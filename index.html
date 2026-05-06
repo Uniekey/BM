@@ -79,82 +79,26 @@
 
         /* ================= 🖨️ KỶ LUẬT IN ẤN A4 LANDSCAPE ĐỒNG NHẤT ================= */
         @media print {
-            /* Ép buộc trình duyệt chọn A4 và xoay ngang */
             @page { size: A4 landscape; margin: 10mm 12mm; }
-            
-            /* Đồng nhất Font và Màu sắc cho toàn bộ văn bản in */
             body, .main-content, .content-area, .print-area { 
-                background-color: #fff !important; 
-                font-family: 'Times New Roman', Times, serif !important; 
-                font-size: 11pt !important; 
-                color: #000 !important; 
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
-                margin: 0 !important; 
-                padding: 0 !important; 
-                width: 100% !important; 
-                max-width: 100% !important;
-                box-shadow: none !important; 
-                border: none !important; 
+                background-color: #fff !important; font-family: 'Times New Roman', Times, serif !important; 
+                font-size: 11pt !important; color: #000 !important; -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; margin: 0 !important; padding: 0 !important; 
+                width: 100% !important; max-width: 100% !important; box-shadow: none !important; border: none !important; 
             }
-            
-            /* Ẩn toàn bộ Menu và Nút bấm UI */
             .sidebar, .no-print, .smart-search-wrapper, .lang-toggle, .toast-save { display: none !important; }
-            
-            /* Cấu trúc Bảng Đồng Nhất */
             .table-responsive { border: none !important; overflow: visible !important; margin-bottom: 15px !important; }
             table { width: 100% !important; min-width: 100% !important; border-collapse: collapse !important; table-layout: auto !important; page-break-inside: auto !important; }
             thead { display: table-header-group !important; }
-            tr { page-break-inside: avoid !important; page-break-after: auto !important; } /* Chống cắt đứt dòng khi qua trang */
-            
-            table th { 
-                background-color: #e2e8f0 !important; 
-                color: #000 !important; 
-                border: 1px solid #000 !important; 
-                padding: 6px !important; 
-                position: static !important; 
-                font-weight: bold !important; 
-                text-align: center !important;
-                vertical-align: middle !important;
-            }
-            table td { 
-                border: 1px solid #000 !important; 
-                padding: 4px 6px !important; 
-                color: #000 !important; 
-                vertical-align: middle !important; 
-            }
-            
-            /* Định dạng Input & Textarea biến thành Text thường */
-            input, textarea, select, .inline-edit { 
-                border: none !important; 
-                background: transparent !important; 
-                color: #000 !important; 
-                padding: 0 !important; 
-                margin: 0 !important; 
-                box-shadow: none !important; 
-                font-family: 'Times New Roman', Times, serif !important; 
-                font-size: inherit !important; 
-                line-height: 1.3 !important;
-                resize: none !important;
-                height: auto !important;
-                appearance: none !important;
-                -webkit-appearance: none !important;
-            }
+            tr { page-break-inside: avoid !important; page-break-after: auto !important; }
+            table th { background-color: #e2e8f0 !important; color: #000 !important; border: 1px solid #000 !important; padding: 6px !important; position: static !important; font-weight: bold !important; text-align: center !important; vertical-align: middle !important; }
+            table td { border: 1px solid #000 !important; padding: 4px 6px !important; color: #000 !important; vertical-align: middle !important; }
+            input, textarea, select, .inline-edit { border: none !important; background: transparent !important; color: #000 !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; font-family: 'Times New Roman', Times, serif !important; font-size: inherit !important; line-height: 1.3 !important; resize: none !important; height: auto !important; appearance: none !important; -webkit-appearance: none !important; }
             textarea.inline-edit { field-sizing: content !important; display: block !important; overflow: visible !important; }
-            
-            /* Căn lề rõ ràng */
-            .txt-left { text-align: left !important; }
-            .txt-center { text-align: center !important; }
-            .txt-right { text-align: right !important; }
-            
             ::-webkit-input-placeholder { color: transparent !important; }
-            
-            /* Tối ưu cỡ chữ cho các bảng lớn (PR) */
             .table-micro-font th, .table-micro-font td { font-size: 10pt !important; padding: 4px !important; }
             .table-micro-font .inline-edit { font-size: 10pt !important; }
             .form-title { color: #000 !important; font-weight: bold !important; margin-bottom: 15px !important; }
-
-            /* Khối tổng hợp và Chữ ký */
             .summary-box { background: transparent !important; border: none !important; padding: 0 !important; page-break-inside: avoid !important; }
             .summary-row { border-bottom: 1px dotted #666 !important; margin-bottom: 5px !important; }
             .signature-block { page-break-inside: avoid !important; margin-top: 30px !important; }
@@ -420,7 +364,8 @@
                                 <li v-for="item in filteredDatabase" @mousedown.prevent="selectItemFromSearch(item, docPR)"><span class="highlight">{{ item.partNo }}</span> - {{ item.name }}</li>
                             </ul>
                         </div>
-                        <button @click="addBlankRow('pr')" class="btn btn-outline-primary fw-bold"><i class="fas fa-plus"></i></button>
+                        <button @click="addBlankRow('pr')" class="btn btn-outline-primary fw-bold" title="Thêm dòng trống"><i class="fas fa-plus"></i></button>
+                        <button @click="copyFromDuToanToPR" class="btn btn-warning fw-bold text-dark" title="Đồng bộ danh sách từ Dự Toán (BOM)"><i class="fas fa-bolt me-1"></i> Nhập từ BOM</button>
                         <button @click="clearDraft('pr')" class="btn btn-outline-danger fw-bold"><i class="fas fa-eraser"></i></button>
                         <button onclick="window.print()" class="btn btn-danger fw-bold shadow-sm"><i class="fas fa-print me-1"></i> IN PHIẾU (A4)</button>
                     </div>
@@ -450,7 +395,7 @@
                     <table class="table table-borderless table-sm w-100 mb-3 text-dark align-middle" style="font-size: 14px;">
                         <tr>
                             <td width="10%" class="fw-bold txt-nowrap p-1">Đơn vị lập:</td>
-                            <td width="40%" class="p-1"><textarea v-model="prHeader.company" class="inline-edit border-bottom border-dark p-0 m-0 fw-bold text-uppercase"></textarea></td>
+                            <td width="40%" class="p-1"><textarea v-model="prHeader.company" class="inline-edit border-bottom border-dark p-0 m-0 fw-bold"></textarea></td>
                             <td width="50%" class="p-1"></td>
                         </tr>
                         <tr>
@@ -484,28 +429,28 @@
                             <thead class="table-light txt-center">
                                 <tr>
                                     <th rowspan="2" style="width: 2%;">STT</th>
-                                    <th colspan="2" style="width: 16%;">Mô tả hàng hóa</th>
-                                    <th rowspan="2" style="width: 6%;">Mã vật tư</th>
-                                    <th rowspan="2" style="width: 3%;">ĐVT</th>
-                                    <th rowspan="2" style="width: 4%;">BQ sử<br>dụng</th>
+                                    <th colspan="2" style="width: 16%;">Mô tả<br>hàng hóa</th>
+                                    <th rowspan="2" style="width: 6%;">Mã vật tư<br>(*)</th>
+                                    <th rowspan="2" style="width: 4%;">ĐVT<br>(*)</th>
+                                    <th rowspan="2" style="width: 5%;">Bình quân sử dụng<br>hàng tháng<br>(*)</th>
                                     <th colspan="2" style="width: 6%;">Số lượng</th>
-                                    <th rowspan="2" style="width: 6%;">Đơn giá<br>tham khảo</th>
-                                    <th rowspan="2" style="width: 7%;">Thành tiền<br>(Có VAT)</th>
-                                    <th rowspan="2" style="width: 5%;">T.gian<br>cần</th>
-                                    <th rowspan="2" style="width: 7%;">Mục đích<br>sử dụng</th>
-                                    <th rowspan="2" style="width: 5%;">TK CP<br>(Lập)</th>
-                                    <th rowspan="2" style="width: 5%;">TK CP<br>(KTT)</th>
+                                    <th rowspan="2" style="width: 6%;">Đơn giá<br>tham khảo<br>(có VAT)<br>(*)</th>
+                                    <th rowspan="2" style="width: 7%;">Thành tiền<br>(Có VAT)<br>(*)</th>
+                                    <th rowspan="2" style="width: 6%;">Thời gian cần hàng<br>(*)</th>
+                                    <th rowspan="2" style="width: 7%;">Mục đích sử dụng<br>(*)</th>
+                                    <th rowspan="2" style="width: 6%;">Tài khoản chi phí<br>(Người lập)</th>
+                                    <th rowspan="2" style="width: 6%;">Tài khoản chi phí<br>(KTT)</th>
                                     <th rowspan="2" style="width: 6%;">Ngân sách<br>còn lại</th>
-                                    <th rowspan="2" style="width: 7%;">NCC<br>tham khảo</th>
-                                    <th rowspan="2" style="width: 5%;">C.Ty<br>sử dụng</th>
-                                    <th rowspan="2" style="width: 8%;">Điều kiện<br>nghiệm thu</th>
+                                    <th rowspan="2" style="width: 6%;">Nhà cung cấp<br>tham khảo</th>
+                                    <th rowspan="2" style="width: 5%;">Công ty sử dụng<br>(*)</th>
+                                    <th rowspan="2" style="width: 6%;">Điều kiện nghiệm thu/<br>Đánh giá chất lượng<br>(nếu có)</th>
                                     <th rowspan="2" class="no-print" style="width: 2%;">X</th>
                                 </tr>
                                 <tr>
-                                    <th style="width: 9%;">Tên hàng hóa</th>
-                                    <th style="width: 7%;">Quy cách</th>
-                                    <th style="width: 3%;">Tồn</th>
-                                    <th style="width: 3%;">Xin</th>
+                                    <th style="width: 9%;">Tên hàng hóa<br>(*)</th>
+                                    <th style="width: 7%;">Quy cách<br>(*)</th>
+                                    <th style="width: 3%;">Tồn Kho<br>(*)</th>
+                                    <th style="width: 3%;">Đề xuất<br>(*)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -520,7 +465,7 @@
                                     <td><input type="number" v-model.number="row.qtyReq" class="inline-edit txt-center fw-bold text-primary p-0 m-0 bg-light border border-primary rounded" style="font-size: 11pt;"></td>
                                     <td><input type="text" :value="formatNum(row.price)" @focus="focusNum($event, row.price)" @blur="row.price = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
                                     <td class="txt-right fw-bold text-danger txt-nowrap bg-light">{{ formatNum(row.qtyReq * row.price) }}</td>
-                                    <td><textarea v-model="row.timeNeeded" class="inline-edit txt-center p-0 text-muted" placeholder="dd/mm"></textarea></td>
+                                    <td><textarea v-model="row.timeNeeded" class="inline-edit txt-center p-0 text-muted" placeholder="dd/mm/yy"></textarea></td>
                                     <td><textarea v-model="row.purpose" class="inline-edit txt-left"></textarea></td>
                                     <td><textarea v-model="row.accCreator" class="inline-edit txt-center"></textarea></td>
                                     <td><textarea v-model="row.accKTT" class="inline-edit txt-center"></textarea></td>
@@ -531,7 +476,7 @@
                                     <td class="txt-center no-print"><button @click="removeRow(docPR, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
                                 </tr>
                                 <tr class="table-light border-top border-dark fw-bold">
-                                    <td colspan="9" class="txt-right text-uppercase fs-6">TỔNG CỘNG MUA HÀNG:</td>
+                                    <td colspan="9" class="txt-right text-uppercase fs-6">Tổng</td>
                                     <td class="txt-right text-danger fs-5 txt-nowrap">{{ formatNum(prTotalAmount) }}</td>
                                     <td colspan="9"></td>
                                 </tr>
@@ -540,11 +485,11 @@
                     </div>
 
                     <div class="row mt-4">
-                        <div class="col-12 col-md-8">
-                            <h6 class="fw-bold bg-light p-2 border border-dark border-bottom-0 m-0 text-center text-uppercase" style="font-size: 13px;">QUÁ TRÌNH XỬ LÝ CHỨNG TỪ</h6>
+                        <div class="col-12 col-md-10">
+                            <h6 class="fw-bold bg-light p-2 border border-dark border-bottom-0 m-0 text-center text-uppercase" style="font-size: 13px;">QUÁ TRÌNH XỬ LÝ:</h6>
                             <div class="table-responsive">
                                 <table class="table table-bordered border-dark align-middle txt-center mb-4 table-micro-font">
-                                    <thead class="table-light"><tr><th width="15%">Thời điểm xử lý</th><th width="35%">Bước xử lý</th><th width="25%">Người xử lý</th><th width="25%">Ý kiến xử lý</th></tr></thead>
+                                    <thead class="table-light"><tr><th width="15%">Thời điểm xử lý</th><th width="35%">Bước xử lý</th><th width="25%">Người xử lý</th><th width="25%">Ý kiến người xử lý</th></tr></thead>
                                     <tbody>
                                         <tr v-for="(step, sIdx) in prWorkflow" :key="sIdx">
                                             <td><textarea v-model="step.time" class="inline-edit text-center text-primary fw-bold p-0 m-0" placeholder="dd/mm/yy hh:mm"></textarea></td>
@@ -559,11 +504,11 @@
                     </div>
 
                     <div class="row signature-block text-center mt-3 pt-3 text-dark" style="font-size: 13px;">
-                        <div class="col">Ngày ..... tháng ..... năm .......<br><span class="fw-bold">NGƯỜI LẬP PHIẾU</span><br><br><br><br><br></div>
-                        <div class="col">Ngày ..... tháng ..... năm .......<br><span class="fw-bold">TRƯỞNG PHÒNG</span><br><br><br><br><br></div>
-                        <div class="col">Ngày ..... tháng ..... năm .......<br><span class="fw-bold">TP CUNG ỨNG</span><br><br><br><br><br></div>
-                        <div class="col">Ngày ..... tháng ..... năm .......<br><span class="fw-bold">KẾ TOÁN TRƯỞNG</span><br><br><br><br><br></div>
-                        <div class="col">Ngày ..... tháng ..... năm .......<br><span class="fw-bold text-danger">BAN GIÁM ĐỐC</span><br><br><br><br><br></div>
+                        <div class="col">Ngày ….. tháng ….. năm ……<br><span class="fw-bold">Người lập phiếu</span><br><br><br><br><br></div>
+                        <div class="col">Ngày ….. tháng ….. năm …<br><span class="fw-bold">Trưởng phòng</span><br><br><br><br><br></div>
+                        <div class="col">Ngày ….. tháng ….. năm ……<br><span class="fw-bold">TP Cung ứng</span><br><br><br><br><br></div>
+                        <div class="col">Ngày ….. tháng ….. năm ……<br><span class="fw-bold">Kế toán trưởng</span><br><br><br><br><br></div>
+                        <div class="col">Ngày ….. tháng ….. năm ……<br><span class="fw-bold text-danger">Ban Giám đốc</span><br><br><br><br><br></div>
                     </div>
                 </div>
             </div>
@@ -703,17 +648,18 @@
                 bgHeader: { company: 'CÔNG TY CỔ PHẦN CẢNG QUỐC TẾ LONG AN', address: 'Xã Tân Tập, Huyện Cần Giuộc, Tỉnh Long An', ref: '001/2026/BG-M&E', date: new Date().toLocaleDateString('vi-VN'), to: '' },
                 docBaoGia: [],
                 
-                prHeader: { isoDate: '…/…/...', isoRev: '01', isoCheck: '…', prNo: '', isPlan: true, company: 'Cảng Quốc Tế Long An', dept: 'Phòng Cơ điện', deptCode: 'M&E', warehouse: '', storekeeper: '', approvedDate: '' },
+                // Mặc định nạp theo mẫu PR Công ty Cổ Phần Phát Triển Châu Á
+                prHeader: { isoDate: '…/…/...', isoRev: '...', isoCheck: '…', prNo: '', isPlan: true, company: 'Công ty Cổ Phần Phát Triển Châu Á', dept: 'Phòng Cơ điện', deptCode: 'M&E', warehouse: '', storekeeper: '', approvedDate: '' },
                 docPR: [],
                 prWorkflow: [
                     { time: '', stepName: '01. Lập phiếu ĐNMH', person: 'Người lập phiếu', note: '' },
                     { time: '', stepName: '02. Xác nhận tồn kho', person: 'Phạm Thị Như Huỳnh', note: '' },
-                    { time: '', stepName: '03. Tổng hợp lại mặt hàng cần mua', person: 'Phạm Thị Như Huỳnh', note: '' },
-                    { time: '', stepName: '04. Kiểm tra phiếu đề nghị', person: 'Trưởng phòng Cơ điện', note: '' },
-                    { time: '', stepName: '05. Xác nhận đơn hàng', person: 'Lưu Thị Cẩm Hồng', note: '' },
+                    { time: '', stepName: '03. Tổng hợp lại các mặt hàng cần mua/cấp', person: 'Phạm Thị Như Huỳnh', note: '' },
+                    { time: '', stepName: '04. Kiểm tra phiếu đề nghị ( Mô tả hàng hóa, bình quân sử dụng, thời gian cần hàng, mục đích sử dụng )', person: 'Trưởng phòng Cơ điện', note: '' },
+                    { time: '', stepName: '05. Xác nhận đơn hàng ( kiểm tra tồn kho, bình quân sử dụng )', person: 'Lưu Thị Cẩm Hồng', note: '' },
                     { time: '', stepName: '06. Kiểm tra ngân sách ĐNMH', person: 'Kế toán trưởng', note: '' },
-                    { time: '', stepName: '07. Phê duyệt mua hàng', person: 'Ban giám đốc', note: '' },
-                    { time: '', stepName: '08. Tiếp nhận phiếu', person: 'Phạm Thị Như Huỳnh', note: '' }
+                    { time: '', stepName: '07. Phê duyệt đề nghị mua hàng', person: 'Ban giám đốc (theo phân quyền)', note: '' },
+                    { time: '', stepName: '08. Tiếp nhận phiếu đề nghị', person: 'Phạm Thị Như Huỳnh', note: '' }
                 ],
                 
                 dailyType: 'thicong', dailyHeader: { project: '', date: '', location: '', pic: '' }, dailyManpower: [], dailyEquipment: [], dailyTasks: [],
@@ -753,7 +699,7 @@
             
             selectItemFromSearch(item, targetArray) {
                 let newItem = { ...item, qty: 1 }; newItem.priceGop = newItem.priceVT + newItem.priceNC;
-                if (this.currentTab === 'pr') targetArray.push({ name: newItem.name, specs: newItem.specs, partNo: newItem.partNo, unit: newItem.unit, avgUsage: 0, qtyStock: 0, qtyReq: 1, price: newItem.priceVT, timeNeeded: '', purpose: 'Bảo trì sửa chữa M&E', accCreator: '', accKTT: '', budget: '', supplier: '', companyUse: 'Cảng Long An', qcCond: 'Đúng thông số Hãng' });
+                if (this.currentTab === 'pr') targetArray.push({ name: newItem.name, specs: newItem.specs, partNo: newItem.partNo, unit: newItem.unit, avgUsage: 0, qtyStock: 0, qtyReq: 1, price: newItem.priceVT, timeNeeded: '', purpose: 'Dự án / Bảo trì', accCreator: '', accKTT: '', budget: '', supplier: '', companyUse: 'ADG', qcCond: 'Đúng thông số kỹ thuật yêu cầu' });
                 else targetArray.push(newItem);
                 this.searchQuery = ''; this.showSearchDropdown = false;
             },
@@ -787,41 +733,24 @@
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
                     
-                    let newDb = [];
-                    let headerFound = false;
-                    let colIdx = {};
-                    
+                    let newDb = []; let headerFound = false; let colIdx = {};
                     const parseCleanNumber = (val) => {
                         if (typeof val === 'number') return val;
                         if (!val) return 0;
                         let s = val.toString().trim().replace(/[^0-9\.,\-]/g, '');
                         if(!s) return 0;
-                        
-                        let lastDot = s.lastIndexOf('.');
-                        let lastComma = s.lastIndexOf(',');
-                        
-                        if (lastComma > lastDot && lastDot !== -1) {
-                            s = s.replace(/\./g, '').replace(/,/g, '.'); 
-                        } else if (lastDot > lastComma && lastComma !== -1) {
-                            s = s.replace(/,/g, ''); 
-                        } else {
-                            if (s.indexOf('.') !== -1) {
-                                let parts = s.split('.');
-                                if (parts.length > 2 || parts[1].length === 3) s = s.replace(/\./g, '');
-                            } else if (s.indexOf(',') !== -1) {
-                                let parts = s.split(',');
-                                if (parts.length > 2 || parts[1].length === 3) s = s.replace(/,/g, '');
-                                else s = s.replace(/,/g, '.');
-                            }
+                        let lastDot = s.lastIndexOf('.'); let lastComma = s.lastIndexOf(',');
+                        if (lastComma > lastDot && lastDot !== -1) { s = s.replace(/\./g, '').replace(/,/g, '.'); } 
+                        else if (lastDot > lastComma && lastComma !== -1) { s = s.replace(/,/g, ''); } 
+                        else {
+                            if (s.indexOf('.') !== -1) { let parts = s.split('.'); if (parts.length > 2 || parts[1].length === 3) s = s.replace(/\./g, ''); } 
+                            else if (s.indexOf(',') !== -1) { let parts = s.split(','); if (parts.length > 2 || parts[1].length === 3) s = s.replace(/,/g, ''); else s = s.replace(/,/g, '.'); }
                         }
-                        let num = parseFloat(s);
-                        return isNaN(num) ? 0 : num;
+                        let num = parseFloat(s); return isNaN(num) ? 0 : num;
                     };
 
                     for (let i = 0; i < rows.length; i++) {
-                        const row = rows[i];
-                        if (!row || row.length === 0) continue;
-                        
+                        const row = rows[i]; if (!row || row.length === 0) continue;
                         if (!headerFound) {
                             let rowStr = row.join('').toLowerCase();
                             if (rowStr.includes('mã vật tư') && rowStr.includes('tên vật tư')) {
@@ -834,27 +763,19 @@
                             }
                             continue;
                         }
-                        
                         const name = row[colIdx.name] ? row[colIdx.name].toString().trim() : '';
                         if (!name || name.toLowerCase().includes('tổng cộng')) continue;
-                        
                         const partNo = row[colIdx.partNo] ? row[colIdx.partNo].toString().trim() : '';
                         const unit = row[colIdx.unit] ? row[colIdx.unit].toString().trim() : '';
-                        
                         const qty = colIdx.qty !== -1 ? parseCleanNumber(row[colIdx.qty]) : 0;
                         const val = colIdx.val !== -1 ? parseCleanNumber(row[colIdx.val]) : 0;
                         const priceVT = qty > 0 ? Math.round(val / qty) : 0;
-                        
                         newDb.push({ partNo: partNo, name: name, specs: '', unit: unit, priceVT: priceVT, priceNC: 0 });
                     }
-                    
                     if (newDb.length > 0) {
-                        this.database = newDb;
-                        localStorage.setItem('masterDataProject', JSON.stringify(newDb));
+                        this.database = newDb; localStorage.setItem('masterDataProject', JSON.stringify(newDb));
                         alert(`HOÀN TẤT: Hệ thống đã cập nhật thành công ${newDb.length} vật tư vào bộ nhớ bảo mật.`);
-                    } else { 
-                        alert('LỖI: Không tìm thấy dữ liệu hợp lệ. Vui lòng kiểm tra lại cấu trúc file Excel (Cần có cột Mã vật tư, Tên vật tư).'); 
-                    }
+                    } else { alert('LỖI: Không tìm thấy dữ liệu hợp lệ. Vui lòng kiểm tra lại cấu trúc file Excel.'); }
                     event.target.value = ''; 
                 };
                 reader.readAsArrayBuffer(file);
@@ -862,12 +783,44 @@
             
             addBlankRow(t) { 
                 if(t==='dutoan') this.docDuToan.push({}); if(t==='baogia') this.docBaoGia.push({}); 
-                if(t==='pr') this.docPR.push({purpose: 'Bảo trì sửa chữa M&E', companyUse: 'Cảng Long An', qtyReq: 1}); 
+                if(t==='pr') this.docPR.push({purpose: 'Dự án / Bảo trì', companyUse: 'ADG', qcCond: 'Đúng thông số kỹ thuật yêu cầu', qtyReq: 1, avgUsage: 0, qtyStock: 0, price: 0}); 
                 if(t==='dailyTasks') this.dailyTasks.push({}); if(t==='dailyManpower') this.dailyManpower.push({}); if(t==='dailyEquipment') this.dailyEquipment.push({});
                 if(t==='nghiemthu') this.docNghiemThu.push({status: 'ĐẠT YÊU CẦU'});
             },
             removeRow(arr, i) { if(confirm("Xóa dòng này khỏi Bảng?")) arr.splice(i, 1); },
-            copyFromDuToan() { if(confirm("Chuyển đổi dữ liệu BOM sang Form Báo Giá? (Bao gồm chi phí % Lợi nhuận)")) { this.docBaoGia = this.docDuToan.map(i => ({...i, priceGop: Math.round(((i.priceVT * i.qty * (1 + this.tyleQLCVT/100)) + (i.priceNC * i.qty * (1 + this.tyleNCGT/100) * (1 + this.tyleQLCNC/100))) / i.qty) || 0 })); } }
+            copyFromDuToan() { 
+                if(confirm("Chuyển đổi dữ liệu BOM sang Form Báo Giá? (Bao gồm chi phí % Lợi nhuận)")) { 
+                    this.docBaoGia = this.docDuToan.map(i => ({...i, priceGop: Math.round(((i.priceVT * i.qty * (1 + this.tyleQLCVT/100)) + (i.priceNC * i.qty * (1 + this.tyleNCGT/100) * (1 + this.tyleQLCNC/100))) / i.qty) || 0 })); 
+                } 
+            },
+
+            copyFromDuToanToPR() {
+                if(confirm("Xác nhận lấy dữ liệu từ bảng Dự Toán (BOM) sang Phiếu Đề Nghị Mua Hàng (PR)?\nLưu ý: Hệ thống sẽ tự động BỎ QUA các hạng mục thuần nhân công (Giá VT = 0).")) {
+                    const materialsOnly = this.docDuToan.filter(i => i.priceVT > 0 || (i.priceVT === 0 && i.priceNC === 0));
+                    
+                    const newPRItems = materialsOnly.map(i => ({
+                        name: i.name || '',
+                        specs: i.specs || '',
+                        partNo: i.partNo || '',
+                        unit: i.unit || '',
+                        avgUsage: 0,
+                        qtyStock: 0,
+                        qtyReq: i.qty || 1, 
+                        price: i.priceVT || 0, 
+                        timeNeeded: '',
+                        purpose: 'Dự án / Bảo trì',
+                        accCreator: '',
+                        accKTT: '',
+                        budget: 0,
+                        supplier: '',
+                        companyUse: 'ADG',
+                        qcCond: 'Đúng thông số kỹ thuật yêu cầu'
+                    }));
+
+                    this.docPR = [...this.docPR, ...newPRItems];
+                    alert(`Đã thêm thành công ${newPRItems.length} mã vật tư từ BOM sang Phiếu PR. Anh có thể tiếp tục tùy chỉnh số lượng hoặc thêm/xóa dòng tự do.`);
+                }
+            }
         }
     }).mount('#app');
 </script>
