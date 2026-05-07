@@ -88,9 +88,11 @@
                 background-color: #fff !important; font-family: 'Times New Roman', Times, serif !important; 
                 font-size: 11pt !important; color: #000 !important; -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important; margin: 0 !important; padding: 0 !important; 
-                width: 100% !important; max-width: 100% !important; box-shadow: none !important; border: none !important; 
+                width: 100% !important; max-width: 100vw !important; box-shadow: none !important; border: none !important; 
+                overflow-x: hidden !important; 
             }
             .sidebar, .no-print, .smart-search-wrapper, .lang-toggle, .toast-save { display: none !important; }
+            .row { margin-left: 0 !important; margin-right: 0 !important; } 
             .table-responsive { border: none !important; overflow: visible !important; margin-bottom: 15px !important; }
             table { width: 100% !important; min-width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; page-break-inside: auto !important; word-wrap: break-word !important; }
             thead { display: table-header-group !important; }
@@ -359,9 +361,9 @@
                                     <td colspan="7" class="txt-right fw-bold text-uppercase fs-6">{{ t('TỔNG THANH TOÁN / GRAND TOTAL:', 'GRAND TOTAL:') }}</td><td class="txt-right fw-bold text-danger fs-5 txt-nowrap">{{ formatNum(totalBaoGia * 1.08) }}</td><td class="no-print"></td>
                                 </tr>
                                 <tr class="table-light border-0">
-                                    <td colspan="9" class="txt-right text-muted fst-italic py-2 border-bottom border-dark">
+                                    <td colspan="8" class="txt-right text-muted fst-italic py-2 border-bottom border-dark">
                                         {{ t('Bằng chữ: ', 'In words: ') }}<span class="text-dark fw-bold">{{ readMoney(totalBaoGia * 1.08) }}</span>
-                                    </td>
+                                    </td><td class="no-print"></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -515,12 +517,12 @@
                                 <tr class="table-light border-top border-dark fw-bold">
                                     <td colspan="9" class="txt-right text-uppercase fs-6">{{ t('Tổng cộng:', 'Total:') }}</td>
                                     <td class="txt-right text-danger fs-5 txt-nowrap">{{ formatNum(prTotalAmount) }}</td>
-                                    <td colspan="9"></td>
+                                    <td colspan="8"></td><td class="no-print"></td>
                                 </tr>
                                 <tr class="table-light border-0">
-                                    <td colspan="19" class="txt-right text-muted fst-italic py-2 border-bottom border-dark">
+                                    <td colspan="18" class="txt-right text-muted fst-italic py-2 border-bottom border-dark">
                                         {{ t('Bằng chữ: ', 'In words: ') }}<span class="text-dark fw-bold">{{ readMoney(prTotalAmount) }}</span>
-                                    </td>
+                                    </td><td class="no-print"></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -718,7 +720,7 @@
                 
                 // --- BIẾN LOGO & TÊN DỰ ÁN TOÀN CỤC ---
                 companyLogo: localStorage.getItem('company_logo_base64') || 'https://via.placeholder.com/150x60?text=CLICK+ĐỂ+THÊM+LOGO',
-                globalProjectName: localStorage.getItem('global_project_name') || 'DỰ ÁN: [NHẬP TÊN CÔNG TRÌNH / DỰ ÁN TẠI ĐÂY]',
+                globalProjectName: localStorage.getItem('global_project_name') || '',
                 
                 docDuToan: [], tyleNCGT: 10, tyleQLCVT: 15, tyleQLCNC: 10,
                 bgHeader: { company: 'CÔNG TY CỔ PHẦN PHÁT TRIỂN CHÂU Á', address: 'Số 07, KP6, Xã Bến Lức, Tỉnh Tây Ninh', ref: '001/2026/BG-M&E', date: new Date().toLocaleDateString('vi-VN'), to: '' },
@@ -772,12 +774,10 @@
         methods: {
             t(vi, en) { return this.lang === 'vi' ? vi : en; },
 
-            // KHẮC PHỤC LỖI SỐ THẬP PHÂN KẾ TOÁN
             formatNum(val) { 
                 return val ? Math.round(Number(val)).toLocaleString('vi-VN') : '0'; 
             },
 
-            // ĐỘNG CƠ ĐỌC SỐ TIỀN BẰNG CHỮ
             readMoney(num) {
                 if (!num || isNaN(num) || num === 0) return this.t("Không đồng", "Zero VND");
                 num = Math.round(num); 
