@@ -11,7 +11,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     <style>
         :root { 
             --primary-bg: #1a365d; --sidebar-bg: #0f172a; --hover-bg: #1e293b; 
@@ -780,6 +782,16 @@
 
 <script>
     const { createApp } = Vue;
+
+    // Cấu hình LocalForage sử dụng IndexedDB
+    localforage.config({
+        driver: localforage.INDEXEDDB,
+        name: 'ME_Portal_DB',
+        version: 1.0,
+        storeName: 'port_documents',
+        description: 'Database lưu trữ ngoại tuyến cho Cảng Long An'
+    });
+
     createApp({
         data() {
             return {
@@ -787,9 +799,9 @@
                 database: [], newItem: { partNo: '', name: '', specs: '', unit: '', priceVT: 0, priceNC: 0 },
                 searchQuery: '', showSearchDropdown: false,
                 
-                // --- BIẾN LOGO & TÊN DỰ ÁN TOÀN CỤC ---
-                companyLogo: localStorage.getItem('company_logo_base64') || 'https://via.placeholder.com/150x60?text=CLICK+ĐỂ+THÊM+LOGO',
-                globalProjectName: localStorage.getItem('global_project_name') || '',
+                // Khởi tạo rỗng, dữ liệu sẽ được load qua IndexedDB trong mounted()
+                companyLogo: 'https://via.placeholder.com/150x60?text=CLICK+ĐỂ+THÊM+LOGO',
+                globalProjectName: '',
                 
                 docDuToan: [], tyleNCGT: 10, tyleQLCVT: 15, tyleQLCNC: 10,
                 bgHeader: { company: 'CÔNG TY CỔ PHẦN PHÁT TRIỂN CHÂU Á', address: 'Số 07, KP6, Xã Bến Lức, Tỉnh Tây Ninh', ref: '001/2026/BG-M&E', date: new Date().toLocaleDateString('vi-VN'), to: '' },
@@ -806,10 +818,10 @@
                     { time: '', stepVi: '01. Lập phiếu ĐNMH', stepEn: '01. Create Purchase Requisition', person: 'Người lập phiếu', note: '' },
                     { time: '', stepVi: '02. Xác nhận tồn kho', stepEn: '02. Confirm Inventory / Stock', person: 'Phạm Thị Như Huỳnh', note: '' },
                     { time: '', stepVi: '03. Tổng hợp lại các mặt hàng cần mua/cấp', stepEn: '03. Consolidate requested items', person: 'Phạm Thị Như Huỳnh', note: '' },
-                    { time: '', stepVi: '04. Kiểm tra phiếu đề nghị (Mô tả hàng hóa, bình quân sử dụng...)', stepEn: '04. Check PR Details (Specs, Qty, Usage, etc.)', person: 'Trưởng phòng Cơ Điện', note: '' },
-                    { time: '', stepVi: '05. Xác nhận đơn hàng (Kiểm tra tồn kho, bình quân sử dụng)', stepEn: '05. Order Confirmation (Stock check)', person: 'Lưu Thị Cẩm Hồng', note: '' },
+                    { time: '', stepVi: '04. Kiểm tra phiếu đề nghị', stepEn: '04. Check PR Details', person: 'Trưởng phòng Cơ Điện', note: '' },
+                    { time: '', stepVi: '05. Xác nhận đơn hàng', stepEn: '05. Order Confirmation', person: 'Lưu Thị Cẩm Hồng', note: '' },
                     { time: '', stepVi: '06. Kiểm tra ngân sách ĐNMH', stepEn: '06. Budget Verification', person: 'Kế toán Trưởng', note: '' },
-                    { time: '', stepVi: '07. Phê duyệt đề nghị mua hàng', stepEn: '07. Final PR Approval (By Auth. Level)', person: 'Ban Giám đốc (theo phân quyền)', note: '' },
+                    { time: '', stepVi: '07. Phê duyệt đề nghị mua hàng', stepEn: '07. Final PR Approval', person: 'Ban Giám đốc', note: '' },
                     { time: '', stepVi: '08. Tiếp nhận phiếu đề nghị', stepEn: '08. Receive Approved PR', person: 'Phạm Thị Như Huỳnh', note: '' }
                 ],
                 
@@ -843,59 +855,84 @@
             prWorkflow: { deep: true, handler(val) { this.saveDraft('pr_flow', val); } },
             docNghiemThu: { deep: true, handler(val) { this.saveDraft('nt_table', val); } }
         },
-        mounted() {
-            this.loadDrafts(); 
-            this.database = JSON.parse(localStorage.getItem('masterDataProject') || "[]");
+        async mounted() {
+            // Khởi chạy Dịch chuyển dữ liệu (Migration Pipeline)
+            await this.migrateDataToIndexedDB();
+            
+            // Tải dữ liệu an toàn từ IndexedDB
+            await this.loadDrafts(); 
+            const db = await localforage.getItem('masterDataProject');
+            if (db) this.database = db;
         },
         methods: {
+            // [THUẬT TOÁN 1] BẢO MẬT BĂM MẬT KHẨU SHA-256
+            async hashPassword(message) {
+                const msgBuffer = new TextEncoder().encode(message);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            },
+
+            async loginAdmin() { 
+                const pass = prompt("Nhập mã số NV (Password):");
+                if (!pass) return;
+
+                const inputHash = await this.hashPassword(pass);
+                
+                // MÃ HASH XÁC THỰC: Đây là chuỗi SHA-256 của mật khẩu "admin". 
+                // Ghi chú Quản trị viên: Để lấy mã Hash cho mã NV thật của anh (VD: 2109004), 
+                // hãy nhập mã đó vào bảng thông báo, sau đó nhấn F12 (Console) để copy mã Hash mới và dán đè vào biến này.
+                const VALID_HASH = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"; 
+
+                if (inputHash === VALID_HASH) {
+                    this.isAdmin = true;
+                } else {
+                    console.warn(`[SECURITY] Mật khẩu vừa nhập có mã Hash là: "${inputHash}". Hãy dùng mã này cập nhật vào biến VALID_HASH trong code để đổi mật khẩu.`);
+                    alert("Từ chối truy cập! (Vui lòng kiểm tra Console F12 để lấy mã Hash nếu anh đang muốn thiết lập mật khẩu mới)");
+                }
+            },
+
+            // [THUẬT TOÁN 2] TỰ ĐỘNG DỊCH CHUYỂN DỮ LIỆU ĐỂ TRÁNH DATA LOSS
+            async migrateDataToIndexedDB() {
+                const keys = ['masterDataProject', 'global_project_name', 'dt_table', 'bg_table', 'bg_terms', 'pr_table', 'pr_flow', 'nt_table', 'company_logo_base64'];
+                let hasMigrated = false;
+                for (let k of keys) {
+                    let oldData = localStorage.getItem(k);
+                    if (oldData !== null) {
+                        try { 
+                            await localforage.setItem(k, JSON.parse(oldData)); 
+                        } catch(e) { 
+                            await localforage.setItem(k, oldData); 
+                        }
+                        localStorage.removeItem(k); // Hủy dữ liệu cũ để giải phóng bộ nhớ Cache
+                        hasMigrated = true;
+                    }
+                }
+                if (hasMigrated) console.info("✅ System: Data Successfully Migrated to IndexedDB (No Data Loss).");
+            },
+
             t(vi, en) { return this.lang === 'vi' ? vi : en; },
 
-            formatNum(val) { 
-                return val ? Math.round(Number(val)).toLocaleString('vi-VN') : '0'; 
-            },
+            formatNum(val) { return val ? Math.round(Number(val)).toLocaleString('vi-VN') : '0'; },
 
             readMoney(num) {
                 if (!num || isNaN(num) || num === 0) return this.t("Không đồng", "Zero VND");
                 num = Math.round(num); 
-                
-                if (this.lang === 'en') {
-                    return "VND " + num.toLocaleString('en-US') + " only.";
-                }
-
+                if (this.lang === 'en') return "VND " + num.toLocaleString('en-US') + " only.";
                 const defaultNumbers = ' hai ba bốn năm sáu bảy tám chín';
                 const chuHangDonVi = ('1 một' + defaultNumbers).split(' ');
                 const chuHangChuc = ('lẻ mười' + defaultNumbers).split(' ');
                 const chuHangTram = ('không một' + defaultNumbers).split(' ');
                 const mangGiaTri = ['', 'nghìn', 'triệu', 'tỷ', 'nghìn tỷ', 'triệu tỷ'];
-
-                let str = parseInt(Math.abs(num)) + '';
-                let arr = [];
-                while (str.length > 0) {
-                    arr.push(str.length >= 3 ? str.slice(-3) : str);
-                    str = str.length >= 3 ? str.slice(0, -3) : '';
-                }
-
+                let str = parseInt(Math.abs(num)) + ''; let arr = [];
+                while (str.length > 0) { arr.push(str.length >= 3 ? str.slice(-3) : str); str = str.length >= 3 ? str.slice(0, -3) : ''; }
                 let rsString = '';
                 for (let i = 0; i < arr.length; i++) {
-                    let chuoi = '';
-                    let temp = arr[i].padStart(3, '0');
-                    let tram = parseInt(temp[0]);
-                    let chuc = parseInt(temp[1]);
-                    let donVi = parseInt(temp[2]);
-
+                    let chuoi = ''; let temp = arr[i].padStart(3, '0');
+                    let tram = parseInt(temp[0]); let chuc = parseInt(temp[1]); let donVi = parseInt(temp[2]);
                     if (tram === 0 && chuc === 0 && donVi === 0) continue;
-
-                    if (tram !== 0 || i !== arr.length - 1) {
-                        chuoi += chuHangTram[tram] + ' trăm ';
-                        if (chuc === 0 && donVi !== 0) chuoi += 'lẻ ';
-                    }
-                    if (chuc !== 0 && chuc !== 1) {
-                        chuoi += chuHangChuc[chuc] + ' mươi ';
-                        if (chuc === 4 && donVi !== 0) chuoi = chuoi.replace('bốn mươi', 'bốn mươi');
-                    } else if (chuc === 1) {
-                        chuoi += 'mười ';
-                    }
-
+                    if (tram !== 0 || i !== arr.length - 1) { chuoi += chuHangTram[tram] + ' trăm '; if (chuc === 0 && donVi !== 0) chuoi += 'lẻ '; }
+                    if (chuc !== 0 && chuc !== 1) { chuoi += chuHangChuc[chuc] + ' mươi '; if (chuc === 4 && donVi !== 0) chuoi = chuoi.replace('bốn mươi', 'bốn mươi'); } else if (chuc === 1) { chuoi += 'mười '; }
                     switch (donVi) {
                         case 1: chuoi += (chuc !== 0 && chuc !== 1) ? 'mốt ' : chuHangDonVi[donVi] + ' '; break;
                         case 5: chuoi += (chuc !== 0) ? 'lăm ' : chuHangDonVi[donVi] + ' '; break;
@@ -904,16 +941,13 @@
                     }
                     rsString = chuoi + mangGiaTri[i] + ' ' + rsString;
                 }
-
                 rsString = rsString.trim().replace(/\s+/g, ' ');
                 if (rsString.startsWith('không trăm lẻ ')) rsString = rsString.substring(14);
                 else if (rsString.startsWith('không trăm ')) rsString = rsString.substring(11);
-
                 let res = rsString.charAt(0).toUpperCase() + rsString.slice(1) + ' đồng chẵn.';
                 return num < 0 ? "Âm " + res.toLowerCase() : res;
             },
 
-            loginAdmin() { if(prompt("Mã số NV (Password):") === "2109004") this.isAdmin = true; else alert("Từ chối truy cập!"); },
             hideSearch() { setTimeout(() => { this.showSearchDropdown = false; }, 200); },
             
             uploadRowImage(event, row) {
@@ -924,19 +958,11 @@
                         const img = new Image();
                         img.onload = () => {
                             const canvas = document.createElement('canvas');
-                            const MAX_WIDTH = 800;
-                            const MAX_HEIGHT = 800;
-                            let width = img.width;
-                            let height = img.height;
-
-                            if (width > height) {
-                                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                            } else {
-                                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-                            }
+                            let width = img.width; let height = img.height;
+                            if (width > height) { if (width > 800) { height *= 800 / width; width = 800; } } 
+                            else { if (height > 800) { width *= 800 / height; height = 800; } }
                             canvas.width = width; canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
+                            const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
                             row.image = canvas.toDataURL('image/jpeg', 0.7); 
                         };
                         img.src = e.target.result;
@@ -952,7 +978,7 @@
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         this.companyLogo = e.target.result;
-                        localStorage.setItem('company_logo_base64', this.companyLogo);
+                        localforage.setItem('company_logo_base64', this.companyLogo);
                         this.showSavedToast = true; setTimeout(() => this.showSavedToast = false, 2000);
                     };
                     reader.readAsDataURL(file);
@@ -962,47 +988,51 @@
             selectItemFromSearch(item, targetArray) {
                 let newItem = { ...item, qty: 1 }; 
                 newItem.priceGop = newItem.priceVT + newItem.priceNC; 
-                
                 if (this.currentTab === 'pr') {
-                    targetArray.push({ name: newItem.name, specs: newItem.specs, partNo: newItem.partNo, unit: newItem.unit, avgUsage: 0, qtyStock: 0, qtyReq: 1, price: newItem.priceVT, timeNeeded: '', purpose: 'Dự án / Bảo trì', accCreator: '', accKTT: '', budget: '', supplier: '', companyUse: 'ADG', qcCond: 'Đúng thông số kỹ thuật yêu cầu' });
-                } else {
-                    targetArray.push(newItem);
-                }
+                    targetArray.push({ name: newItem.name, specs: newItem.specs, partNo: newItem.partNo, unit: newItem.unit, avgUsage: 0, qtyStock: 0, qtyReq: 1, price: newItem.priceVT, timeNeeded: '', purpose: 'Dự án / Bảo trì', accCreator: '', accKTT: '', budget: 0, supplier: '', companyUse: 'ADG', qcCond: 'Đúng thông số kỹ thuật yêu cầu' });
+                } else { targetArray.push(newItem); }
                 this.searchQuery = ''; this.showSearchDropdown = false;
             },
             
             focusNum(e, val) { e.target.value = val === 0 ? '' : val; e.target.select(); },
             blurNum(e) { let p = Number(e.target.value.toString().replace(/[\.,]/g, '')); return isNaN(p) ? 0 : p; },
-            saveDraft(key, data) { localStorage.setItem(key, JSON.stringify(data)); this.showSavedToast = true; setTimeout(() => this.showSavedToast = false, 2000); },
-            loadDrafts() {
-                const parseL = (k, d) => localStorage.getItem(k) ? JSON.parse(localStorage.getItem(k)) : d;
-                this.docDuToan = parseL('dt_table', this.docDuToan); 
-                this.docBaoGia = parseL('bg_table', this.docBaoGia); 
-                this.bgTerms = parseL('bg_terms', this.bgTerms);
-                this.docPR = parseL('pr_table', this.docPR); 
-                this.prWorkflow = parseL('pr_flow', this.prWorkflow);
-                this.docNghiemThu = parseL('nt_table', this.docNghiemThu);
+            
+            saveDraft(key, data) { 
+                localforage.setItem(key, JSON.parse(JSON.stringify(data))).then(() => {
+                    this.showSavedToast = true; setTimeout(() => this.showSavedToast = false, 2000); 
+                });
             },
+
+            async loadDrafts() {
+                const parseL = async (k, defaultData) => {
+                    const data = await localforage.getItem(k);
+                    return data !== null ? data : defaultData;
+                };
+                this.docDuToan = await parseL('dt_table', this.docDuToan); 
+                this.docBaoGia = await parseL('bg_table', this.docBaoGia); 
+                this.bgTerms = await parseL('bg_terms', this.bgTerms);
+                this.docPR = await parseL('pr_table', this.docPR); 
+                this.prWorkflow = await parseL('pr_flow', this.prWorkflow);
+                this.docNghiemThu = await parseL('nt_table', this.docNghiemThu);
+                this.globalProjectName = await parseL('global_project_name', this.globalProjectName);
+                
+                const cachedLogo = await parseL('company_logo_base64', null);
+                if(cachedLogo) this.companyLogo = cachedLogo;
+            },
+
             clearDraft(t) { 
                 if(!confirm("CẢNH BÁO: Bạn có chắc chắn muốn xóa toàn bộ dữ liệu trên Form này?")) return; 
                 if(t==='dutoan') this.docDuToan=[]; 
-                if(t==='baogia') {
-                    this.docBaoGia=[]; 
-                    this.bgTerms = [
-                        { title: 'Thời gian thực hiện:', content: 'Trong vòng 15-30 ngày kể từ ngày ký hợp đồng.' },
-                        { title: 'Thanh toán (Payment):', content: 'Tạm ứng 30%, thanh toán 70% sau khi bàn giao.' },
-                        { title: 'Bảo hành (Warranty):', content: 'Bảo hành 12 tháng theo tiêu chuẩn của Hãng.' }
-                    ];
-                }
+                if(t==='baogia') { this.docBaoGia=[]; this.bgTerms = [ { title: 'Thời gian thực hiện:', content: 'Trong vòng 15-30 ngày kể từ ngày ký hợp đồng.' }, { title: 'Thanh toán (Payment):', content: 'Tạm ứng 30%, thanh toán 70% sau khi bàn giao.' }, { title: 'Bảo hành (Warranty):', content: 'Bảo hành 12 tháng theo tiêu chuẩn của Hãng.' } ]; }
                 if(t==='pr') this.docPR=[]; 
                 if(t==='daily') { this.dailyTasks=[]; this.dailyManpower=[]; this.dailyEquipment=[]; } 
                 if(t==='nghiemthu') this.docNghiemThu=[]; 
             },
 
-            addToDatabase() { 
+            async addToDatabase() { 
                 if(!this.newItem.name) return alert("Vui lòng nhập Tên Hạng Mục");
                 this.database.unshift({...this.newItem});
-                localStorage.setItem('masterDataProject', JSON.stringify(this.database));
+                await localforage.setItem('masterDataProject', JSON.parse(JSON.stringify(this.database)));
                 this.newItem = { partNo: '', name: '', specs: '', unit: '', priceVT: 0, priceNC: 0 };
                 alert("Đã thêm thành công vào Cơ Sở Dữ Liệu Nội Bộ");
             },
@@ -1011,7 +1041,7 @@
                 const file = event.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
-                reader.onload = (e) => {
+                reader.onload = async (e) => {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -1057,7 +1087,8 @@
                         newDb.push({ partNo: partNo, name: name, specs: '', unit: unit, priceVT: priceVT, priceNC: 0 });
                     }
                     if (newDb.length > 0) {
-                        this.database = newDb; localStorage.setItem('masterDataProject', JSON.stringify(newDb));
+                        this.database = newDb; 
+                        await localforage.setItem('masterDataProject', JSON.parse(JSON.stringify(newDb)));
                         alert(`HOÀN TẤT: Hệ thống đã cập nhật thành công ${newDb.length} vật tư vào bộ nhớ bảo mật.`);
                     } else { alert('LỖI: Không tìm thấy dữ liệu hợp lệ. Vui lòng kiểm tra lại cấu trúc file Excel.'); }
                     event.target.value = ''; 
@@ -1086,26 +1117,13 @@
                     const materialsOnly = this.docDuToan.filter(i => i.priceVT > 0 || (i.priceVT === 0 && i.priceNC === 0));
                     
                     const newPRItems = materialsOnly.map(i => ({
-                        name: i.name || '',
-                        specs: i.specs || '',
-                        partNo: i.partNo || '',
-                        unit: i.unit || '',
-                        avgUsage: 0,
-                        qtyStock: 0,
-                        qtyReq: i.qty || 1, 
-                        price: i.priceVT || 0, 
-                        timeNeeded: '',
-                        purpose: 'Dự án / Bảo trì',
-                        accCreator: '',
-                        accKTT: '',
-                        budget: 0,
-                        supplier: '',
-                        companyUse: 'ADG',
-                        qcCond: 'Đúng thông số kỹ thuật yêu cầu'
+                        name: i.name || '', specs: i.specs || '', partNo: i.partNo || '', unit: i.unit || '',
+                        avgUsage: 0, qtyStock: 0, qtyReq: i.qty || 1, price: i.priceVT || 0, timeNeeded: '', purpose: 'Dự án / Bảo trì',
+                        accCreator: '', accKTT: '', budget: 0, supplier: '', companyUse: 'ADG', qcCond: 'Đúng thông số kỹ thuật yêu cầu'
                     }));
 
                     this.docPR = [...this.docPR, ...newPRItems];
-                    alert(`Đã thêm thành công ${newPRItems.length} mã vật tư từ BOM sang Phiếu PR. Anh có thể tiếp tục tùy chỉnh số lượng hoặc thêm/xóa dòng tự do.`);
+                    alert(`Đã thêm thành công ${newPRItems.length} mã vật tư từ BOM sang Phiếu PR.`);
                 }
             }
         }
