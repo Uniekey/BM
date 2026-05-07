@@ -4,14 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biểu Mẫu | Cảng Quốc Tế Long An</title>
-    <!-- Google Fonts for Professional Look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap & FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Vue & XLSX -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -33,7 +30,7 @@
 
         .content-area { background: #ffffff; padding: 25px 30px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid #e2e8f0; }
         .print-area { padding: 40px; background: #fff; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
-        .form-title { text-align: center; font-weight: 700; font-size: 22px; color: var(--primary-bg); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-title { text-align: center; font-weight: 700; font-size: 22px; color: var(--primary-bg); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
 
         /* ================= SMART SEARCH ================= */
         .smart-search-wrapper { position: relative; min-width: 320px; }
@@ -73,6 +70,13 @@
         .action-btn { opacity: 0.3; transition: 0.2s; padding: 2px 8px; border-radius: 4px; } tr:hover .action-btn { opacity: 1; }
         .toast-save { position: fixed; bottom: 30px; right: 30px; background: var(--success-color); color: white; padding: 12px 25px; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); z-index: 9999; }
         
+        /* Cấu hình hiển thị Logo */
+        .logo-container { transition: 0.3s; }
+        .logo-container:hover { background-color: #f8fafc; }
+        
+        /* Project Subtitle */
+        .project-subtitle { font-size: 16px; color: #0284c7; text-transform: uppercase; margin-bottom: 10px; }
+
         /* Empty State */
         .empty-state { text-align: center; padding: 50px 20px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 10px; margin: 20px 0; }
         .empty-state i { font-size: 48px; color: #94a3b8; margin-bottom: 15px; }
@@ -98,10 +102,12 @@
             ::-webkit-input-placeholder { color: transparent !important; }
             .table-micro-font th, .table-micro-font td { font-size: 10pt !important; padding: 4px !important; }
             .table-micro-font .inline-edit { font-size: 10pt !important; }
-            .form-title { color: #000 !important; font-weight: bold !important; margin-bottom: 15px !important; }
+            .form-title { color: #000 !important; font-weight: bold !important; margin-bottom: 5px !important; }
+            .project-subtitle { font-size: 13pt !important; color: #000 !important; margin-bottom: 15px !important; }
             .summary-box { background: transparent !important; border: none !important; padding: 0 !important; page-break-inside: avoid !important; }
             .summary-row { border-bottom: 1px dotted #666 !important; margin-bottom: 5px !important; }
             .signature-block { page-break-inside: avoid !important; margin-top: 30px !important; }
+            .logo-container { border: none !important; padding: 0 !important; }
         }
     </style>
 </head>
@@ -115,7 +121,6 @@
     </div>
 
     <div class="row g-0">
-        <!-- SIDEBAR -->
         <div class="col-md-2 sidebar no-print d-flex flex-column">
             <h5 class="text-center mb-4 pb-3 border-bottom border-secondary form-title text-white" style="font-size: 18px; margin: 0 15px;">
                 <i class="fas fa-anchor text-info me-2"></i>M&E PORTAL
@@ -135,10 +140,8 @@
             </div>
         </div>
 
-        <!-- MAIN CONTENT -->
         <div class="col-md-10 main-content">
             
-            <!-- TAB 1: MASTER DATA -->
             <div v-if="currentTab === 'database'" class="content-area">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
                     <div>
@@ -197,7 +200,6 @@
                 </div>
             </div>
 
-            <!-- TAB 2: DỰ TOÁN / BOM -->
             <div v-if="currentTab === 'dutoan'">
                 <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
                     <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-calculator me-2"></i> Lập Dự Toán</h3>
@@ -217,10 +219,21 @@
                 </div>
 
                 <div id="print-dutoan" class="print-area">
-                    <h2 class="form-title mb-1">BẢNG DỰ TOÁN</h2>
-                    <div class="text-center mb-4 text-muted"><em>(Hồ sơ nội bộ phân tích cơ cấu giá / Internal cost structure analysis)</em></div>
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-3 text-center">
+                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
+                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;" title="Click để đổi Logo">
+                            </div>
+                        </div>
+                        <div class="col-6 text-center">
+                            <h2 class="form-title mb-1">BẢNG DỰ TOÁN</h2>
+                            <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle p-0 m-0 w-100" placeholder="NHẬP THÔNG TIN CÔNG TRÌNH / DỰ ÁN..."></textarea>
+                        </div>
+                        <div class="col-3"></div>
+                    </div>
 
-                    <div class="table-responsive">
+                    <div class="table-responsive mt-4">
                         <table id="table-dutoan" class="table align-middle">
                             <thead>
                                 <tr>
@@ -248,7 +261,7 @@
                                     <td class="txt-center no-print"><button @click="removeRow(docDuToan, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
                                 </tr>
                                 <tr class="table-light fw-bold border-top border-2 border-dark">
-                                    <td colspan="7" class="txt-right text-uppercase">Cộng chi phí cơ sở:</td>
+                                    <td colspan="7" class="txt-right text-uppercase">Tổng cộng:</td>
                                     <td class="txt-right txt-nowrap">{{ formatNum(dtSumVT) }}</td>
                                     <td class="txt-right text-success txt-nowrap">{{ formatNum(dtSumNC) }}</td>
                                     <td class="no-print"></td>
@@ -261,18 +274,17 @@
                         <div class="col-md-7 col-12 summary-box shadow-sm border-0">
                             <h6 class="fw-bold mb-3 border-bottom border-dark pb-2 text-primary">TỔNG HỢP CHI PHÍ & LỢI NHUẬN:</h6>
                             <div class="summary-row"><span><strong>1. Tổng Chi phí Cơ sở</strong></span><span class="fw-bold fs-6">{{ formatNum(dtSumVT + dtSumNC) }}</span></div>
-                            <div class="summary-row text-muted"><span>2. Chi phí Quản lý / NC Gián Tiếp (<input type="number" v-model.number="tyleNCGT" class="inline-edit w-auto d-inline txt-right text-primary fw-bold p-0" style="width: 35px;">% NC)</span><span>{{ formatNum(dtCpNCGT) }}</span></div>
+                            <div class="summary-row text-muted"><span>2. Chi phí Quản lý (<input type="number" v-model.number="tyleNCGT" class="inline-edit w-auto d-inline txt-right text-primary fw-bold p-0" style="width: 35px;">% NC)</span><span>{{ formatNum(dtCpNCGT) }}</span></div>
                             <div class="summary-row text-muted"><span>3. Lợi nhuận định mức Vật tư (<input type="number" v-model.number="tyleQLCVT" class="inline-edit w-auto d-inline txt-right text-primary fw-bold p-0" style="width: 35px;">% VT)</span><span>{{ formatNum(dtCpQLCVT) }}</span></div>
                             <div class="summary-row text-muted"><span>4. Lợi nhuận định mức Nhân công (<input type="number" v-model.number="tyleQLCNC" class="inline-edit w-auto d-inline txt-right text-primary fw-bold p-0" style="width: 35px;">% NC)</span><span>{{ formatNum(dtCpQLCNC) }}</span></div>
                             <div class="summary-row mt-2 pt-2 border-top border-dark"><span><strong class="text-dark">Dự toán trước thuế:</strong></span><span class="fw-bold text-dark fs-6">{{ formatNum(dtTongTruocThue) }}</span></div>
                             <div class="summary-row"><span>Thuế GTGT (VAT 8%):</span><span>{{ formatNum(dtTongTruocThue * 0.08) }}</span></div>
-                            <div class="summary-row mt-2 pt-2 border-top border-dark border-2 bg-white px-2 py-2 rounded"><span><strong class="text-danger text-uppercase fs-6">TỔNG GIÁ TRỊ GÓI THẦU:</strong></span><span><strong class="text-danger fs-5">{{ formatNum(dtTongTruocThue * 1.08) }}</strong></span></div>
+                            <div class="summary-row mt-2 pt-2 border-top border-dark border-2 bg-white px-2 py-2 rounded"><span><strong class="text-danger text-uppercase fs-6">TỔNG GIÁ TRỊ GÓI THẦU (đã gồm VAT):</strong></span><span><strong class="text-danger fs-5">{{ formatNum(dtTongTruocThue * 1.08) }}</strong></span></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 3: BẢNG BÁO GIÁ -->
             <div v-if="currentTab === 'baogia'">
                 <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
                     <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-file-invoice-dollar me-2"></i> Báo Giá</h3>
@@ -286,7 +298,13 @@
 
                 <div id="print-baogia" class="print-area">
                     <div class="row mb-4 border-bottom border-2 pb-3 align-items-end">
-                        <div class="col-sm-8 col-12 mb-3 mb-sm-0">
+                        <div class="col-sm-2 col-12 mb-3 mb-sm-0 text-center">
+                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
+                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-12 mb-3 mb-sm-0">
                             <h5 class="mb-1"><textarea v-model="bgHeader.company" class="inline-edit fw-bold fs-5 text-uppercase text-primary w-100 p-0 m-0"></textarea></h5>
                             <div class="small text-muted"><textarea v-model="bgHeader.address" class="inline-edit w-100 p-0 m-0 text-muted"></textarea></div>
                         </div>
@@ -296,7 +314,11 @@
                         </div>
                     </div>
                     
-                    <h2 class="form-title text-center text-dark">BẢNG BÁO GIÁ / QUOTATION</h2>
+                    <div class="text-center mb-4">
+                        <h2 class="form-title text-dark mb-1">BẢNG BÁO GIÁ / QUOTATION</h2>
+                        <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle p-0 m-0 w-100" placeholder="NHẬP THÔNG TIN CÔNG TRÌNH / DỰ ÁN..."></textarea>
+                    </div>
+
                     <div class="mb-4 d-flex align-items-center">
                         <span class="fw-bold me-2 txt-nowrap">Kính gửi / To:</span> 
                         <textarea v-model="bgHeader.to" class="inline-edit border-bottom border-dark fw-bold text-uppercase p-0 m-0 flex-grow-1" placeholder="Nhập tên khách hàng..."></textarea>
@@ -351,7 +373,6 @@
                 </div>
             </div>
 
-            <!-- TAB 4: PHIẾU ĐỀ NGHỊ MUA HÀNG (PR) -->
             <div v-if="currentTab === 'pr'">
                 <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
                     <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-file-signature me-2"></i> Phiếu Đề Nghị Mua Hàng</h3>
@@ -373,8 +394,15 @@
 
                 <div id="print-pr" class="print-area w-100">
                     <div class="row mb-3 align-items-center">
-                        <div class="col-3"></div>
-                        <div class="col-6 text-center"><h2 class="form-title mb-1" style="font-size: 24px; color:#000;">PHIẾU ĐỀ NGHỊ MUA HÀNG</h2></div>
+                        <div class="col-3 text-center">
+                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
+                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;" title="Click để đổi Logo">
+                            </div>
+                        </div>
+                        <div class="col-6 text-center">
+                            <h2 class="form-title mb-0" style="font-size: 24px; color:#000;">PHIẾU ĐỀ NGHỊ MUA HÀNG</h2>
+                        </div>
                         <div class="col-3 border border-dark p-2" style="font-size: 11px;">
                             <div class="fw-bold border-bottom border-dark pb-1 mb-1">Số hiệu: ADG_QT_KH_01/BM01</div>
                             <div class="d-flex align-items-center mb-1"><span class="txt-nowrap me-2">Ngày hiệu lực:</span> <textarea v-model="prHeader.isoDate" class="inline-edit p-0 m-0"></textarea></div>
@@ -466,7 +494,7 @@
                                     <td><input type="text" :value="formatNum(row.price)" @focus="focusNum($event, row.price)" @blur="row.price = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
                                     <td class="txt-right fw-bold text-danger txt-nowrap bg-light">{{ formatNum(row.qtyReq * row.price) }}</td>
                                     <td><textarea v-model="row.timeNeeded" class="inline-edit txt-center p-0 text-muted" placeholder="dd/mm/yy"></textarea></td>
-                                    <td><textarea v-model="row.purpose" class="inline-edit txt-left"></textarea></td>
+                                    <td><textarea v-model="globalProjectName" class="inline-edit txt-left fw-bold text-primary" title="Trường này được đồng bộ với Tên Dự Án"></textarea></td>
                                     <td><textarea v-model="row.accCreator" class="inline-edit txt-center"></textarea></td>
                                     <td><textarea v-model="row.accKTT" class="inline-edit txt-center"></textarea></td>
                                     <td><input type="text" :value="formatNum(row.budget)" @focus="focusNum($event, row.budget)" @blur="row.budget = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
@@ -513,7 +541,6 @@
                 </div>
             </div>
 
-            <!-- TAB 5: DAILY REPORT -->
             <div v-if="currentTab === 'daily'">
                 <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
                     <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-hard-hat me-2"></i> Báo Cáo Hiện Trường</h3>
@@ -527,21 +554,33 @@
                     </div>
                 </div>
                 <div id="print-daily" class="print-area">
-                    <h3 class="form-title mb-1">BÁO CÁO CÔNG VIỆC HẰNG NGÀY</h3>
-                    <div class="text-center mb-4 text-muted fw-bold"><em>{{ dailyType === 'baotri' ? '(Công tác Bảo trì & Khắc phục sự cố)' : '(Công tác Thi công & Lắp đặt)' }}</em></div>
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-3 text-center">
+                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
+                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;" title="Click để đổi Logo">
+                            </div>
+                        </div>
+                        <div class="col-6 text-center">
+                            <h3 class="form-title mb-1">NHẬT KÝ THI CÔNG</h3>
+                            <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle p-0 m-0 w-100" placeholder="NHẬP THÔNG TIN CÔNG TRÌNH / DỰ ÁN..."></textarea>
+                            <div class="text-muted fw-bold mt-1"><em>{{ dailyType === 'baotri' ? '(Công tác Bảo trì & Khắc phục sự cố)' : '(Công tác Thi công & Lắp đặt)' }}</em></div>
+                        </div>
+                        <div class="col-3"></div>
+                    </div>
                     
-                    <div class="table-responsive">
+                    <div class="table-responsive mt-3">
                         <table class="table table-bordered border-dark mb-4 align-middle">
                             <tr>
                                 <td width="15%" class="table-light fw-bold txt-left p-2">Dự án/Hạng mục:</td>
-                                <td width="35%" class="p-2"><textarea v-model="dailyHeader.project" class="inline-edit fw-bold text-primary txt-left p-0 m-0 text-uppercase"></textarea></td>
+                                <td width="35%" class="p-2"><textarea v-model="globalProjectName" class="inline-edit fw-bold text-primary txt-left p-0 m-0 text-uppercase"></textarea></td>
                                 <td width="15%" class="table-light fw-bold txt-left p-2">Ngày thực hiện:</td>
                                 <td width="35%" class="p-2"><input type="date" v-model="dailyHeader.date" class="inline-edit w-auto fw-bold txt-center p-0 m-0 text-danger"></td>
                             </tr>
                             <tr>
-                                <td class="table-light fw-bold txt-left p-2">Khu vực:</td>
+                                <td class="table-light fw-bold txt-left p-2">Địa chỉ:</td>
                                 <td class="p-2"><textarea v-model="dailyHeader.location" class="inline-edit txt-left p-0 m-0"></textarea></td>
-                                <td class="table-light fw-bold txt-left p-2">Phụ trách (PIC):</td>
+                                <td class="table-light fw-bold txt-left p-2">Người phụ trách:</td>
                                 <td class="p-2"><textarea v-model="dailyHeader.pic" class="inline-edit txt-left p-0 m-0 fw-bold"></textarea></td>
                             </tr>
                         </table>
@@ -550,11 +589,11 @@
                     <div class="row mb-4 g-3">
                         <div class="col-md-6 col-12">
                             <h6 class="fw-bold text-uppercase bg-light p-2 border border-dark border-bottom-0 m-0 d-flex justify-content-between align-items-center"><span><i class="fas fa-users me-2 text-primary"></i>1. Nhân lực</span><button class="btn btn-sm text-primary p-0 no-print" @click="addBlankRow('dailyManpower')"><i class="fas fa-plus-circle fs-5"></i></button></h6>
-                            <div class="table-responsive"><table class="table table-bordered border-dark m-0 align-middle"><thead class="table-light text-center"><tr><th width="10%">STT</th><th width="60%">Vai trò / Chức danh</th><th width="20%">Số lượng</th><th class="no-print" width="10%"></th></tr></thead><tbody><tr v-for="(mp, idx) in dailyManpower" :key="idx"><td class="txt-center fw-bold text-muted">{{ idx + 1 }}</td><td><textarea v-model="mp.role" class="inline-edit txt-left p-0 m-0"></textarea></td><td><input type="number" v-model.number="mp.qty" class="inline-edit txt-center fw-bold p-0 m-0 text-primary"></td><td class="txt-center no-print"><button @click="removeRow(dailyManpower, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times"></i></button></td></tr></tbody></table></div>
+                            <div class="table-responsive"><table class="table table-bordered border-dark m-0 align-middle"><thead class="table-light text-center"><tr><th width="10%">STT</th><th width="40%">Vai trò / Chức danh</th><th width="10%">Số lượng</th><th class="no-print" width="40%"></th></tr></thead><tbody><tr v-for="(mp, idx) in dailyManpower" :key="idx"><td class="txt-center fw-bold text-muted">{{ idx + 1 }}</td><td><textarea v-model="mp.role" class="inline-edit txt-left p-0 m-0"></textarea></td><td><input type="number" v-model.number="mp.qty" class="inline-edit txt-center fw-bold p-0 m-0 text-primary"></td><td class="txt-center no-print"><button @click="removeRow(dailyManpower, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times"></i></button></td></tr></tbody></table></div>
                         </div>
                         <div class="col-md-6 col-12">
-                            <h6 class="fw-bold text-uppercase bg-light p-2 border border-dark border-bottom-0 m-0 d-flex justify-content-between align-items-center"><span><i class="fas fa-truck-loading me-2 text-primary"></i>2. Thiết bị / Xe cộ</span><button class="btn btn-sm text-primary p-0 no-print" @click="addBlankRow('dailyEquipment')"><i class="fas fa-plus-circle fs-5"></i></button></h6>
-                            <div class="table-responsive"><table class="table table-bordered border-dark m-0 align-middle"><thead class="table-light text-center"><tr><th width="10%">STT</th><th width="60%">Tên Thiết bị / Máy móc</th><th width="20%">Số lượng</th><th class="no-print" width="10%"></th></tr></thead><tbody><tr v-for="(eq, idx) in dailyEquipment" :key="idx"><td class="txt-center fw-bold text-muted">{{ idx + 1 }}</td><td><textarea v-model="eq.name" class="inline-edit txt-left p-0 m-0"></textarea></td><td><input type="number" v-model.number="eq.qty" class="inline-edit txt-center fw-bold p-0 m-0 text-primary"></td><td class="txt-center no-print"><button @click="removeRow(dailyEquipment, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times"></i></button></td></tr></tbody></table></div>
+                            <h6 class="fw-bold text-uppercase bg-light p-2 border border-dark border-bottom-0 m-0 d-flex justify-content-between align-items-center"><span><i class="fas fa-truck-loading me-2 text-primary"></i>2. Thiết bị / Máy thi công</span><button class="btn btn-sm text-primary p-0 no-print" @click="addBlankRow('dailyEquipment')"><i class="fas fa-plus-circle fs-5"></i></button></h6>
+                            <div class="table-responsive"><table class="table table-bordered border-dark m-0 align-middle"><thead class="table-light text-center"><tr><th width="10%">STT</th><th width="40%">Tên Thiết bị / Máy móc</th><th width="10%">Số lượng</th><th class="no-print" width="40%"></th></tr></thead><tbody><tr v-for="(eq, idx) in dailyEquipment" :key="idx"><td class="txt-center fw-bold text-muted">{{ idx + 1 }}</td><td><textarea v-model="eq.name" class="inline-edit txt-left p-0 m-0"></textarea></td><td><input type="number" v-model.number="eq.qty" class="inline-edit txt-center fw-bold p-0 m-0 text-primary"></td><td class="txt-center no-print"><button @click="removeRow(dailyEquipment, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times"></i></button></td></tr></tbody></table></div>
                         </div>
                     </div>
 
@@ -575,10 +614,9 @@
                 </div>
             </div>
 
-            <!-- TAB 6: NGHIỆM THU -->
             <div v-if="currentTab === 'nghiemthu'">
                 <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
-                    <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-handshake me-2"></i> Biên Bản Bàn Giao</h3>
+                    <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-handshake me-2"></i> Biên Bản Nghiệm Thu</h3>
                     <div class="d-flex flex-wrap gap-2">
                         <button @click="addBlankRow('nghiemthu')" class="btn btn-outline-primary fw-bold"><i class="fas fa-plus"></i> Thêm</button>
                         <button @click="clearDraft('nghiemthu')" class="btn btn-outline-danger fw-bold"><i class="fas fa-eraser"></i> Xóa</button>
@@ -587,11 +625,25 @@
                 </div>
                 
                 <div id="print-nghiemthu" class="print-area">
-                    <h3 class="form-title mb-1 text-dark">BIÊN BẢN NGHIỆM THU & BÀN GIAO THIẾT BỊ</h3>
-                    <div class="mb-4 mt-4">
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-3 text-center">
+                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
+                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;" title="Click để đổi Logo">
+                            </div>
+                        </div>
+                        <div class="col-9 text-center">
+                            <h3 class="form-title mb-1 text-dark">BIÊN BẢN NGHIỆM THU</h3>
+                            <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle p-0 m-0 w-100" placeholder="NHẬP THÔNG TIN CÔNG TRÌNH / DỰ ÁN..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 mt-3">
                         <table class="table table-borderless table-sm w-100 w-md-75 align-middle">
                             <tr><td width="20%" class="fw-bold txt-left txt-nowrap p-1">Căn cứ Hợp đồng số:</td><td class="p-1"><textarea v-model="ntHeader.contract" class="inline-edit border-bottom border-dark text-primary fw-bold txt-left p-0 m-0"></textarea></td></tr>
-                            <tr><td class="fw-bold txt-left txt-nowrap p-1">Tên Dự án / Gói thầu:</td><td class="p-1"><textarea v-model="ntHeader.project" class="inline-edit border-bottom border-dark text-uppercase fw-bold txt-left p-0 m-0"></textarea></td></tr>
+                            <tr><td class="fw-bold txt-left txt-nowrap p-1">Tên Dự án / Gói thầu:</td>
+                                <td class="p-1"><textarea v-model="globalProjectName" class="inline-edit border-bottom border-dark text-uppercase fw-bold txt-left p-0 m-0"></textarea></td>
+                            </tr>
                             <tr><td class="fw-bold txt-left txt-nowrap p-1">Thời gian nghiệm thu:</td><td class="p-1"><input type="datetime-local" v-model="ntHeader.date" class="inline-edit w-auto border-bottom border-dark txt-center p-0 m-0 fw-bold"></td></tr>
                         </table>
                     </div>
@@ -600,10 +652,10 @@
                         <table class="table table-bordered align-middle border-dark">
                             <thead class="table-light txt-center">
                                 <tr>
-                                    <th rowspan="2" width="4%" class="txt-nowrap">STT</th><th rowspan="2" width="25%">Hạng mục bàn giao</th><th rowspan="2" width="15%">S/N / Quy cách</th>
-                                    <th colspan="2">Đánh giá Kỹ thuật</th><th rowspan="2" width="10%">Hồ sơ CO/CQ</th><th rowspan="2" width="12%">Kết luận</th><th rowspan="2" width="14%">Ghi chú</th><th rowspan="2" class="no-print" width="3%">X</th>
+                                    <th rowspan="2" width="4%" class="txt-nowrap">STT</th><th rowspan="2" width="25%">Hạng mục</th><th rowspan="2" width="15%">Quy cách</th>
+                                    <th colspan="2">Đánh giá</th><th rowspan="2" width="10%">Hồ sơ</th><th rowspan="2" width="12%">Kết luận</th><th rowspan="2" width="14%">Ghi chú</th><th rowspan="2" class="no-print" width="3%">X</th>
                                 </tr>
-                                <tr><th width="12%">Tiêu chuẩn HĐ</th><th width="12%">Thực tế Đạt</th></tr>
+                                <tr><th width="12%">Theo Hợp Đồng</th><th width="12%">Theo Thực Tế</th></tr>
                             </thead>
                             <tbody>
                                 <tr v-for="(row, idx) in docNghiemThu" :key="idx">
@@ -644,26 +696,29 @@
                 database: [], newItem: { partNo: '', name: '', specs: '', unit: '', priceVT: 0, priceNC: 0 },
                 searchQuery: '', showSearchDropdown: false,
                 
+                // --- BIẾN LOGO & TÊN DỰ ÁN TOÀN CỤC ---
+                companyLogo: localStorage.getItem('company_logo_base64') || 'https://via.placeholder.com/150x60?text=CLICK+ĐỂ+THÊM+LOGO',
+                globalProjectName: localStorage.getItem('global_project_name') || 'DỰ ÁN: [NHẬP TÊN CÔNG TRÌNH / DỰ ÁN TẠI ĐÂY]',
+                
                 docDuToan: [], tyleNCGT: 10, tyleQLCVT: 15, tyleQLCNC: 10,
-                bgHeader: { company: 'CÔNG TY CỔ PHẦN CẢNG QUỐC TẾ LONG AN', address: 'Xã Tân Tập, Huyện Cần Giuộc, Tỉnh Long An', ref: '001/2026/BG-M&E', date: new Date().toLocaleDateString('vi-VN'), to: '' },
+                bgHeader: { company: 'CÔNG TY CỔ PHẦN PHÁT TRIỂN CHÂU Á', address: 'Số 07, KP6, Xã Bến Lức, Tỉnh Tây Ninh', ref: '001/2026/BG-M&E', date: new Date().toLocaleDateString('vi-VN'), to: '' },
                 docBaoGia: [],
                 
-                // Mặc định nạp theo mẫu PR Công ty Cổ Phần Phát Triển Châu Á
-                prHeader: { isoDate: '…/…/...', isoRev: '...', isoCheck: '…', prNo: '', isPlan: true, company: 'Công ty Cổ Phần Phát Triển Châu Á', dept: 'Phòng Cơ điện', deptCode: 'M&E', warehouse: '', storekeeper: '', approvedDate: '' },
+                prHeader: { isoDate: '…/…/...', isoRev: '...', isoCheck: '…', prNo: '', isPlan: true, company: 'Công ty Cổ Phần Phát Triển Châu Á', dept: 'Phòng Cơ Điện', deptCode: 'M&E', warehouse: '', storekeeper: '', approvedDate: '' },
                 docPR: [],
                 prWorkflow: [
                     { time: '', stepName: '01. Lập phiếu ĐNMH', person: 'Người lập phiếu', note: '' },
                     { time: '', stepName: '02. Xác nhận tồn kho', person: 'Phạm Thị Như Huỳnh', note: '' },
                     { time: '', stepName: '03. Tổng hợp lại các mặt hàng cần mua/cấp', person: 'Phạm Thị Như Huỳnh', note: '' },
-                    { time: '', stepName: '04. Kiểm tra phiếu đề nghị ( Mô tả hàng hóa, bình quân sử dụng, thời gian cần hàng, mục đích sử dụng )', person: 'Trưởng phòng Cơ điện', note: '' },
+                    { time: '', stepName: '04. Kiểm tra phiếu đề nghị ( Mô tả hàng hóa, bình quân sử dụng, thời gian cần hàng, mục đích sử dụng )', person: 'Trưởng phòng Cơ Điện', note: '' },
                     { time: '', stepName: '05. Xác nhận đơn hàng ( kiểm tra tồn kho, bình quân sử dụng )', person: 'Lưu Thị Cẩm Hồng', note: '' },
-                    { time: '', stepName: '06. Kiểm tra ngân sách ĐNMH', person: 'Kế toán trưởng', note: '' },
-                    { time: '', stepName: '07. Phê duyệt đề nghị mua hàng', person: 'Ban giám đốc (theo phân quyền)', note: '' },
+                    { time: '', stepName: '06. Kiểm tra ngân sách ĐNMH', person: 'Kế toán Trưởng', note: '' },
+                    { time: '', stepName: '07. Phê duyệt đề nghị mua hàng', person: 'Ban Giám đốc (theo phân quyền)', note: '' },
                     { time: '', stepName: '08. Tiếp nhận phiếu đề nghị', person: 'Phạm Thị Như Huỳnh', note: '' }
                 ],
                 
-                dailyType: 'thicong', dailyHeader: { project: '', date: '', location: '', pic: '' }, dailyManpower: [], dailyEquipment: [], dailyTasks: [],
-                ntHeader: { contract: '', project: '', date: '' }, docNghiemThu: []
+                dailyType: 'thicong', dailyHeader: { date: '', location: '', pic: '' }, dailyManpower: [], dailyEquipment: [], dailyTasks: [],
+                ntHeader: { contract: '', date: '' }, docNghiemThu: []
             }
         },
         computed: {
@@ -684,6 +739,7 @@
         },
         watch: {
             currentTab() { this.searchQuery = ''; },
+            globalProjectName(val) { this.saveDraft('global_project_name', val); },
             docDuToan: { deep: true, handler(val) { this.saveDraft('dt_table', val); } },
             docBaoGia: { deep: true, handler(val) { this.saveDraft('bg_table', val); } },
             docPR: { deep: true, handler(val) { this.saveDraft('pr_table', val); } },
@@ -696,6 +752,19 @@
         methods: {
             loginAdmin() { if(prompt("Mã số NV (Password):") === "2109004") this.isAdmin = true; else alert("Từ chối truy cập!"); },
             hideSearch() { setTimeout(() => { this.showSearchDropdown = false; }, 200); },
+            
+            uploadLogo(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.companyLogo = e.target.result;
+                        localStorage.setItem('company_logo_base64', this.companyLogo);
+                        this.showSavedToast = true; setTimeout(() => this.showSavedToast = false, 2000);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            },
             
             selectItemFromSearch(item, targetArray) {
                 let newItem = { ...item, qty: 1 }; newItem.priceGop = newItem.priceVT + newItem.priceNC;
