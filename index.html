@@ -34,7 +34,7 @@
 
         /* ================= SMART SEARCH ================= */
         .smart-search-wrapper { position: relative; min-width: 320px; }
-        .smart-search-input { width: 100%; padding: 8px 35px 8px 15px; border-radius: 6px; border: 1px solid #94a3b8; outline: none; transition: 0.2s; font-size: 13px; }
+        .smart-search-input { width: 100%; padding: 8px 35px 8px 15px; border-radius: 6px; border: 1px solid #94a3b8; outline: none; transition: 0.2s; font-size: 13px; font-family: inherit; }
         .smart-search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2); }
         .smart-search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #64748b; pointer-events: none; }
         .smart-search-results { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border-color); border-radius: 0 0 6px 6px; max-height: 250px; overflow-y: auto; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 0; margin: 0; list-style: none; }
@@ -42,27 +42,59 @@
         .smart-search-results li:hover { background-color: #f0f9ff; color: var(--primary-bg); font-weight: 600; }
         .smart-search-results .highlight { color: var(--danger-color); font-weight: bold; }
 
-        /* ================= BẢNG & TEXTAREA ENGINE ================= */
+        /* ================= CHUẨN HÓA UI/UX NHẬP LIỆU (FORM CONTROLS) ================= */
+        input, textarea, select { 
+            font-family: 'Inter', sans-serif !important; 
+        }
+
         .table-responsive { overflow-x: auto; border: 1px solid var(--border-color); margin-bottom: 1.5rem; border-radius: 6px; }
         table { border-collapse: collapse; width: 100%; min-width: 900px; margin-bottom: 0; table-layout: auto; }
-        table th { background-color: #f8fafc !important; text-align: center; font-weight: 600; padding: 12px 6px !important; border-bottom: 2px solid #cbd5e1 !important; color: #1e293b; vertical-align: middle; position: sticky; top: 0; z-index: 10; }
-        table td { vertical-align: middle !important; padding: 4px !important; border: 1px solid #e2e8f0; }
+        
+        table th { background-color: #f8fafc !important; text-align: center; font-weight: 600; padding: 12px 10px !important; border-bottom: 2px solid #cbd5e1 !important; color: #1e293b; vertical-align: middle; position: sticky; top: 0; z-index: 10; }
+        table td { vertical-align: middle !important; padding: 2px !important; border: 1px solid #e2e8f0; }
+        table td:not(:has(.inline-edit)) { padding: 8px 10px !important; } /* Lót đệm cho các ô không nhập liệu (như ô số thứ tự) */
         
         .inline-edit { 
-            border: 1px dashed transparent; background: transparent; width: 100%; box-sizing: border-box; 
-            outline: none; padding: 6px; font-family: inherit; font-size: inherit; line-height: 1.4; 
-            border-radius: 4px; transition: all 0.2s; display: block; color: var(--text-dark);
+            border: 1px dashed transparent; 
+            background: transparent; 
+            width: 100%; 
+            box-sizing: border-box; 
+            outline: none; 
+            padding: 8px 12px !important; /* Chuẩn hóa vùng click rộng rãi */
+            margin: 0 !important; /* Ép không lề để đồng bộ tuyệt đối */
+            font-family: inherit !important; 
+            font-size: inherit; /* Cho phép kế thừa fs-5, fs-6 nếu có */
+            line-height: 1.5 !important; /* Cao độ chữ tiêu chuẩn */
+            border-radius: 4px; 
+            transition: all 0.2s ease-in-out; 
+            display: block; 
+            color: var(--text-dark);
+            min-height: 38px; /* Đồng bộ chiều cao tất cả các ô nhập liệu */
         }
+        
         textarea.inline-edit { 
             field-sizing: content; 
-            min-height: 30px; white-space: pre-wrap !important; 
-            word-break: break-word !important; overflow-wrap: break-word !important; margin: 0; resize: none; overflow: hidden;
+            resize: none; 
+            overflow: hidden;
+            white-space: pre-wrap !important; 
+            word-break: break-word !important; 
+            padding-top: 10px !important; /* Cân đối chiều dọc cho Textarea */
+            padding-bottom: 10px !important;
         }
         
-        .inline-edit:hover:not(:disabled) { border-bottom: 1px dashed #94a3b8; background: #f8fafc; }
-        .inline-edit:focus { border: 1px solid var(--accent); background: #f0f9ff; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+        /* Chống đè padding cho các ô inline nằm trong một dòng văn bản (Vd: % nhân công) */
+        .inline-edit.d-inline {
+            padding: 0 4px !important;
+            min-height: auto !important;
+            display: inline-block !important;
+            border-bottom: 1px dashed #94a3b8;
+            border-radius: 0;
+        }
+
+        .inline-edit:hover:not(:disabled):not(.d-inline) { border: 1px dashed #94a3b8; background: #f8fafc; }
+        .inline-edit:focus:not(:disabled):not(.d-inline) { border: 1px solid var(--accent); background: #f0f9ff; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
         
-        .txt-left { text-align: left; } .txt-center { text-align: center; } .txt-right { text-align: right; }
+        .txt-left { text-align: left !important; } .txt-center { text-align: center !important; } .txt-right { text-align: right !important; }
         .txt-nowrap { white-space: nowrap !important; }
 
         .summary-box { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; }
@@ -76,7 +108,7 @@
         .empty-state { text-align: center; padding: 50px 20px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 10px; margin: 20px 0; }
         .empty-state i { font-size: 48px; color: #94a3b8; margin-bottom: 15px; }
 
-        /* ================= 🖨️ KỶ LUẬT IN ẤN A4 LANDSCAPE ĐỒNG NHẤT ================= */
+        /* ================= 🖨️ KỶ LUẬT IN ẤN A4 LANDSCAPE ================= */
         @media print {
             @page { size: A4 landscape; margin: 10mm 12mm; }
             body, .main-content, .content-area, .print-area { 
@@ -94,19 +126,26 @@
             tr { page-break-inside: avoid !important; page-break-after: auto !important; }
             table th { background-color: #e2e8f0 !important; color: #000 !important; border: 1px solid #000 !important; padding: 6px !important; position: static !important; font-weight: bold !important; text-align: center !important; vertical-align: middle !important; }
             table td { border: 1px solid #000 !important; padding: 4px 6px !important; color: #000 !important; vertical-align: middle !important; word-wrap: break-word !important; }
-            input, textarea, select, .inline-edit { border: none !important; background: transparent !important; color: #000 !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; font-family: 'Times New Roman', Times, serif !important; font-size: inherit !important; line-height: 1.3 !important; resize: none !important; height: auto !important; appearance: none !important; -webkit-appearance: none !important; }
-            textarea.inline-edit { field-sizing: content !important; display: block !important; overflow: visible !important; word-break: break-word !important; }
+            
+            /* Tối ưu ô nhập liệu khi in */
+            input, textarea, select, .inline-edit { 
+                border: none !important; background: transparent !important; color: #000 !important; 
+                padding: 2px 4px !important; margin: 0 !important; box-shadow: none !important; 
+                font-family: 'Times New Roman', Times, serif !important; font-size: inherit !important; 
+                line-height: 1.3 !important; min-height: auto !important; height: auto !important; 
+                appearance: none !important; -webkit-appearance: none !important; display: block !important;
+            }
+            textarea.inline-edit { field-sizing: content !important; overflow: visible !important; word-break: break-word !important; }
             ::-webkit-input-placeholder { color: transparent !important; }
+            
             .table-micro-font th, .table-micro-font td { font-size: 9pt !important; padding: 4px !important; }
             .table-micro-font .inline-edit { font-size: 9pt !important; }
             .form-title { color: #000 !important; font-weight: bold !important; margin-bottom: 5px !important; }
-            .project-subtitle { font-size: 13pt !important; color: #000 !important; margin-bottom: 15px !important; }
+            .project-subtitle { font-size: 13pt !important; color: #000 !important; margin-bottom: 15px !important; padding: 0 !important; }
             .summary-box { background: transparent !important; border: none !important; padding: 0 !important; page-break-inside: avoid !important; }
             .summary-row { border-bottom: 1px dotted #666 !important; margin-bottom: 5px !important; }
             .signature-block { page-break-inside: avoid !important; margin-top: 30px !important; }
             .logo-container { border: none !important; padding: 0 !important; }
-            
-            /* Sửa khung hình ảnh khi in */
             .img-preview-box { border: none !important; background: transparent !important; }
         }
         
@@ -231,7 +270,7 @@
                         </div>
                         <div class="col-6 text-center">
                             <h2 class="form-title mb-1">{{ t('BẢNG DỰ TOÁN', 'COST ESTIMATE (BOM)') }}</h2>
-                            <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle p-0 m-0 w-100" :placeholder="t('NHẬP THÔNG TIN CÔNG TRÌNH / DỰ ÁN...', 'ENTER PROJECT / PACKAGE NAME...')"></textarea>
+                            <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle" :placeholder="t('NHẬP THÔNG TIN CÔNG TRÌNH / DỰ ÁN...', 'ENTER PROJECT / PACKAGE NAME...')"></textarea>
                             <div class="text-muted mt-1"><em>{{ t('(Hồ sơ nội bộ phân tích cơ cấu giá)', '(Internal cost structure analysis)') }}</em></div>
                         </div>
                         <div class="col-3"></div>
@@ -278,9 +317,9 @@
                         <div class="col-md-7 col-12 summary-box shadow-sm border-0">
                             <h6 class="fw-bold mb-3 border-bottom border-dark pb-2 text-primary">{{ t('TỔNG HỢP CHI PHÍ & LỢI NHUẬN:', 'COST & PROFIT SUMMARY:') }}</h6>
                             <div class="summary-row"><span><strong>{{ t('1. Tổng Chi phí Cơ sở', '1. Total Base Cost') }}</strong></span><span class="fw-bold fs-6">{{ formatNum(dtSumVT + dtSumNC) }}</span></div>
-                            <div class="summary-row text-muted"><span>{{ t('2. Chi phí Quản lý', '2. Indirect Costs / Overhead') }} (<input type="number" v-model.number="tyleNCGT" class="inline-edit w-auto d-inline txt-right text-primary fw-bold p-0" style="width: 35px;">% NC)</span><span>{{ formatNum(dtCpNCGT) }}</span></div>
-                            <div class="summary-row text-muted"><span>{{ t('3. Lợi nhuận định mức Vật tư', '3. Material Profit Margin') }} (<input type="number" v-model.number="tyleQLCVT" class="inline-edit w-auto d-inline txt-right text-primary fw-bold p-0" style="width: 35px;">% VT)</span><span>{{ formatNum(dtCpQLCVT) }}</span></div>
-                            <div class="summary-row text-muted"><span>{{ t('4. Lợi nhuận định mức Nhân công', '4. Labor Profit Margin') }} (<input type="number" v-model.number="tyleQLCNC" class="inline-edit w-auto d-inline txt-right text-primary fw-bold p-0" style="width: 35px;">% NC)</span><span>{{ formatNum(dtCpQLCNC) }}</span></div>
+                            <div class="summary-row text-muted"><span>{{ t('2. Chi phí Quản lý', '2. Indirect Costs / Overhead') }} (<input type="number" v-model.number="tyleNCGT" class="inline-edit d-inline txt-right text-primary fw-bold" style="width: 35px;">% NC)</span><span>{{ formatNum(dtCpNCGT) }}</span></div>
+                            <div class="summary-row text-muted"><span>{{ t('3. Lợi nhuận định mức Vật tư', '3. Material Profit Margin') }} (<input type="number" v-model.number="tyleQLCVT" class="inline-edit d-inline txt-right text-primary fw-bold" style="width: 35px;">% VT)</span><span>{{ formatNum(dtCpQLCVT) }}</span></div>
+                            <div class="summary-row text-muted"><span>{{ t('4. Lợi nhuận định mức Nhân công', '4. Labor Profit Margin') }} (<input type="number" v-model.number="tyleQLCNC" class="inline-edit d-inline txt-right text-primary fw-bold" style="width: 35px;">% NC)</span><span>{{ formatNum(dtCpQLCNC) }}</span></div>
                             <div class="summary-row mt-2 pt-2 border-top border-dark"><span><strong class="text-dark">{{ t('Dự toán trước thuế:', 'Subtotal Before Tax:') }}</strong></span><span class="fw-bold text-dark fs-6">{{ formatNum(dtTongTruocThue) }}</span></div>
                             <div class="summary-row"><span>{{ t('Thuế GTGT (VAT 8%):', 'Value Added Tax (VAT 8%):') }}</span><span>{{ formatNum(dtTongTruocThue * 0.08) }}</span></div>
                             <div class="summary-row mt-2 pt-2 border-top border-dark border-2 bg-white px-2 py-2 rounded mb-0"><span><strong class="text-danger text-uppercase fs-6">{{ t('TỔNG GIÁ TRỊ GÓI THẦU (đã gồm VAT):', 'TOTAL PACKAGE VALUE (Incl. VAT):') }}</strong></span><span><strong class="text-danger fs-5">{{ formatNum(dtTongTruocThue * 1.08) }}</strong></span></div>
@@ -320,23 +359,23 @@
                             </div>
                         </div>
                         <div class="col-sm-6 col-12 mb-3 mb-sm-0">
-                            <h5 class="mb-1"><textarea v-model="bgHeader.company" class="inline-edit fw-bold fs-5 text-uppercase text-primary w-100 p-0 m-0"></textarea></h5>
-                            <div class="small text-muted"><textarea v-model="bgHeader.address" class="inline-edit w-100 p-0 m-0 text-muted"></textarea></div>
+                            <h5 class="mb-1"><textarea v-model="bgHeader.company" class="inline-edit fw-bold fs-5 text-uppercase text-primary"></textarea></h5>
+                            <div class="small text-muted"><textarea v-model="bgHeader.address" class="inline-edit text-muted"></textarea></div>
                         </div>
                         <div class="col-sm-4 col-12 text-sm-end small">
-                            <div class="d-flex justify-content-end align-items-center mb-1"><span class="fw-bold me-2">{{ t('Số/Ref:', 'Ref:') }}</span> <textarea v-model="bgHeader.ref" class="inline-edit w-50 txt-right text-danger fw-bold p-0 m-0"></textarea></div>
-                            <div class="d-flex justify-content-end align-items-center"><span class="fw-bold me-2">{{ t('Ngày/Date:', 'Date:') }}</span> <textarea v-model="bgHeader.date" class="inline-edit w-50 txt-right p-0 m-0"></textarea></div>
+                            <div class="d-flex justify-content-end align-items-center mb-1"><span class="fw-bold me-2">{{ t('Số/Ref:', 'Ref:') }}</span> <textarea v-model="bgHeader.ref" class="inline-edit w-50 txt-right text-danger fw-bold"></textarea></div>
+                            <div class="d-flex justify-content-end align-items-center"><span class="fw-bold me-2">{{ t('Ngày/Date:', 'Date:') }}</span> <textarea v-model="bgHeader.date" class="inline-edit w-50 txt-right"></textarea></div>
                         </div>
                     </div>
                     
                     <div class="text-center mb-4">
                         <h2 class="form-title text-dark mb-1">{{ t('BẢNG BÁO GIÁ / QUOTATION', 'QUOTATION') }}</h2>
-                        <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle p-0 m-0 w-100" :placeholder="t('NHẬP THÔNG TIN CÔNG TRÌNH / DỰ ÁN...', 'ENTER PROJECT / PACKAGE NAME...')"></textarea>
+                        <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle" :placeholder="t('NHẬP THÔNG TIN CÔNG TRÌNH / DỰ ÁN...', 'ENTER PROJECT / PACKAGE NAME...')"></textarea>
                     </div>
 
                     <div class="mb-4 d-flex align-items-center">
                         <span class="fw-bold me-2 txt-nowrap">{{ t('Kính gửi / To:', 'To:') }}</span> 
-                        <textarea v-model="bgHeader.to" class="inline-edit border-bottom border-dark fw-bold text-uppercase p-0 m-0 flex-grow-1" :placeholder="t('Nhập tên khách hàng...', 'Enter client name...')"></textarea>
+                        <textarea v-model="bgHeader.to" class="inline-edit border-bottom border-dark fw-bold text-uppercase flex-grow-1" :placeholder="t('Nhập tên khách hàng...', 'Enter client name...')"></textarea>
                     </div>
 
                     <div class="table-responsive">
@@ -386,8 +425,8 @@
                         <table class="table table-borderless table-sm w-100 m-0 align-middle">
                             <tr v-for="(term, tIdx) in bgTerms" :key="tIdx">
                                 <td width="3%"><i class="fas fa-check-square"></i></td>
-                                <td width="25%"><textarea v-model="term.title" class="inline-edit fw-bold border-bottom border-secondary p-0 m-0"></textarea></td>
-                                <td><textarea v-model="term.content" class="inline-edit border-bottom border-secondary p-0 m-0"></textarea></td>
+                                <td width="25%"><textarea v-model="term.title" class="inline-edit fw-bold border-bottom border-secondary"></textarea></td>
+                                <td><textarea v-model="term.content" class="inline-edit border-bottom border-secondary"></textarea></td>
                                 <td class="no-print text-center" width="3%"><button @click="removeTerm(tIdx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times"></i></button></td>
                             </tr>
                         </table>
@@ -431,16 +470,16 @@
                         </div>
                         <div class="col-3 border border-dark p-2" style="font-size: 11px;">
                             <div class="fw-bold border-bottom border-dark pb-1 mb-1">{{ t('Số hiệu:', 'Form No.:') }} ADG_QT_KH_01/BM01</div>
-                            <div class="d-flex align-items-center mb-1"><span class="txt-nowrap me-2">{{ t('Ngày hiệu lực:', 'Effective Date:') }}</span> <textarea v-model="prHeader.isoDate" class="inline-edit p-0 m-0"></textarea></div>
-                            <div class="d-flex align-items-center mb-1"><span class="txt-nowrap me-2">{{ t('Lần ban hành:', 'Issue No.:') }}</span> <textarea v-model="prHeader.isoRev" class="inline-edit p-0 m-0"></textarea></div>
-                            <div class="d-flex align-items-center"><span class="txt-nowrap me-2">{{ t('Lần soát xét:', 'Rev No.:') }}</span> <textarea v-model="prHeader.isoCheck" class="inline-edit p-0 m-0"></textarea></div>
+                            <div class="d-flex align-items-center mb-1"><span class="txt-nowrap me-2">{{ t('Ngày hiệu lực:', 'Effective Date:') }}</span> <textarea v-model="prHeader.isoDate" class="inline-edit"></textarea></div>
+                            <div class="d-flex align-items-center mb-1"><span class="txt-nowrap me-2">{{ t('Lần ban hành:', 'Issue No.:') }}</span> <textarea v-model="prHeader.isoRev" class="inline-edit"></textarea></div>
+                            <div class="d-flex align-items-center"><span class="txt-nowrap me-2">{{ t('Lần soát xét:', 'Rev No.:') }}</span> <textarea v-model="prHeader.isoCheck" class="inline-edit"></textarea></div>
                         </div>
                     </div>
 
                     <div class="row mb-3 fw-bold align-items-center text-dark" style="font-size: 14px;">
                         <div class="col-5 d-flex align-items-center">
                             <span class="txt-nowrap me-2">{{ t('Số phiếu:', 'PR No.:') }} ADG_ĐNMH_</span> 
-                            <textarea v-model="prHeader.prNo" class="inline-edit border-bottom border-dark text-danger p-0 m-0" style="width: 100px; font-size: 16px;"></textarea>
+                            <textarea v-model="prHeader.prNo" class="inline-edit border-bottom border-dark text-danger" style="width: 100px; font-size: 16px;"></textarea>
                         </div>
                         <div class="col-3 text-center"><label class="mb-0 d-flex align-items-center justify-content-center cursor-pointer"><input type="checkbox" v-model="prHeader.isPlan" class="me-2" style="transform: scale(1.2);">{{ t('Theo kế hoạch', 'Planned') }}</label></div>
                         <div class="col-4"></div>
@@ -448,30 +487,30 @@
 
                     <table class="table table-borderless table-sm w-100 mb-3 text-dark align-middle" style="font-size: 14px;">
                         <tr>
-                            <td width="10%" class="fw-bold txt-nowrap p-1">{{ t('Đơn vị lập:', 'Requesting Co.:') }}</td>
-                            <td width="40%" class="p-1"><textarea v-model="prHeader.company" class="inline-edit border-bottom border-dark p-0 m-0 fw-bold"></textarea></td>
-                            <td width="50%" class="p-1"></td>
+                            <td width="10%" class="fw-bold txt-nowrap">{{ t('Đơn vị lập:', 'Requesting Co.:') }}</td>
+                            <td width="40%"><textarea v-model="prHeader.company" class="inline-edit border-bottom border-dark fw-bold"></textarea></td>
+                            <td width="50%"></td>
                         </tr>
                         <tr>
-                            <td class="fw-bold txt-nowrap p-1">{{ t('Bộ phận:', 'Department:') }}</td>
-                            <td class="p-1"><textarea v-model="prHeader.dept" class="inline-edit border-bottom border-dark p-0 m-0 fw-bold"></textarea></td>
-                            <td class="p-1 d-flex align-items-center">
+                            <td class="fw-bold txt-nowrap">{{ t('Bộ phận:', 'Department:') }}</td>
+                            <td><textarea v-model="prHeader.dept" class="inline-edit border-bottom border-dark fw-bold"></textarea></td>
+                            <td class="d-flex align-items-center">
                                 <span class="fw-bold me-2 txt-nowrap">{{ t('Mã code:', 'Dept. Code:') }}</span> 
-                                <textarea v-model="prHeader.deptCode" class="inline-edit border-bottom border-dark p-0 m-0 fw-bold text-primary" style="width: 150px;"></textarea>
+                                <textarea v-model="prHeader.deptCode" class="inline-edit border-bottom border-dark fw-bold text-primary" style="width: 150px;"></textarea>
                             </td>
                         </tr>
                         <tr>
-                            <td class="fw-bold txt-nowrap p-1">{{ t('Kho hàng:', 'Warehouse:') }}</td>
-                            <td class="p-1"><textarea v-model="prHeader.warehouse" class="inline-edit border-bottom border-dark p-0 m-0"></textarea></td>
-                            <td class="p-1">
+                            <td class="fw-bold txt-nowrap">{{ t('Kho hàng:', 'Warehouse:') }}</td>
+                            <td><textarea v-model="prHeader.warehouse" class="inline-edit border-bottom border-dark"></textarea></td>
+                            <td>
                                 <div class="d-flex gap-4 align-items-center">
                                     <div class="d-flex align-items-center">
                                         <span class="fw-bold me-2 txt-nowrap">{{ t('Thủ kho:', 'Storekeeper:') }}</span> 
-                                        <textarea v-model="prHeader.storekeeper" class="inline-edit border-bottom border-dark p-0 m-0" style="width: 150px;"></textarea>
+                                        <textarea v-model="prHeader.storekeeper" class="inline-edit border-bottom border-dark" style="width: 150px;"></textarea>
                                     </div>
                                     <div class="d-flex align-items-center">
                                         <span class="fw-bold me-2 txt-nowrap">{{ t('Ngày duyệt:', 'Approved Date:') }}</span> 
-                                        <input type="date" v-model="prHeader.approvedDate" class="inline-edit border-bottom border-dark p-0 m-0 w-auto fw-bold text-primary">
+                                        <input type="date" v-model="prHeader.approvedDate" class="inline-edit border-bottom border-dark w-auto fw-bold text-primary">
                                     </div>
                                 </div>
                             </td>
@@ -514,12 +553,12 @@
                                     <td><textarea v-model="row.specs" class="inline-edit txt-left"></textarea></td>
                                     <td><textarea v-model="row.partNo" class="inline-edit txt-center fw-bold text-danger"></textarea></td>
                                     <td><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap fw-bold"></textarea></td>
-                                    <td><input type="number" v-model.number="row.avgUsage" class="inline-edit txt-center p-0 m-0"></td>
-                                    <td><input type="number" v-model.number="row.qtyStock" class="inline-edit txt-center p-0 m-0"></td>
-                                    <td><input type="number" v-model.number="row.qtyReq" class="inline-edit txt-center fw-bold text-primary p-0 m-0 bg-light border border-primary rounded" style="font-size: 11pt;"></td>
+                                    <td><input type="number" v-model.number="row.avgUsage" class="inline-edit txt-center"></td>
+                                    <td><input type="number" v-model.number="row.qtyStock" class="inline-edit txt-center"></td>
+                                    <td><input type="number" v-model.number="row.qtyReq" class="inline-edit txt-center fw-bold text-primary bg-light border border-primary rounded" style="font-size: 11pt;"></td>
                                     <td><input type="text" :value="formatNum(row.price)" @focus="focusNum($event, row.price)" @blur="row.price = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
                                     <td class="txt-right fw-bold text-danger txt-nowrap bg-light">{{ formatNum(row.qtyReq * row.price) }}</td>
-                                    <td><textarea v-model="row.timeNeeded" class="inline-edit txt-center p-0 text-muted" placeholder="dd/mm/yy"></textarea></td>
+                                    <td><textarea v-model="row.timeNeeded" class="inline-edit txt-center text-muted" placeholder="dd/mm/yy"></textarea></td>
                                     <td><textarea v-model="globalProjectName" class="inline-edit txt-left fw-bold text-primary" :title="t('Trường này được đồng bộ với Tên Dự Án', 'Syncs with Project Name')"></textarea></td>
                                     <td><textarea v-model="row.accCreator" class="inline-edit txt-center"></textarea></td>
                                     <td><textarea v-model="row.accKTT" class="inline-edit txt-center"></textarea></td>
@@ -551,10 +590,10 @@
                                     <thead class="table-light"><tr><th width="15%">{{ t('Thời điểm xử lý', 'Date & Time') }}</th><th width="35%">{{ t('Bước xử lý', 'Processing Step') }}</th><th width="25%">{{ t('Người xử lý', 'Person In Charge') }}</th><th width="25%">{{ t('Ý kiến người xử lý', 'Remarks') }}</th></tr></thead>
                                     <tbody>
                                         <tr v-for="(step, sIdx) in prWorkflow" :key="sIdx">
-                                            <td><textarea v-model="step.time" class="inline-edit text-center text-primary fw-bold p-0 m-0" placeholder="dd/mm/yy hh:mm"></textarea></td>
-                                            <td class="txt-left text-dark"><textarea :value="t(step.stepVi, step.stepEn)" class="inline-edit text-left p-0 m-0" readonly></textarea></td>
-                                            <td><textarea v-model="step.person" class="inline-edit text-center fw-bold p-0 m-0"></textarea></td>
-                                            <td><textarea v-model="step.note" class="inline-edit text-left p-0 m-0"></textarea></td>
+                                            <td><textarea v-model="step.time" class="inline-edit text-center text-primary fw-bold" placeholder="dd/mm/yy hh:mm"></textarea></td>
+                                            <td class="txt-left text-dark"><textarea :value="t(step.stepVi, step.stepEn)" class="inline-edit text-left" readonly></textarea></td>
+                                            <td><textarea v-model="step.person" class="inline-edit text-center fw-bold"></textarea></td>
+                                            <td><textarea v-model="step.note" class="inline-edit text-left"></textarea></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -594,7 +633,7 @@
                         </div>
                         <div class="col-6 text-center">
                             <h3 class="form-title mb-1">{{ t('NHẬT KÝ THI CÔNG', 'DAILY SITE REPORT') }}</h3>
-                            <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle p-0 m-0 w-100" :placeholder="t('NHẬP THÔNG TIN CÔNG TRÌNH / DỰ ÁN...', 'ENTER PROJECT / PACKAGE NAME...')"></textarea>
+                            <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle" :placeholder="t('NHẬP THÔNG TIN CÔNG TRÌNH / DỰ ÁN...', 'ENTER PROJECT / PACKAGE NAME...')"></textarea>
                             <div class="text-muted fw-bold mt-1"><em>{{ dailyType === 'baotri' ? t('(Công tác Bảo trì & Khắc phục sự cố)', '(Maintenance & Troubleshooting)') : t('(Công tác Thi công & Lắp đặt)', '(Construction & Installation)') }}</em></div>
                         </div>
                         <div class="col-3"></div>
@@ -604,15 +643,15 @@
                         <table class="table table-bordered border-dark mb-4 align-middle">
                             <tr>
                                 <td width="15%" class="table-light fw-bold txt-left p-2">{{ t('Dự án/Hạng mục:', 'Project/Package:') }}</td>
-                                <td width="35%" class="p-2"><textarea v-model="globalProjectName" class="inline-edit fw-bold text-primary txt-left p-0 m-0 text-uppercase"></textarea></td>
+                                <td width="35%"><textarea v-model="globalProjectName" class="inline-edit fw-bold text-primary txt-left text-uppercase"></textarea></td>
                                 <td width="15%" class="table-light fw-bold txt-left p-2">{{ t('Ngày thực hiện:', 'Date:') }}</td>
-                                <td width="35%" class="p-2"><input type="date" v-model="dailyHeader.date" class="inline-edit w-auto fw-bold txt-center p-0 m-0 text-danger"></td>
+                                <td width="35%"><input type="date" v-model="dailyHeader.date" class="inline-edit w-auto fw-bold txt-center text-danger"></td>
                             </tr>
                             <tr>
                                 <td class="table-light fw-bold txt-left p-2">{{ t('Địa chỉ:', 'Location:') }}</td>
-                                <td class="p-2"><textarea v-model="dailyHeader.location" class="inline-edit txt-left p-0 m-0"></textarea></td>
+                                <td><textarea v-model="dailyHeader.location" class="inline-edit txt-left"></textarea></td>
                                 <td class="table-light fw-bold txt-left p-2">{{ t('Người phụ trách:', 'Person in charge:') }}</td>
-                                <td class="p-2"><textarea v-model="dailyHeader.pic" class="inline-edit txt-left p-0 m-0 fw-bold"></textarea></td>
+                                <td><textarea v-model="dailyHeader.pic" class="inline-edit txt-left fw-bold"></textarea></td>
                             </tr>
                         </table>
                     </div>
@@ -620,11 +659,11 @@
                     <div class="row mb-4 g-3">
                         <div class="col-md-6 col-12">
                             <h6 class="fw-bold text-uppercase bg-light p-2 border border-dark border-bottom-0 m-0 d-flex justify-content-between align-items-center"><span><i class="fas fa-users me-2 text-primary"></i>{{ t('1. Nhân lực', '1. Manpower') }}</span><button class="btn btn-sm text-primary p-0 no-print" @click="addBlankRow('dailyManpower')"><i class="fas fa-plus-circle fs-5"></i></button></h6>
-                            <div class="table-responsive"><table class="table table-bordered border-dark m-0 align-middle"><thead class="table-light text-center"><tr><th width="10%">{{ t('STT', 'No.') }}</th><th width="40%">{{ t('Vai trò / Chức danh', 'Role / Title') }}</th><th width="10%">{{ t('Số lượng', 'Qty') }}</th><th class="no-print" width="40%"></th></tr></thead><tbody><tr v-for="(mp, idx) in dailyManpower" :key="idx"><td class="txt-center fw-bold text-muted">{{ idx + 1 }}</td><td><textarea v-model="mp.role" class="inline-edit txt-left p-0 m-0"></textarea></td><td><input type="number" v-model.number="mp.qty" class="inline-edit txt-center fw-bold p-0 m-0 text-primary"></td><td class="txt-center no-print"><button @click="removeRow(dailyManpower, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times"></i></button></td></tr></tbody></table></div>
+                            <div class="table-responsive"><table class="table table-bordered border-dark m-0 align-middle"><thead class="table-light text-center"><tr><th width="10%">{{ t('STT', 'No.') }}</th><th width="40%">{{ t('Vai trò / Chức danh', 'Role / Title') }}</th><th width="10%">{{ t('Số lượng', 'Qty') }}</th><th class="no-print" width="40%"></th></tr></thead><tbody><tr v-for="(mp, idx) in dailyManpower" :key="idx"><td class="txt-center fw-bold text-muted">{{ idx + 1 }}</td><td><textarea v-model="mp.role" class="inline-edit txt-left"></textarea></td><td><input type="number" v-model.number="mp.qty" class="inline-edit txt-center fw-bold text-primary"></td><td class="txt-center no-print"><button @click="removeRow(dailyManpower, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times"></i></button></td></tr></tbody></table></div>
                         </div>
                         <div class="col-md-6 col-12">
                             <h6 class="fw-bold text-uppercase bg-light p-2 border border-dark border-bottom-0 m-0 d-flex justify-content-between align-items-center"><span><i class="fas fa-truck-loading me-2 text-primary"></i>{{ t('2. Thiết bị / Máy thi công', '2. Equipment / Vehicles') }}</span><button class="btn btn-sm text-primary p-0 no-print" @click="addBlankRow('dailyEquipment')"><i class="fas fa-plus-circle fs-5"></i></button></h6>
-                            <div class="table-responsive"><table class="table table-bordered border-dark m-0 align-middle"><thead class="table-light text-center"><tr><th width="10%">{{ t('STT', 'No.') }}</th><th width="40%">{{ t('Tên Thiết bị / Máy móc', 'Equipment Name') }}</th><th width="10%">{{ t('Số lượng', 'Qty') }}</th><th class="no-print" width="40%"></th></tr></thead><tbody><tr v-for="(eq, idx) in dailyEquipment" :key="idx"><td class="txt-center fw-bold text-muted">{{ idx + 1 }}</td><td><textarea v-model="eq.name" class="inline-edit txt-left p-0 m-0"></textarea></td><td><input type="number" v-model.number="eq.qty" class="inline-edit txt-center fw-bold p-0 m-0 text-primary"></td><td class="txt-center no-print"><button @click="removeRow(dailyEquipment, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times"></i></button></td></tr></tbody></table></div>
+                            <div class="table-responsive"><table class="table table-bordered border-dark m-0 align-middle"><thead class="table-light text-center"><tr><th width="10%">{{ t('STT', 'No.') }}</th><th width="40%">{{ t('Tên Thiết bị / Máy móc', 'Equipment Name') }}</th><th width="10%">{{ t('Số lượng', 'Qty') }}</th><th class="no-print" width="40%"></th></tr></thead><tbody><tr v-for="(eq, idx) in dailyEquipment" :key="idx"><td class="txt-center fw-bold text-muted">{{ idx + 1 }}</td><td><textarea v-model="eq.name" class="inline-edit txt-left"></textarea></td><td><input type="number" v-model.number="eq.qty" class="inline-edit txt-center fw-bold text-primary"></td><td class="txt-center no-print"><button @click="removeRow(dailyEquipment, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times"></i></button></td></tr></tbody></table></div>
                         </div>
                     </div>
 
@@ -642,7 +681,7 @@
                                     <th class="no-print" width="4%"></th>
                                 </tr>
                             </thead>
-                            <tbody><tr v-for="(task, idx) in dailyTasks" :key="idx"><td class="txt-center fw-bold text-muted">{{ idx + 1 }}</td><td><textarea class="inline-edit txt-left p-0 m-0 fw-bold" v-model="task.col1"></textarea></td><td><textarea class="inline-edit txt-left p-0 m-0" v-model="task.col2"></textarea></td><td><textarea class="inline-edit txt-left p-0 m-0 text-primary fw-bold" v-model="task.col3"></textarea></td><td><textarea class="inline-edit txt-left p-0 m-0" v-model="task.col4"></textarea></td><td><textarea class="inline-edit txt-left p-0 m-0" v-model="task.col5"></textarea></td><td class="txt-center no-print"><button @click="removeRow(dailyTasks, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td></tr></tbody>
+                            <tbody><tr v-for="(task, idx) in dailyTasks" :key="idx"><td class="txt-center fw-bold text-muted">{{ idx + 1 }}</td><td><textarea class="inline-edit txt-left fw-bold" v-model="task.col1"></textarea></td><td><textarea class="inline-edit txt-left" v-model="task.col2"></textarea></td><td><textarea class="inline-edit txt-left text-primary fw-bold" v-model="task.col3"></textarea></td><td><textarea class="inline-edit txt-left" v-model="task.col4"></textarea></td><td><textarea class="inline-edit txt-left" v-model="task.col5"></textarea></td><td class="txt-center no-print"><button @click="removeRow(dailyTasks, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td></tr></tbody>
                         </table>
                     </div>
                     <div class="row signature-block mt-5 text-center">
@@ -671,17 +710,17 @@
                         </div>
                         <div class="col-9 text-center">
                             <h3 class="form-title mb-1 text-dark">{{ t('BIÊN BẢN NGHIỆM THU', 'EQUIPMENT HANDOVER & ACCEPTANCE CERTIFICATE') }}</h3>
-                            <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle p-0 m-0 w-100" :placeholder="t('NHẬP THÔNG TIN CÔNG TRÌNH / DỰ ÁN...', 'ENTER PROJECT / PACKAGE NAME...')"></textarea>
+                            <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle" :placeholder="t('NHẬP THÔNG TIN CÔNG TRÌNH / DỰ ÁN...', 'ENTER PROJECT / PACKAGE NAME...')"></textarea>
                         </div>
                     </div>
 
                     <div class="mb-4 mt-3">
                         <table class="table table-borderless table-sm w-100 w-md-75 align-middle">
-                            <tr><td width="20%" class="fw-bold txt-left txt-nowrap p-1">{{ t('Căn cứ Hợp đồng số:', 'Ref. Contract No.:') }}</td><td class="p-1"><textarea v-model="ntHeader.contract" class="inline-edit border-bottom border-dark text-primary fw-bold txt-left p-0 m-0"></textarea></td></tr>
+                            <tr><td width="20%" class="fw-bold txt-left txt-nowrap p-1">{{ t('Căn cứ Hợp đồng số:', 'Ref. Contract No.:') }}</td><td><textarea v-model="ntHeader.contract" class="inline-edit border-bottom border-dark text-primary fw-bold txt-left"></textarea></td></tr>
                             <tr><td class="fw-bold txt-left txt-nowrap p-1">{{ t('Tên Dự án / Gói thầu:', 'Project / Package Name:') }}</td>
-                                <td class="p-1"><textarea v-model="globalProjectName" class="inline-edit border-bottom border-dark text-uppercase fw-bold txt-left p-0 m-0"></textarea></td>
+                                <td><textarea v-model="globalProjectName" class="inline-edit border-bottom border-dark text-uppercase fw-bold txt-left"></textarea></td>
                             </tr>
-                            <tr><td class="fw-bold txt-left txt-nowrap p-1">{{ t('Thời gian nghiệm thu:', 'Time of Acceptance:') }}</td><td class="p-1"><input type="datetime-local" v-model="ntHeader.date" class="inline-edit w-auto border-bottom border-dark txt-center p-0 m-0 fw-bold"></td></tr>
+                            <tr><td class="fw-bold txt-left txt-nowrap p-1">{{ t('Thời gian nghiệm thu:', 'Time of Acceptance:') }}</td><td><input type="datetime-local" v-model="ntHeader.date" class="inline-edit w-auto border-bottom border-dark txt-center fw-bold"></td></tr>
                         </table>
                     </div>
 
@@ -703,7 +742,7 @@
                             <tbody>
                                 <tr v-for="(row, idx) in docNghiemThu" :key="idx">
                                     <td class="txt-center fw-bold text-muted txt-nowrap">{{ idx + 1 }}</td>
-                                    <td><textarea v-model="row.name" class="inline-edit txt-left fw-bold p-0 m-0"></textarea></td>
+                                    <td><textarea v-model="row.name" class="inline-edit txt-left fw-bold"></textarea></td>
                                     
                                     <td class="p-1 align-middle text-center">
                                         <div class="position-relative w-100 d-flex align-items-center justify-content-center img-preview-box" style="min-height: 80px;">
@@ -714,16 +753,16 @@
                                         </div>
                                     </td>
 
-                                    <td><textarea v-model="row.specContract" class="inline-edit txt-center p-0 m-0"></textarea></td>
-                                    <td><textarea v-model="row.specActual" class="inline-edit txt-center p-0 m-0 fw-bold text-primary"></textarea></td>
-                                    <td><textarea v-model="row.doc" class="inline-edit txt-center p-0 m-0"></textarea></td>
+                                    <td><textarea v-model="row.specContract" class="inline-edit txt-left"></textarea></td>
+                                    <td><textarea v-model="row.specActual" class="inline-edit txt-left"></textarea></td>
+                                    <td><textarea v-model="row.doc" class="inline-edit txt-center"></textarea></td>
                                     <td>
-                                        <select v-model="row.status" class="inline-edit txt-center fw-bold p-0 m-0" :class="{'text-success': row.status.includes('ĐẠT') || row.status.includes('PASS'), 'text-danger': row.status.includes('LỖI') || row.status.includes('FAIL'), 'text-warning': row.status.includes('TẠM') || row.status.includes('MINOR')}">
+                                        <select v-model="row.status" class="inline-edit txt-center fw-bold" :class="{'text-success': row.status.includes('ĐẠT') || row.status.includes('PASS'), 'text-danger': row.status.includes('LỖI') || row.status.includes('FAIL'), 'text-warning': row.status.includes('TẠM') || row.status.includes('MINOR')}">
                                             <option v-if="lang==='vi'">ĐẠT</option><option v-if="lang==='vi'">KHÔNG ĐẠT</option>
                                             <option v-if="lang==='en'">PASSED</option><option v-if="lang==='en'">FAILED</option>
                                         </select>
                                     </td>
-                                    <td><textarea v-model="row.note" class="inline-edit txt-left p-0 m-0"></textarea></td>
+                                    <td><textarea v-model="row.note" class="inline-edit txt-left"></textarea></td>
                                     <td class="txt-center no-print"><button @click="removeRow(docNghiemThu, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
                                 </tr>
                             </tbody>
@@ -877,7 +916,6 @@
             loginAdmin() { if(prompt("Mã số NV (Password):") === "2109004") this.isAdmin = true; else alert("Từ chối truy cập!"); },
             hideSearch() { setTimeout(() => { this.showSearchDropdown = false; }, 200); },
             
-            // Xử lý Resize & Nén Ảnh cho Nghiệm Thu
             uploadRowImage(event, row) {
                 const file = event.target.files[0];
                 if (file) {
@@ -899,7 +937,7 @@
                             canvas.width = width; canvas.height = height;
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, width, height);
-                            row.image = canvas.toDataURL('image/jpeg', 0.7); // Nén JPEG chất lượng 70%
+                            row.image = canvas.toDataURL('image/jpeg', 0.7); 
                         };
                         img.src = e.target.result;
                     };
@@ -923,7 +961,7 @@
             
             selectItemFromSearch(item, targetArray) {
                 let newItem = { ...item, qty: 1 }; 
-                newItem.priceGop = newItem.priceVT + newItem.priceNC; // Mặc định báo giá cơ sở (Không lợi nhuận)
+                newItem.priceGop = newItem.priceVT + newItem.priceNC; 
                 
                 if (this.currentTab === 'pr') {
                     targetArray.push({ name: newItem.name, specs: newItem.specs, partNo: newItem.partNo, unit: newItem.unit, avgUsage: 0, qtyStock: 0, qtyReq: 1, price: newItem.priceVT, timeNeeded: '', purpose: 'Dự án / Bảo trì', accCreator: '', accKTT: '', budget: '', supplier: '', companyUse: 'ADG', qcCond: 'Đúng thông số kỹ thuật yêu cầu' });
