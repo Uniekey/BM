@@ -500,7 +500,7 @@
                             <div class="table-responsive">
                                 <table class="table table-bordered border-dark align-middle txt-center mb-1" style="font-size: 10px; table-layout: fixed;">
                                     <thead class="table-light"><tr><th width="15%">Thời điểm xử lý</th><th width="35%">Bước xử lý</th><th width="20%">Người xử lý</th><th width="30%">Ý kiến người xử lý</th></tr></thead>
-                                    <tbody><tr v-for="(step, sIdx) in prWorkflow" :key="sIdx"><td><textarea v-model="step.time" class="inline-edit text-center text-primary fw-bold" placeholder="dd/mm/yy hh:mm"></textarea></td><td class="txt-left text-dark"><textarea :value="step.stepVi" class="inline-edit text-left" readonly style="font-size: 10px;"></textarea></td><td><textarea v-model="step.person" class="inline-edit text-left fw-bold"></textarea></td><td><textarea v-model="step.note" class="inline-edit text-left"></textarea></td></tr></tbody>
+                                    <tbody><tr v-for="(step, sIdx) in prWorkflow" :key="sIdx"><td><textarea v-model="step.time" class="inline-edit text-center text-primary" placeholder="dd/mm/yy hh:mm"></textarea></td><td class="txt-left text-dark"><textarea :value="step.stepVi" class="inline-edit text-left" readonly style="font-size: 10px;"></textarea></td><td><textarea v-model="step.person" class="inline-edit text-left"></textarea></td><td><textarea v-model="step.note" class="inline-edit text-left"></textarea></td></tr></tbody>
                                 </table>
                             </div>
                         </div>
