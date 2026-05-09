@@ -75,7 +75,11 @@
         .logo-container { transition: 0.3s; } .logo-container:hover { background-color: #f8fafc; }
         .project-subtitle { font-size: 16px; color: #0284c7; text-transform: uppercase; margin-bottom: 10px; }
 
+        .pr-logo-box { height: 55px; }
+        .pr-title { font-size: 18px; color: #000; }
+
         @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             @page { size: A4 landscape; margin: 8mm; }
             html, body { width: 100vw !important; max-width: 100vw !important; margin: 0 !important; padding: 0 !important; background-color: #fff !important; overflow: hidden !important; }
             #app { width: 100% !important; margin: 0 !important; padding: 0 !important; }
@@ -84,12 +88,27 @@
             .print-area { padding: 0 !important; border: none !important; box-shadow: none !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; }
             
             .sidebar, .no-print, .smart-search-wrapper, .toast-save { display: none !important; }
-            .table-responsive { border: none !important; overflow: visible !important; margin-bottom: 15px !important; width: 100% !important; }
+            .table-responsive { border: none !important; overflow: visible !important; margin-bottom: 10px !important; width: 100% !important; }
             
             table { width: 100% !important; min-width: 100% !important; border-collapse: collapse !important; table-layout: auto !important; page-break-inside: auto !important; word-wrap: break-word !important; }
             thead { display: table-header-group !important; } tr { page-break-inside: avoid !important; page-break-after: auto !important; }
             table th { background-color: #e2e8f0 !important; color: #000 !important; border: 1px solid #000 !important; padding: 4px 2px !important; position: static !important; font-weight: bold !important; text-align: center !important; vertical-align: middle !important; font-size: 10pt !important; }
             table td { border: 1px solid #000 !important; padding: 2px !important; color: #000 !important; vertical-align: middle !important; word-wrap: break-word !important; font-size: 10pt !important; }
+            
+            .bg-light { background-color: #f1f5f9 !important; }
+
+            /* TỐI ƯU SIÊU GỌN KHI IN PR HEADER & INFO */
+            .pr-header-row { margin-bottom: 4px !important; border-width: 1px !important; }
+            .pr-header-row > div { padding: 2px 4px !important; }
+            .pr-logo-box { height: 35px !important; }
+            .pr-title { font-size: 14pt !important; margin-bottom: 0 !important; padding: 0 !important; }
+            .doc-no { margin-bottom: 0 !important; font-size: 7.5pt !important; line-height: 1 !important; }
+            .doc-meta { font-size: 7.5pt !important; line-height: 1 !important; margin-bottom: 0 !important; }
+            .doc-meta .inline-edit { min-height: 10px !important; font-size: 7.5pt !important; line-height: 1 !important; padding: 0 !important;}
+            
+            .pr-info-table { margin-bottom: 4px !important; font-size: 9pt !important; line-height: 1.1 !important; }
+	    .pr-info-table td { padding: 0px 2px !important; vertical-align: middle !important; border: 1px solid #000 !important; }
+	    .pr-info-table .inline-edit { padding: 0 !important; min-height: 10px !important; font-size: 9pt !important; line-height: 1 !important; height: auto !important; }
             
             .table-pr-print { table-layout: fixed !important; width: 100% !important; max-width: 100% !important; }
             .table-pr-print th, .table-pr-print td { padding: 2px 1px !important; word-break: break-word !important; overflow: hidden !important; font-size: 7.5pt !important; letter-spacing: -0.2px !important; }
@@ -104,7 +123,7 @@
             .txt-nowrap { white-space: nowrap !important; letter-spacing: -0.2px; } 
             
             .form-title { color: #000 !important; font-weight: bold !important; margin-bottom: 5px !important; } .project-subtitle { font-size: 13pt !important; color: #000 !important; margin-bottom: 15px !important; padding: 0 !important; }
-            .signature-block { page-break-inside: avoid !important; margin-top: 30px !important; } .logo-container { border: none !important; padding: 0 !important; } .img-preview-box { border: none !important; background: transparent !important; }
+            .signature-block { page-break-inside: avoid !important; margin-top: 20px !important; } .logo-container { border: none !important; padding: 0 !important; } .img-preview-box { border: none !important; background: transparent !important; }
         }
         .img-preview-box { border: 1px dashed #cbd5e1; border-radius: 4px; overflow: hidden; background: #f8fafc; transition: 0.3s; }
     </style>
@@ -202,9 +221,9 @@
                                 <tr><th width="11%" class="txt-nowrap border-dark border">{{ t('Vật tư', 'Material') }}</th><th width="11%" class="txt-nowrap border-dark border">{{ t('Nhân công', 'Labor') }}</th><th width="11%" class="txt-nowrap border-dark border">{{ t('Vật tư', 'Material') }}</th><th width="11%" class="txt-nowrap border-dark border">{{ t('Nhân công', 'Labor') }}</th></tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(row, idx) in docDuToan" :key="idx"><td class="txt-center text-muted fw-bold border-dark border">{{ idx + 1 }}</td><td class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left fw-bold"></textarea></td><td class="border-dark border"><textarea v-model="row.specs" class="inline-edit txt-left text-muted"></textarea></td><td class="border-dark border"><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td><td class="border-dark border"><input type="text" :value="formatNum(row.qty)" @focus="focusNum($event, row.qty)" @blur="row.qty = blurNum($event)" class="inline-edit txt-center fw-bold text-primary txt-nowrap"></td><td class="border-dark border"><input type="text" :value="formatNum(row.priceVT)" @focus="focusNum($event, row.priceVT)" @blur="row.priceVT = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td><td class="border-dark border"><input type="text" :value="formatNum(row.priceNC)" @focus="focusNum($event, row.priceNC)" @blur="row.priceNC = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td><td class="txt-right fw-bold txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceVT) }}</td><td class="txt-right fw-bold text-success txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceNC) }}</td><td class="txt-center no-print"><button @click="removeRow(docDuToan, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td></tr>
+                                <tr v-for="(row, idx) in docDuToan" :key="idx"><td class="txt-center text-muted border-dark border">{{ idx + 1 }}</td><td class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left"></textarea></td><td class="border-dark border"><textarea v-model="row.specs" class="inline-edit txt-left text-muted"></textarea></td><td class="border-dark border"><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td><td class="border-dark border"><input type="text" :value="formatNum(row.qty)" @focus="focusNum($event, row.qty)" @blur="row.qty = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td><td class="border-dark border"><input type="text" :value="formatNum(row.priceVT)" @focus="focusNum($event, row.priceVT)" @blur="row.priceVT = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td><td class="border-dark border"><input type="text" :value="formatNum(row.priceNC)" @focus="focusNum($event, row.priceNC)" @blur="row.priceNC = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td><td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceVT) }}</td><td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceNC) }}</td><td class="txt-center no-print"><button @click="removeRow(docDuToan, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td></tr>
                                 
-                                <tr class="table-light fw-bold border-top border-2 border-dark"><td colspan="7" class="txt-right text-uppercase border-dark border txt-nowrap">{{ t('Tổng chi phí trực tiếp:', 'Subtotal Direct Cost:') }}</td><td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(dtSumVT) }}</td><td class="txt-right text-success txt-nowrap border-dark border px-2">{{ formatNum(dtSumNC) }}</td><td class="no-print"></td></tr>
+                                <tr class="table-light fw-bold border-top border-2 border-dark"><td colspan="7" class="txt-right text-uppercase border-dark border txt-nowrap">{{ t('Tổng chi phí trực tiếp:', 'Subtotal Direct Cost:') }}</td><td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(dtSumVT) }}</td><td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(dtSumNC) }}</td><td class="no-print"></td></tr>
                                 
                                 <tr class="table-secondary fw-bold border-dark">
                                     <td colspan="10" class="txt-center border-dark border text-uppercase txt-nowrap" style="letter-spacing: 1px;">{{ t('TỔNG HỢP CHI PHÍ & LỢI NHUẬN', 'COST & PROFIT SUMMARY') }}</td>
@@ -302,7 +321,7 @@
                         <table class="table align-middle border-dark">
                             <thead><tr><th width="5%" class="txt-nowrap border-dark border">{{ t('STT', 'No.') }}</th><th width="10%" class="txt-nowrap border-dark border">{{ t('Mã/Code', 'Code') }}</th><th width="32%" class="border-dark border">{{ t('Hạng mục / Description', 'Description') }}</th><th width="15%" class="border-dark border">{{ t('Quy cách', 'Specs') }}</th><th width="6%" class="txt-nowrap border-dark border">{{ t('ĐVT', 'Unit') }}</th><th width="6%" class="txt-nowrap border-dark border">{{ t('SL', 'Qty') }}</th><th width="11%" class="txt-nowrap border-dark border">{{ t('Đơn giá', 'Price') }}</th><th width="12%" class="txt-nowrap border-dark border">{{ t('Thành tiền', 'Total') }}</th><th class="no-print" width="3%">X</th></tr></thead>
                             <tbody>
-                                <tr v-for="(row, idx) in docBaoGia" :key="idx"><td class="txt-center text-muted fw-bold border-dark border">{{ idx + 1 }}</td><td class="border-dark border"><textarea v-model="row.partNo" class="inline-edit txt-center fw-bold txt-nowrap"></textarea></td><td class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left fw-bold"></textarea></td><td class="border-dark border"><textarea v-model="row.specs" class="inline-edit txt-left text-muted"></textarea></td><td class="border-dark border"><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td><td class="border-dark border"><input type="text" :value="formatNum(row.qty)" @focus="focusNum($event, row.qty)" @blur="row.qty = blurNum($event)" class="inline-edit txt-center fw-bold text-primary txt-nowrap"></td><td class="border-dark border"><input type="text" :value="formatNum(row.priceGop)" @focus="focusNum($event, row.priceGop)" @blur="row.priceGop = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td><td class="txt-right fw-bold txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceGop) }}</td><td class="txt-center no-print"><button @click="removeRow(docBaoGia, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td></tr>
+                                <tr v-for="(row, idx) in docBaoGia" :key="idx"><td class="txt-center text-muted border-dark border">{{ idx + 1 }}</td><td class="border-dark border"><textarea v-model="row.partNo" class="inline-edit txt-center txt-nowrap"></textarea></td><td class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left"></textarea></td><td class="border-dark border"><textarea v-model="row.specs" class="inline-edit txt-left text-muted"></textarea></td><td class="border-dark border"><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td><td class="border-dark border"><input type="text" :value="formatNum(row.qty)" @focus="focusNum($event, row.qty)" @blur="row.qty = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td><td class="border-dark border"><input type="text" :value="formatNum(row.priceGop)" @focus="focusNum($event, row.priceGop)" @blur="row.priceGop = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td><td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceGop) }}</td><td class="txt-center no-print"><button @click="removeRow(docBaoGia, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td></tr>
                                 <tr class="border-top border-dark"><td colspan="7" class="txt-right fw-bold border-dark border">{{ t('Tổng cộng trước thuế:', 'Subtotal:') }}</td><td class="txt-right fw-bold txt-nowrap border-dark border px-2">{{ formatNum(totalBaoGia) }}</td><td class="no-print"></td></tr>
                                 <tr><td colspan="7" class="txt-right fw-bold border-dark border">{{ t('Thuế GTGT (VAT 8%):', 'VAT (8%):') }}</td><td class="txt-right fw-bold txt-nowrap border-dark border px-2">{{ formatNum(totalBaoGia * 0.08) }}</td><td class="no-print"></td></tr>
                                 <tr class="table-light border-top border-2 border-dark"><td colspan="7" class="txt-right fw-bold text-uppercase fs-6 border-dark border">{{ t('TỔNG THANH TOÁN:', 'TOTAL AMOUNT:') }}</td><td class="txt-right fw-bold text-danger fs-5 txt-nowrap border-dark border px-2">{{ formatNum(totalBaoGia * 1.08) }}</td><td class="no-print"></td></tr>
@@ -323,6 +342,12 @@
                     <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-file-signature me-2"></i> {{ t('Phiếu Đề Nghị Mua Hàng', 'Purchase Requisition') }}</h3>
                     <div class="d-flex flex-wrap gap-2 align-items-center">
                         <div class="smart-search-wrapper me-2"><input type="text" v-model="searchQuery" @focus="showSearchDropdown = true" @blur="hideSearch" class="smart-search-input" :placeholder="t('Tìm vật tư...', 'Search material...')"><i class="fas fa-search smart-search-icon"></i><ul v-if="showSearchDropdown && filteredDatabase.length > 0" class="smart-search-results"><li v-for="item in filteredDatabase" @mousedown.prevent="selectItemFromSearch(item, docPR)"><span class="highlight">{{ item.partNo }}</span> - {{ item.name }}</li></ul></div>
+                        
+                        <div class="form-check form-switch me-2 d-none d-md-flex align-items-center bg-light p-2 rounded border">
+                            <input class="form-check-input mt-0 me-2" type="checkbox" v-model="printPrWorkflow" id="togglePrFlow" style="cursor: pointer;">
+                            <label class="form-check-label fw-bold text-secondary small mb-0" for="togglePrFlow" style="cursor: pointer;">{{ t('In Quá trình', 'Print Workflow') }}</label>
+                        </div>
+
                         <button @click="addBlankRow('pr')" class="btn btn-outline-primary fw-bold"><i class="fas fa-plus"></i></button>
                         <button @click="copyFromDuToanToPR" class="btn btn-warning fw-bold text-dark"><i class="fas fa-bolt me-1"></i> {{ t('Nhập từ BOM', 'Import from BOM') }}</button>
                         <button @click="clearDraft('pr')" class="btn btn-outline-danger fw-bold"><i class="fas fa-eraser"></i></button>
@@ -332,56 +357,70 @@
                 </div>
                 
                 <div id="print-pr" class="print-area w-100">
-                    <div class="row mb-3 align-items-stretch border border-dark mx-0">
-                        <div class="col-3 text-center border-end border-dark d-flex align-items-center justify-content-center p-2">
-                            <div class="logo-container position-relative w-100" style="height: 60px;">
+                    <div class="row align-items-stretch border border-dark mx-0 pr-header-row">
+                        <div class="col-3 text-center border-end border-dark d-flex align-items-center justify-content-center p-1">
+                            <div class="logo-container position-relative w-100 pr-logo-box">
                                 <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
                                 <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
                             </div>
                         </div>
-                        <div class="col-6 text-center border-end border-dark d-flex flex-column justify-content-center">
-                            <h2 class="form-title mb-0 fw-bold" style="font-size: 18px; color:#000;">{{ t('PHIẾU ĐỀ NGHỊ MUA HÀNG', 'PURCHASE REQUISITION') }}</h2>
+                        <div class="col-6 text-center border-end border-dark d-flex flex-column justify-content-center p-1">
+                            <h2 class="form-title fw-bold pr-title">{{ t('PHIẾU ĐỀ NGHỊ MUA HÀNG', 'PURCHASE REQUISITION') }}</h2>
                         </div>
-                        <div class="col-3 p-1" style="font-size: 10px;">
-                            <div class="fw-bold mb-1">{{ t('Số hiệu: ADG_QT_KH_01/BM01', 'Doc No: ADG_QT_KH_01/BM01') }}</div>
-                            <div class="d-flex align-items-center mb-1"><span class="txt-nowrap me-2">{{ t('Ngày hiệu lực:', 'Effective:') }}</span> <textarea v-model="prHeader.isoDate" class="inline-edit p-0" style="min-height:auto;"></textarea></div>
-                            <div class="d-flex align-items-center mb-1"><span class="txt-nowrap me-2">{{ t('Lần ban hành:', 'Issue No:') }}</span> <textarea v-model="prHeader.isoRev" class="inline-edit p-0" style="min-height:auto;"></textarea></div>
-                            <div class="d-flex align-items-center"><span class="txt-nowrap me-2">{{ t('Lần soát xét:', 'Rev No:') }}</span> <textarea v-model="prHeader.isoCheck" class="inline-edit p-0" style="min-height:auto;"></textarea></div>
+                        <div class="col-3 p-1 d-flex flex-column justify-content-center">
+                            <div class="fw-bold doc-no">{{ t('Số hiệu: ADG_QT_KH_01/BM01', 'Doc No: ADG_QT_KH_01/BM01') }}</div>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Ngày HL:', 'Effective:') }}</span> <textarea v-model="prHeader.isoDate" class="inline-edit"></textarea></div>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Lần BH:', 'Issue No:') }}</span> <textarea v-model="prHeader.isoRev" class="inline-edit"></textarea></div>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Lần SX:', 'Rev No:') }}</span> <textarea v-model="prHeader.isoCheck" class="inline-edit"></textarea></div>
                         </div>
                     </div>
 
-                    <div class="row mb-2 fw-bold align-items-center text-dark mx-0" style="font-size: 13px;">
-                        <div class="col-6 d-flex align-items-center p-0"><span class="txt-nowrap me-2">{{ t('Số phiếu:', 'PR No:') }}</span> <textarea v-model="prHeader.prNo" class="inline-edit border-bottom border-dark text-danger" style="width: 150px; font-size: 14px;"></textarea></div>
-                        <div class="col-6 d-flex justify-content-end p-0"><label class="mb-0 d-flex align-items-center cursor-pointer"><input type="checkbox" v-model="prHeader.isPlan" class="me-2" style="transform: scale(1.2);">{{ t('Theo kế hoạch', 'Planned') }}</label></div>
-                    </div>
-                    
-                    <table class="table table-borderless table-sm w-100 mb-2 text-dark align-middle" style="font-size: 12px;">
-                        <tr>
-                            <td width="10%" class="fw-bold txt-nowrap p-1">{{ t('Đơn vị lập:', 'Company:') }}</td>
-                            <td width="40%" class="p-1"><textarea v-model="prHeader.company" class="inline-edit border-bottom border-dark fw-bold"></textarea></td>
-                            <td width="50%" class="p-1"></td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold txt-nowrap p-1">{{ t('Bộ phận:', 'Department:') }}</td>
-                            <td class="p-1"><textarea v-model="prHeader.dept" class="inline-edit border-bottom border-dark fw-bold"></textarea></td>
-                            <td class="d-flex align-items-center p-1"><span class="fw-bold me-2 txt-nowrap">{{ t('Mã code:', 'Dept Code:') }}</span> <textarea v-model="prHeader.deptCode" class="inline-edit border-bottom border-dark fw-bold text-primary" style="width: 150px;"></textarea></td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold txt-nowrap p-1">{{ t('Kho hàng:', 'Warehouse:') }}</td>
-                            <td class="p-1"><textarea v-model="prHeader.warehouse" class="inline-edit border-bottom border-dark"></textarea></td>
-                            <td class="p-1">
-                                <div class="d-flex gap-3 align-items-center">
-                                    <div class="d-flex align-items-center"><span class="fw-bold me-2 txt-nowrap">{{ t('Thủ kho:', 'Storekeeper:') }}</span> <textarea v-model="prHeader.storekeeper" class="inline-edit border-bottom border-dark" style="width: 120px;"></textarea></div>
-                                    <div class="d-flex align-items-center"><span class="fw-bold me-2 txt-nowrap">{{ t('Ngày duyệt:', 'Approved:') }}</span> <input type="date" v-model="prHeader.approvedDate" class="inline-edit border-bottom border-dark w-auto fw-bold text-primary"></div>
-                                </div>
-                            </td>
-                        </tr>
+                    <table class="table table-bordered border-dark table-sm w-100 text-dark pr-info-table mb-2 align-middle">
+                        <tbody>
+                            <tr>
+                                <td width="12%" class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Số phiếu:', 'PR No:') }}</td>
+                                <td width="3@media print8%">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-bold text-dark me-1">ADG_ĐNMH_</span>
+                                        <textarea v-model="prHeader.prNo" class="inline-edit text-danger fw-bold flex-grow-1 p-0 m-0 border-0"></textarea>
+                                    </div>
+                                </td>
+                                <td width="50%" colspan="2" class="text-left">
+                                    <label class="mb-0 d-inline-flex align-items-center cursor-pointer fw-bold txt-nowrap">
+                                        <input type="checkbox" v-model="prHeader.isPlan" class="me-2" style="transform: scale(1.1);">{{ t('Theo kế hoạch', 'Planned') }}
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Đơn vị lập:', 'Company:') }}</td>
+                                <td colspan="3"><textarea v-model="prHeader.company" class="inline-edit fw-bold p-0 m-0 border-0"></textarea></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Bộ phận:', 'Department:') }}</td>
+                                <td><textarea v-model="prHeader.dept" class="inline-edit fw-bold p-0 m-0 border-0"></textarea></td>
+                                <td width="12%" class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Mã code:', 'Dept Code:') }}</td>
+                                <td width="38%"><textarea v-model="prHeader.deptCode" class="inline-edit fw-bold text-primary p-0 m-0 border-0"></textarea></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Kho hàng:', 'Warehouse:') }}</td>
+                                <td><textarea v-model="prHeader.warehouse" class="inline-edit p-0 m-0 border-0"></textarea></td>
+                                <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Thủ kho:', 'Storekeeper:') }}</td>
+                                <td><textarea v-model="prHeader.storekeeper" class="inline-edit p-0 m-0 border-0"></textarea></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Ngày duyệt:', 'Approved:') }}</td>
+                                <td colspan="3">
+                                    <input type="date" v-model="prHeader.approvedDate" class="inline-edit fw-bold text-primary w-auto p-0 m-0 border-0">
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
 
                     <div class="table-responsive" style="overflow-x: auto;">
                         <table class="table table-bordered align-middle border-dark table-micro-font mb-0 table-pr-print" style="min-width: 1400px; font-size: 11px;">
                             <colgroup>
-                                <col style="width: 2.5%;"> <col style="width: 9%;">   <col style="width: 7%;">   <col style="width: 6%;">   <col style="width: 3.5%;"> <col style="width: 4%;">   <col style="width: 4%;">   <col style="width: 4%;">   <col style="width: 7%;">   <col style="width: 9%;">   <col style="width: 5%;">   <col style="width: 6%;">   <col style="width: 4%;">   <col style="width: 4%;">   <col style="width: 5%;">   <col style="width: 5%;">   <col style="width: 5%;">   <col style="width: 6%;">   <col style="width: 2%;" class="no-print"> </colgroup>
+                                <col style="width: 2.5%;"> <col style="width: 12%;">  <col style="width: 7%;">   <col style="width: 6%;">   <col style="width: 3.5%;"> <col style="width: 4%;">   <col style="width: 4%;">   <col style="width: 4%;">   <col style="width: 6%;">   <col style="width: 8%;">   <col style="width: 5.5%;"> <col style="width: 6.5%;"> <col style="width: 4%;">   <col style="width: 5%;">   <col style="width: 5%;">   <col style="width: 6%;">   <col style="width: 5%;">   <col style="width: 6%;">   <col style="width: 2%;" class="no-print"> 
+                            </colgroup>
                             <thead class="table-light txt-center align-middle">
                                 <tr>
                                     <th rowspan="2">STT</th>
@@ -399,7 +438,7 @@
                                     <th rowspan="2">Ngân sách<br>còn lại</th>
                                     <th rowspan="2">Nhà cung cấp tham khảo</th>
                                     <th rowspan="2">Công ty<br>sử dụng<br>(*)</th>
-                                    <th rowspan="2">Điều kiện nghiệm thu / Đánh giá chất lượng</th>
+                                    <th rowspan="2">Điều kiện nghiệm thu/ Đánh giá chất lượng (nếu có)</th>
                                     <th rowspan="2" class="no-print">X</th>
                                 </tr>
                                 <tr>
@@ -414,18 +453,18 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(row, idx) in docPR" :key="idx">
-                                    <td class="txt-center fw-bold">{{ idx + 1 }}</td>
-                                    <td><textarea v-model="row.name" class="inline-edit txt-left fw-bold"></textarea></td>
+                                    <td class="txt-center">{{ idx + 1 }}</td>
+                                    <td><textarea v-model="row.name" class="inline-edit txt-left"></textarea></td>
                                     <td><textarea v-model="row.specs" class="inline-edit txt-left"></textarea></td>
-                                    <td><textarea v-model="row.partNo" class="inline-edit txt-center fw-bold text-danger"></textarea></td>
-                                    <td><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap fw-bold"></textarea></td>
+                                    <td><textarea v-model="row.partNo" class="inline-edit txt-center"></textarea></td>
+                                    <td><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td>
                                     <td><input type="text" :value="formatNum(row.avgUsage)" @focus="focusNum($event, row.avgUsage)" @blur="row.avgUsage = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td>
                                     <td><input type="text" :value="formatNum(row.qtyStock)" @focus="focusNum($event, row.qtyStock)" @blur="row.qtyStock = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td>
-                                    <td><input type="text" :value="formatNum(row.qtyReq)" @focus="focusNum($event, row.qtyReq)" @blur="row.qtyReq = blurNum($event)" class="inline-edit txt-center fw-bold text-primary bg-light border border-primary txt-nowrap"></td>
+                                    <td><input type="text" :value="formatNum(row.qtyReq)" @focus="focusNum($event, row.qtyReq)" @blur="row.qtyReq = blurNum($event)" class="inline-edit txt-center border border-primary txt-nowrap"></td>
                                     <td><input type="text" :value="formatNum(row.price)" @focus="focusNum($event, row.price)" @blur="row.price = blurNum($event)" class="inline-edit txt-right txt-nowrap pr-num-fix"></td>
-                                    <td class="txt-right fw-bold text-danger txt-nowrap bg-light px-1 pr-num-fix">{{ formatNum(row.qtyReq * row.price) }}</td>
+                                    <td class="txt-right txt-nowrap px-1 pr-num-fix">{{ formatNum(row.qtyReq * row.price) }}</td>
                                     <td><textarea v-model="row.timeNeeded" class="inline-edit txt-center text-muted"></textarea></td>
-                                    <td><textarea v-model="row.purpose" class="inline-edit txt-left fw-bold text-primary"></textarea></td>
+                                    <td><textarea v-model="row.purpose" class="inline-edit txt-left"></textarea></td>
                                     <td><textarea v-model="row.accCreator" class="inline-edit txt-center"></textarea></td>
                                     <td><textarea v-model="row.accKTT" class="inline-edit txt-center"></textarea></td>
                                     <td><input type="text" :value="formatNum(row.budget)" @focus="focusNum($event, row.budget)" @blur="row.budget = blurNum($event)" class="inline-edit txt-right txt-nowrap pr-num-fix"></td>
@@ -436,30 +475,31 @@
                                 </tr>
                                 <tr class="table-light border-top border-dark fw-bold">
                                     <td colspan="9" class="txt-right text-uppercase">Tổng cộng:</td>
-                                    <td class="txt-right text-danger txt-nowrap px-1 pr-num-fix">{{ formatNum(prTotalAmount) }}</td>
+                                    <td class="txt-right txt-nowrap px-1 pr-num-fix">{{ formatNum(prTotalAmount) }}</td>
                                     <td colspan="8"></td><td class="no-print"></td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                     
-                    <div class="row mt-3 mx-0 page-break-inside-avoid">
+                    <div class="row mt-2 mx-0 page-break-inside-avoid" :class="{'no-print': !printPrWorkflow}">
                         <div class="col-12 p-0">
-                            <h6 class="fw-bold m-0 p-1" style="font-size: 12px;">QUÁ TRÌNH XỬ LÝ:</h6>
+                            <h6 class="fw-bold m-0 p-1" style="font-size: 11px;">QUÁ TRÌNH XỬ LÝ:</h6>
                             <div class="table-responsive">
-                                <table class="table table-bordered border-dark align-middle txt-center mb-2" style="font-size: 11px; table-layout: fixed;">
+                                <table class="table table-bordered border-dark align-middle txt-center mb-1" style="font-size: 10px; table-layout: fixed;">
                                     <thead class="table-light"><tr><th width="15%">Thời điểm xử lý</th><th width="35%">Bước xử lý</th><th width="20%">Người xử lý</th><th width="30%">Ý kiến người xử lý</th></tr></thead>
-                                    <tbody><tr v-for="(step, sIdx) in prWorkflow" :key="sIdx"><td><textarea v-model="step.time" class="inline-edit text-center text-primary fw-bold" placeholder="dd/mm/yy hh:mm"></textarea></td><td class="txt-left text-dark"><textarea :value="step.stepVi" class="inline-edit text-left" readonly style="font-size: 10px;"></textarea></td><td><textarea v-model="step.person" class="inline-edit text-center fw-bold"></textarea></td><td><textarea v-model="step.note" class="inline-edit text-left"></textarea></td></tr></tbody>
+                                    <tbody><tr v-for="(step, sIdx) in prWorkflow" :key="sIdx"><td><textarea v-model="step.time" class="inline-edit text-center text-primary fw-bold" placeholder="dd/mm/yy hh:mm"></textarea></td><td class="txt-left text-dark"><textarea :value="step.stepVi" class="inline-edit text-left" readonly style="font-size: 10px;"></textarea></td><td><textarea v-model="step.person" class="inline-edit text-left fw-bold"></textarea></td><td><textarea v-model="step.note" class="inline-edit text-left"></textarea></td></tr></tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-                    <div class="row signature-block text-center mt-2 pt-2 text-dark mx-0 page-break-inside-avoid" style="font-size: 11px;">
-                        <div class="col">Ngày ….. tháng ….. năm ……<br><br><span class="fw-bold">Người lập phiếu</span><br><br><br><br><br></div>
-                        <div class="col">Ngày ….. tháng ….. năm ……<br><br><span class="fw-bold">Trưởng phòng</span><br><br><br><br><br></div>
-                        <div class="col">Ngày ….. tháng ….. năm ……<br><br><span class="fw-bold">TP Cung ứng</span><br><br><br><br><br></div>
-                        <div class="col">Ngày ….. tháng ….. năm ……<br><br><span class="fw-bold">Kế toán trưởng</span><br><br><br><br><br></div>
-                        <div class="col">Ngày ….. tháng ….. năm ……<br><br><span class="fw-bold">Ban Giám đốc</span><br><br><br><br><br></div>
+
+                    <div class="row signature-block text-center mt-1 pt-1 text-dark mx-0 page-break-inside-avoid" style="font-size: 11px;">
+                        <div class="col">Ngày ….. tháng ….. năm ……<br><br><span class="fw-bold">Người lập phiếu</span><br><br><br><br></div>
+                        <div class="col">Ngày ….. tháng ….. năm ……<br><br><span class="fw-bold">Trưởng phòng</span><br><br><br><br></div>
+                        <div class="col">Ngày ….. tháng ….. năm ……<br><br><span class="fw-bold">TP Cung ứng</span><br><br><br><br></div>
+                        <div class="col">Ngày ….. tháng ….. năm ……<br><br><span class="fw-bold">Kế toán trưởng</span><br><br><br><br></div>
+                        <div class="col">Ngày ….. tháng ….. năm ……<br><br><span class="fw-bold">Ban Giám đốc</span><br><br><br><br></div>
                     </div>
                 </div>
             </div>
@@ -566,16 +606,18 @@
                 bgHeader: { company: 'CÔNG TY CỔ PHẦN PHÁT TRIỂN CHÂU Á', address: 'Số 07, KP6, Xã Bến Lức, Tỉnh Tây Ninh', ref: '001/2026/BG-M&E', date: new Date().toLocaleDateString('vi-VN'), to: '' },
                 docBaoGia: [], bgTerms: [ { title: 'Thời gian thực hiện:', content: 'Trong vòng 15-30 ngày kể từ ngày ký hợp đồng.' }, { title: 'Thanh toán:', content: 'Tạm ứng 30%, thanh toán 70% sau khi bàn giao.' }, { title: 'Bảo hành:', content: '12 tháng theo tiêu chuẩn của Hãng.' } ],
                 
+                // Toggle Workflow Flag
+                printPrWorkflow: true,
                 prHeader: { isoDate: '…/…/...', isoRev: '...', isoCheck: '…', prNo: '', isPlan: true, company: 'Công ty Cổ Phần Phát Triển Châu Á', dept: 'Phòng Cơ điện', deptCode: '', warehouse: '', storekeeper: '', approvedDate: '' },
                 docPR: [], 
                 prWorkflow: [ 
                     { time: '', stepVi: '01. Lập phiếu ĐNMH', stepEn: '01. Create Purchase Requisition', person: 'Người lập phiếu', note: '' }, 
                     { time: '', stepVi: '02. Xác nhận tồn kho', stepEn: '02. Confirm Inventory / Stock', person: 'Phạm Thị Như Huỳnh', note: '' }, 
                     { time: '', stepVi: '03. Tổng hợp lại các mặt hàng cần mua/cấp', stepEn: '03. Consolidate Items', person: 'Phạm Thị Như Huỳnh', note: '' }, 
-                    { time: '', stepVi: '04. Kiểm tra phiếu đề nghị', stepEn: '04. Check PR Details', person: 'Trưởng phòng Cơ điện', note: '' }, 
+                    { time: '', stepVi: '04. Kiểm tra phiếu đề nghị', stepEn: '04. Check PR Details', person: 'Trưởng phòng Cơ Điện', note: '' }, 
                     { time: '', stepVi: '05. Xác nhận đơn hàng', stepEn: '05. Order Confirmation', person: 'Lưu Thị Cẩm Hồng', note: '' }, 
                     { time: '', stepVi: '06. Kiểm tra ngân sách ĐNMH', stepEn: '06. Budget Verification', person: 'Kế toán trưởng', note: '' }, 
-                    { time: '', stepVi: '07. Phê duyệt đề nghị mua hàng', stepEn: '07. Final Approval', person: 'Ban giám đốc', note: '' }, 
+                    { time: '', stepVi: '07. Phê duyệt đề nghị mua hàng', stepEn: '07. Final Approval', person: 'Ban Giám đốc', note: '' }, 
                     { time: '', stepVi: '08. Tiếp nhận phiếu đề nghị', stepEn: '08. PR Received', person: 'Phạm Thị Như Huỳnh', note: '' } 
                 ],
                 
@@ -594,7 +636,7 @@
         },
         watch: {
             currentTab() { this.searchQuery = ''; },
-            globalProjectName(val) { this.saveDraft('global_project_name', val); }, docDuToan: { deep: true, handler(val) { this.saveDraft('dt_table', val); } }, docBaoGia: { deep: true, handler(val) { this.saveDraft('bg_table', val); } }, bgTerms: { deep: true, handler(val) { this.saveDraft('bg_terms', val); } }, docPR: { deep: true, handler(val) { this.saveDraft('pr_table', val); } }, prWorkflow: { deep: true, handler(val) { this.saveDraft('pr_flow', val); } }, docNghiemThu: { deep: true, handler(val) { this.saveDraft('nt_table', val); } }, prHeader: { deep: true, handler(val) { this.saveDraft('pr_header', val); } }
+            globalProjectName(val) { this.saveDraft('global_project_name', val); }, docDuToan: { deep: true, handler(val) { this.saveDraft('dt_table', val); } }, docBaoGia: { deep: true, handler(val) { this.saveDraft('bg_table', val); } }, bgTerms: { deep: true, handler(val) { this.saveDraft('bg_terms', val); } }, docPR: { deep: true, handler(val) { this.saveDraft('pr_table', val); } }, prWorkflow: { deep: true, handler(val) { this.saveDraft('pr_flow', val); } }, docNghiemThu: { deep: true, handler(val) { this.saveDraft('nt_table', val); } }, prHeader: { deep: true, handler(val) { this.saveDraft('pr_header', val); } }, printPrWorkflow(val) { this.saveDraft('pr_flow_print_setting', val); }
         },
         async mounted() {
             await this.migrateDataToIndexedDB(); await this.loadDrafts(); 
@@ -826,7 +868,18 @@
                     ws.mergeCells('A1:N2'); ws.mergeCells('O1:R1'); ws.mergeCells('O2:R2'); applyStyle(1, 2, 18);
                     
                     ws.addRow([]); 
-                    let r4 = ws.addRow([]); r4.getCell(3).value = `Số phiếu: ADG_ĐNMH_${str(this.prHeader.prNo)}`; r4.getCell(3).font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size:14}; ws.mergeCells('C4:F4'); r4.getCell(9).value = `Theo kế hoạch: ${this.prHeader.isPlan ? '☑' : '☐'}`; r4.getCell(9).font=fontBold; ws.mergeCells('I4:M4');
+                    
+                    let r4 = ws.addRow([]); 
+                    r4.getCell(1).value = 'Số phiếu:'; 
+                    r4.getCell(1).font = fontBold;
+                    r4.getCell(2).value = `ADG_ĐNMH_${str(this.prHeader.prNo)}`; 
+                    r4.getCell(2).font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size:12}; 
+                    ws.mergeCells('B4:H4'); 
+                    r4.getCell(2).border = borderBotOnly;
+                    
+                    r4.getCell(9).value = this.prHeader.isPlan ? '☑ Theo kế hoạch' : '☐ Theo kế hoạch'; 
+                    r4.getCell(9).font=fontBold; 
+                    ws.mergeCells('I4:M4');
                     
                     let r5 = ws.addRow([]); r5.getCell(1).value = 'Đơn vị lập:'; r5.getCell(2).value = str(this.prHeader.company); ws.mergeCells('B5:H5'); r5.getCell(1).font=fontBold; r5.getCell(2).font=fontBold; r5.getCell(2).border = borderBotOnly;
                     let r6 = ws.addRow([]); r6.getCell(1).value = 'Bộ phận:'; r6.getCell(2).value = str(this.prHeader.dept); ws.mergeCells('B6:F6'); r6.getCell(1).font=fontBold; r6.getCell(2).font=fontBold; r6.getCell(2).border = borderBotOnly;
@@ -837,7 +890,7 @@
                     r7.getCell(9).value = 'Ngày duyệt:'; r7.getCell(10).value = str(this.prHeader.approvedDate); ws.mergeCells('J7:M7'); r7.getCell(9).font=fontBold; r7.getCell(10).border = borderBotOnly;
                     ws.addRow([]);
 
-                    ws.addRow(['STT', 'Mô tả hàng hóa', '', 'Mã vật tư\n(*)', 'ĐVT\n(*)', 'Bình quân SD hàng tháng\n(*)', 'Số lượng', '', 'Đơn giá\ntham khảo\n(có VAT)\n(*)', 'Thành tiền\n(Có VAT)\n(*)', 'Thời gian\ncần hàng\n(*)', 'Mục đích sử dụng\n(*)', 'TK chi phí\n(Người lập)', 'TK chi phí\n(KTT)', 'Ngân sách\ncòn lại', 'Nhà cung cấp tham khảo', 'Công ty\nsử dụng\n(*)', 'Điều kiện nghiệm thu/ Đánh giá chất lượng']);
+                    ws.addRow(['STT', 'Mô tả hàng hóa', '', 'Mã vật tư\n(*)', 'ĐVT\n(*)', 'Bình quân SD hàng tháng\n(*)', 'Số lượng', '', 'Đơn giá\ntham khảo\n(có VAT)\n(*)', 'Thành tiền\n(Có VAT)\n(*)', 'Thời gian\ncần hàng\n(*)', 'Mục đích sử dụng\n(*)', 'TK chi phí\n(Người lập)', 'TK chi phí\n(KTT)', 'Ngân sách\ncòn lại', 'Nhà cung cấp tham khảo', 'Công ty\nsử dụng\n(*)', 'Điều kiện nghiệm thu/ Đánh giá chất lượng (nếu có)']);
                     ws.addRow(['', 'Tên hàng hóa\n(*)', 'Quy cách\n(*)', '', '', '', 'Tồn Kho\n(*)', 'Đề xuất\n(*)', '', '', '', '', '', '', '', '', '', '']);
                     ws.addRow(['(1)','(2)','(3)','(4)','(5)','(6)','(7)','(8)','(9)','(10)','(11)','(12)','(13)','(14)','(15)','(16)','(17)','(18)']);
                     
@@ -866,18 +919,23 @@
                     let rWords = ws.addRow([]); rWords.getCell(9).value = `Bằng chữ: ${this.readMoney(this.prTotalAmount)}`; ws.mergeCells(`A${rIdx}:R${rIdx}`); rWords.getCell(1).alignment=alignRight; rWords.font={italic:true, name:'Times New Roman', size:11}; rIdx++;
                     applyStyle(12, rIdx-2, 18, 10); 
                     
-                    ws.addRow([]); rIdx++; ws.addRow(['QUÁ TRÌNH XỬ LÝ:']).font = {bold:true, name:'Times New Roman', size:11}; rIdx++;
-                    let wH = ws.addRow([]); wH.getCell(1).value = 'Thời điểm xử lý'; wH.getCell(2).value = 'Bước xử lý'; wH.getCell(5).value = 'Người xử lý'; wH.getCell(9).value = 'Ý kiến người xử lý'; wH.eachCell(c => { c.font=fontBold; c.fill=fillHeader; c.alignment=alignCenter; });
-                    ws.mergeCells(`B${rIdx}:D${rIdx}`); ws.mergeCells(`E${rIdx}:H${rIdx}`); ws.mergeCells(`I${rIdx}:R${rIdx}`); applyStyle(rIdx, rIdx, 18); rIdx++;
+                    ws.addRow([]); rIdx++; 
+
+                    // CHỈ EXCEL XUẤT WORKFLOW NẾU ĐƯỢC CHỌN TRÊN UI
+                    if (this.printPrWorkflow) {
+                        ws.addRow(['QUÁ TRÌNH XỬ LÝ:']).font = {bold:true, name:'Times New Roman', size:11}; rIdx++;
+                        let wH = ws.addRow([]); wH.getCell(1).value = 'Thời điểm xử lý'; wH.getCell(2).value = 'Bước xử lý'; wH.getCell(5).value = 'Người xử lý'; wH.getCell(9).value = 'Ý kiến người xử lý'; wH.eachCell(c => { c.font=fontBold; c.fill=fillHeader; c.alignment=alignCenter; });
+                        ws.mergeCells(`B${rIdx}:D${rIdx}`); ws.mergeCells(`E${rIdx}:H${rIdx}`); ws.mergeCells(`I${rIdx}:R${rIdx}`); applyStyle(rIdx, rIdx, 18); rIdx++;
+                        
+                        this.prWorkflow.forEach(s => {
+                            let r = ws.addRow([]); r.getCell(1).value = str(s.time); r.getCell(2).value = str(s.stepVi); r.getCell(5).value = str(s.person); r.getCell(9).value = str(s.note);
+                            ws.mergeCells(`B${rIdx}:D${rIdx}`); ws.mergeCells(`E${rIdx}:H${rIdx}`); ws.mergeCells(`I${rIdx}:R${rIdx}`); applyStyle(rIdx, rIdx, 18);
+                            r.getCell(1).alignment=alignCenter; r.getCell(2).alignment=alignLeft; r.getCell(5).alignment=alignCenter; r.getCell(9).alignment=alignLeft;
+                            rIdx++;
+                        });
+                        ws.addRow([]); rIdx++;
+                    }
                     
-                    this.prWorkflow.forEach(s => {
-                        let r = ws.addRow([]); r.getCell(1).value = str(s.time); r.getCell(2).value = str(s.stepVi); r.getCell(5).value = str(s.person); r.getCell(9).value = str(s.note);
-                        ws.mergeCells(`B${rIdx}:D${rIdx}`); ws.mergeCells(`E${rIdx}:H${rIdx}`); ws.mergeCells(`I${rIdx}:R${rIdx}`); applyStyle(rIdx, rIdx, 18);
-                        r.getCell(1).alignment=alignCenter; r.getCell(2).alignment=alignLeft; r.getCell(5).alignment=alignCenter; r.getCell(9).alignment=alignLeft;
-                        rIdx++;
-                    });
-                    
-                    ws.addRow([]); rIdx++;
                     let s1 = ws.addRow([]); let s2 = ws.addRow([]);
                     [1, 5, 8, 11, 14].forEach(c => s1.getCell(c).value = 'Ngày...tháng...năm...');
                     s2.getCell(1).value = 'Người lập phiếu'; s2.getCell(5).value = 'Trưởng phòng'; s2.getCell(8).value = 'TP Cung ứng'; s2.getCell(11).value = 'Kế toán trưởng'; s2.getCell(14).value = 'Ban Giám đốc';
@@ -1004,8 +1062,6 @@
             async loginAdmin() { 
                 const pass = prompt(this.t("Nhập mã số NV (Password):", "Enter Staff ID (Password):")); if (!pass) return;
                 const inputHash = await this.hashPassword(pass); 
-                
-                // Mã hóa bảo vệ chuỗi mật khẩu trong source code thông qua Base64 (MjEwOTAwNA== là "2109004")
                 const targetPass = atob("MjEwOTAwNA==");
                 const VALID_HASH = await this.hashPassword(targetPass); 
                 
@@ -1017,7 +1073,7 @@
                 }
             },
             async migrateDataToIndexedDB() {
-                const keys = ['masterDataProject', 'global_project_name', 'dt_table', 'bg_table', 'bg_terms', 'pr_table', 'pr_flow', 'nt_table', 'company_logo_base64', 'pr_header'];
+                const keys = ['masterDataProject', 'global_project_name', 'dt_table', 'bg_table', 'bg_terms', 'pr_table', 'pr_flow', 'nt_table', 'company_logo_base64', 'pr_header', 'pr_flow_print_setting'];
                 for (let k of keys) { let oldData = localStorage.getItem(k); if (oldData !== null) { try { await localforage.setItem(k, JSON.parse(oldData)); } catch(e) { await localforage.setItem(k, oldData); } localStorage.removeItem(k); } }
             },
 
@@ -1097,8 +1153,6 @@
                             const canvas = document.createElement('canvas'); 
                             let width = img.width; 
                             let height = img.height; 
-                            
-                            // Giới hạn max-size xuống 600px để giảm thiểu rủi ro tràn RAM
                             const MAX_SIZE = 600;
                             if (width > height) { 
                                 if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } 
@@ -1109,8 +1163,6 @@
                             canvas.height = height; 
                             const ctx = canvas.getContext('2d'); 
                             ctx.drawImage(img, 0, 0, width, height); 
-                            
-                            // Tối ưu hóa: Giảm chất lượng ảnh JPEG xuống 0.5 (50%) thay vì 0.7
                             row.image = canvas.toDataURL('image/jpeg', 0.5); 
                         }; 
                         img.src = e.target.result; 
@@ -1130,6 +1182,7 @@
             async loadDrafts() {
                 const parseL = async (k, defaultData) => { const data = await localforage.getItem(k); return data !== null ? data : defaultData; };
                 this.docDuToan = await parseL('dt_table', this.docDuToan); this.docBaoGia = await parseL('bg_table', this.docBaoGia); this.bgTerms = await parseL('bg_terms', this.bgTerms); this.docPR = await parseL('pr_table', this.docPR); this.prWorkflow = await parseL('pr_flow', this.prWorkflow); this.docNghiemThu = await parseL('nt_table', this.docNghiemThu); this.globalProjectName = await parseL('global_project_name', this.globalProjectName); this.prHeader = await parseL('pr_header', this.prHeader);
+                this.printPrWorkflow = await parseL('pr_flow_print_setting', this.printPrWorkflow);
                 const cachedLogo = await parseL('company_logo_base64', null); if(cachedLogo) this.companyLogo = cachedLogo;
             },
             clearDraft(t) { 
