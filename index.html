@@ -170,7 +170,7 @@
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'baogia' }" @click="currentTab = 'baogia'"><i class="fas fa-file-invoice-dollar"></i> {{ t('Báo Giá', 'Quotation') }}</a></li>
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'pr' }" @click="currentTab = 'pr'"><i class="fas fa-file-signature text-warning"></i> {{ t('Phiếu ĐNMH', 'Purchase Req (PR)') }}</a></li>
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'daily' }" @click="currentTab = 'daily'"><i class="fas fa-clipboard-list"></i> {{ t('Nhật Ký Thi Công', 'Daily Site Report') }}</a></li>
-                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'nghiemthu' }" @click="currentTab = 'nghiemthu'"><i class="fas fa-handshake"></i> {{ t('Nghiệm Thu', 'Acceptance Record') }}</a></li>
+                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'nghiemthu' }" @click="currentTab = 'nghiemthu'"><i class="fas fa-handshake"></i> {{ t('Nghiệm Thu Kỹ Thuật', 'Acceptance Record') }}</a></li>
             </ul>
         </div>
 
@@ -418,6 +418,8 @@
                                 <td><textarea v-model="prHeader.warehouse" class="inline-edit p-0 m-0 border-0"></textarea></td>
                                 <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Thủ kho:', 'Storekeeper:') }}</td>
                                 <td><textarea v-model="prHeader.storekeeper" class="inline-edit p-0 m-0 border-0"></textarea></td>
+                            </tr>
+                            <tr>
                                 <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Ngày duyệt:', 'Approved:') }}</td>
                                 <td colspan="3">
                                     <input type="date" v-model="prHeader.approvedDate" class="inline-edit fw-bold text-primary w-auto p-0 m-0 border-0">
@@ -553,7 +555,7 @@
 
             <div v-if="currentTab === 'nghiemthu'" class="flex-grow-1">
                  <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
-                    <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-handshake me-2"></i> {{ t('Biên Bản Nghiệm Thu', 'Acceptance Record') }}</h3>
+                    <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-handshake me-2"></i> {{ t('Biên Bản Nghiệm Thu Kỹ Thuật', 'Acceptance Record') }}</h3>
                     <div class="d-flex flex-wrap gap-2">
                         <button @click="addBlankRow('nghiemthu')" class="btn btn-outline-primary fw-bold"><i class="fas fa-plus"></i></button>
                         <button @click="clearDraft('nghiemthu')" class="btn btn-outline-danger fw-bold"><i class="fas fa-eraser"></i></button>
@@ -564,7 +566,7 @@
                 <div id="print-nghiemthu" class="print-area">
                     <div class="row mb-3 align-items-center mx-0">
                         <div class="col-3 text-center p-0"><div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;"><img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;"><input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;"></div></div>
-                        <div class="col-9 text-center"><h3 class="form-title mb-1 text-dark">{{ t('BIÊN BẢN NGHIỆM THU', 'ACCEPTANCE RECORD') }}</h3><textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle" :placeholder="t('NHẬP THÔNG TIN DỰ ÁN...', 'ENTER PROJECT INFO...')"></textarea></div>
+                        <div class="col-9 text-center"><h3 class="form-title mb-1 text-dark">{{ t('BIÊN BẢN NGHIỆM THU KỸ ', 'ACCEPTANCE RECORD') }}</h3><textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle" :placeholder="t('NHẬP THÔNG TIN DỰ ÁN...', 'ENTER PROJECT INFO...')"></textarea></div>
                     </div>
                     <div class="mb-4 mt-3">
                         <table class="table table-borderless table-sm w-100 w-md-75 align-middle">
