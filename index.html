@@ -84,7 +84,6 @@
             html, body { width: 100vw !important; max-width: 100vw !important; margin: 0 !important; padding: 0 !important; background-color: #fff !important; overflow: hidden !important; }
             #app { width: 100% !important; margin: 0 !important; padding: 0 !important; }
             
-            /* TỐI ƯU MÀU SẮC CHO MÁY IN LASER */
             body, table, td, th, span, div, p, a { color: #000000 !important; font-family: 'Times New Roman', Times, serif !important; }
             .text-primary, .text-danger, .text-success, .text-warning, .text-info, .text-muted, .text-secondary, .text-dark { 
                 color: #000000 !important; 
@@ -104,7 +103,6 @@
             table th { background-color: #e2e8f0 !important; color: #000 !important; border: 1px solid #000 !important; padding: 4px 2px !important; font-weight: bold !important; text-align: center !important; vertical-align: middle !important; font-size: 9.5pt !important; line-height: 1.2 !important; }
             table td { border: 1px solid #000 !important; padding: 1px 2px !important; color: #000 !important; vertical-align: middle !important; word-wrap: break-word !important; font-size: 9.5pt !important; line-height: 1.2 !important; }
             
-            /* TỐI ƯU SIÊU GỌN HEADER VÀ THÔNG TIN CHUNG */
             .pr-header-row { margin-bottom: 4px !important; border-width: 1px !important; }
             .pr-header-row > div { padding: 2px 4px !important; }
             .pr-logo-box { height: 40px !important; }
@@ -117,7 +115,6 @@
             .pr-info-table td { padding: 1px 2px !important; vertical-align: middle !important; border: 1px solid #000 !important; }
             .pr-info-table .inline-edit { padding: 0 !important; min-height: 14px !important; font-size: 9.5pt !important; line-height: 1.15 !important; height: auto !important; }
             
-            /* BẢNG CHI TIẾT VẬT TƯ */
             .table-pr-print { table-layout: fixed !important; width: 100% !important; max-width: 100% !important; }
             .table-pr-print th, .table-pr-print td { padding: 1px !important; word-break: break-word !important; overflow: visible !important; font-size: 8pt !important; letter-spacing: -0.2px !important; }
             .table-pr-print .inline-edit { font-size: 8pt !important; line-height: 1.15 !important; min-height: 12px !important; padding: 0 1px !important; }
@@ -166,7 +163,6 @@
                 </div>
             </div>
 
-            <!-- NÚT XÓA CACHE ĐƯỢC BỔ SUNG THEO YÊU CẦU -->
             <div class="mt-2 mx-3 no-print mb-3">
                 <button @click="clearAllCache" class="btn btn-outline-danger btn-sm w-100 fw-bold border-secondary text-light" style="background: rgba(239, 68, 68, 0.2);" :title="t('Xóa toàn bộ dữ liệu lưu nháp & DB', 'Clear all cached data and DB')">
                     <i class="fas fa-trash-alt me-2"></i>{{ t('Xóa Cache / Làm mới', 'Clear Cache / Reload') }}
@@ -179,7 +175,8 @@
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'baogia' }" @click="currentTab = 'baogia'"><i class="fas fa-file-invoice-dollar"></i> {{ t('Báo Giá', 'Quotation') }}</a></li>
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'pr' }" @click="currentTab = 'pr'"><i class="fas fa-file-signature text-warning"></i> {{ t('Phiếu ĐNMH', 'Purchase Req (PR)') }}</a></li>
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'daily' }" @click="currentTab = 'daily'"><i class="fas fa-clipboard-list"></i> {{ t('Nhật Ký Thi Công', 'Daily Site Report') }}</a></li>
-                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'nghiemthu' }" @click="currentTab = 'nghiemthu'"><i class="fas fa-handshake"></i> {{ t('Nghiệm Thu Kỹ Thuật', 'Acceptance Record') }}</a></li>
+                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'nghiemthu' }" @click="currentTab = 'nghiemthu'"><i class="fas fa-check-circle"></i> {{ t('Nghiệm Thu Kỹ Thuật', 'Acceptance') }}</a></li>
+                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'nghiemthubg' }" @click="currentTab = 'nghiemthubg'"><i class="fas fa-handshake text-info"></i> {{ t('Nghiệm Thu Bàn Giao', 'Acceptance & Handover') }}</a></li>
             </ul>
         </div>
 
@@ -280,22 +277,25 @@
                                 </tr>
                                 <tr class="fw-bold">
                                     <td colspan="7" class="txt-right border-dark border text-dark txt-nowrap">{{ t('TỔNG DỰ TOÁN (TRƯỚC THUẾ):', 'ESTIMATE BEFORE TAX:') }}</td>
-                                    <td colspan="2" class="txt-right txt-nowrap border-dark border px-2 text-dark fs-6">{{ formatNum(dtTongTruocThue) }}</td>
+                                    <td colspan="2" class="txt-right txt-nowrap border-dark border px-2 text-dark fs-6">{{ formatNum(dtTotalBeforeVAT) }}</td>
                                     <td class="no-print"></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="7" class="txt-right border-dark border txt-nowrap">{{ t('Thuế GTGT (VAT 8%):', 'VAT (8%):') }}</td>
-                                    <td colspan="2" class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(dtTongTruocThue * 0.08) }}</td>
-                                    <td class="no-print"></td>
-                                </tr>
+    <td colspan="7" class="txt-right border-dark border txt-nowrap">
+        {{ t('Thuế GTGT (VAT ', 'VAT (') }}
+        <input type="text" :value="formatNum(dtVatRate)" @focus="focusNum($event, dtVatRate)" @blur="dtVatRate = blurNum($event)" class="inline-edit d-inline txt-center text-primary fw-bold p-0 border-bottom border-primary" style="width: 25px; height: 18px; min-height: 18px;">%):
+    </td>
+    <td colspan="2" class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(dtVATAmount) }}</td>
+    <td class="no-print"></td>
+</tr>
                                 <tr class="table-light fw-bold border-dark border-2 border-bottom-0">
                                     <td colspan="7" class="txt-right border-dark border text-danger fs-6 text-uppercase txt-nowrap">{{ t('TỔNG GIÁ TRỊ (SAU THUẾ):', 'TOTAL CONTRACT VALUE:') }}</td>
-                                    <td colspan="2" class="txt-right txt-nowrap border-dark border px-2 text-danger fs-5">{{ formatNum(dtTongTruocThue * 1.08) }}</td>
+                                    <td colspan="2" class="txt-right txt-nowrap border-dark border px-2 text-danger fs-5">{{ formatNum(dtTotalAfterVAT) }}</td>
                                     <td class="no-print border-dark border-start-0 border-top"></td>
                                 </tr>
                                 <tr class="table-light border-dark border-2 border-top-0">
                                     <td colspan="9" class="txt-right border-dark border text-muted fst-italic py-2 border-top-0">
-                                        {{ t('Bằng chữ: ', 'In words: ') }}<span class="text-dark fw-bold">{{ readMoney(dtTongTruocThue * 1.08) }}</span>
+                                        {{ t('Bằng chữ: ', 'In words: ') }}<span class="text-dark fw-bold">{{ readMoney(dtTotalAfterVAT) }}</span>
                                     </td>
                                     <td class="no-print border-dark border border-top-0"></td>
                                 </tr>
@@ -317,7 +317,8 @@
                     </div>
                 </div>
             </div>
-<div v-if="currentTab === 'baogia'" class="flex-grow-1">
+
+            <div v-if="currentTab === 'baogia'" class="flex-grow-1">
                 <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
                     <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-file-invoice-dollar me-2"></i> {{ t('Báo Giá (Quotation)', 'Quotation') }}</h3>
                     <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -405,7 +406,7 @@
                                 </tr>
                                 <tr class="bg-light border-top border-dark border-2">
                                     <td colspan="6" class="txt-right fw-bold text-uppercase border-dark border">{{ t('Tổng giá (trước thuế):', 'Subtotal:') }}</td>
-                                    <td class="txt-right fw-bold txt-nowrap border-dark border px-2">{{ formatNum(totalBaoGia) }}</td>
+                                    <td class="txt-right fw-bold txt-nowrap border-dark border px-2">{{ formatNum(bgTotalBeforeVAT) }}</td>
                                     <td class="no-print border-dark border"></td>
                                 </tr>
                                 <tr class="bg-light">
@@ -413,17 +414,17 @@
                                         {{ t('Thuế GTGT (VAT ', 'VAT (') }}
                                         <input type="text" :value="formatNum(vatRate)" @focus="focusNum($event, vatRate)" @blur="vatRate = blurNum($event)" class="inline-edit d-inline txt-center text-danger p-0 border-bottom border-danger" style="width: 25px; height: 18px; min-height: 18px;">%):
                                     </td>
-                                    <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(totalBaoGia * (vatRate/100)) }}</td>
+                                    <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(bgVATAmount) }}</td>
                                     <td class="no-print border-dark border"></td>
                                 </tr>
                                 <tr class="table-secondary">
                                     <td colspan="6" class="txt-right fw-bold text-uppercase border-dark border text-dark">{{ t('TỔNG GIÁ TRỊ (SAU THUẾ):', 'TOTAL AMOUNT:') }}</td>
-                                    <td class="txt-right fw-bold text-danger fs-5 txt-nowrap border-dark border px-2">{{ formatNum(totalBaoGia * (1 + vatRate/100)) }}</td>
+                                    <td class="txt-right fw-bold text-danger fs-5 txt-nowrap border-dark border px-2">{{ formatNum(bgTotalAfterVAT) }}</td>
                                     <td class="no-print border-dark border"></td>
                                 </tr>
                                 <tr class="border-0">
                                     <td colspan="8" class="txt-right py-2 border-dark border border-top-0 text-dark">
-                                        <span class="fst-italic text-muted">{{ t('Bằng chữ: ', 'In words: ') }}</span><span class="fw-bold">{{ readMoney(totalBaoGia * (1 + vatRate/100)) }}</span>
+                                        <span class="fst-italic text-muted">{{ t('Bằng chữ: ', 'In words: ') }}</span><span class="fw-bold">{{ readMoney(bgTotalAfterVAT) }}</span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -519,7 +520,7 @@
                                 <td><textarea v-model="prHeader.warehouse" class="inline-edit p-0 m-0 border-0"></textarea></td>
                                 <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Thủ kho:', 'Storekeeper:') }}</td>
                                 <td><textarea v-model="prHeader.storekeeper" class="inline-edit p-0 m-0 border-0"></textarea></td>
-							</tr>
+                            </tr>
                             <tr>
                                 <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Ngày duyệt:', 'Approved:') }}</td>
                                 <td colspan="3">
@@ -656,7 +657,7 @@
 
             <div v-if="currentTab === 'nghiemthu'" class="flex-grow-1">
                  <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
-                    <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-handshake me-2"></i> {{ t('Biên Bản Nghiệm Thu Kỹ Thuật', 'Acceptance Record') }}</h3>
+                    <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-check-circle me-2"></i> {{ t('Biên Bản Nghiệm Thu Kỹ Thuật', 'Acceptance Record') }}</h3>
                     <div class="d-flex flex-wrap gap-2">
                         <button @click="addBlankRow('nghiemthu')" class="btn btn-outline-primary fw-bold"><i class="fas fa-plus"></i></button>
                         <button @click="clearDraft('nghiemthu')" class="btn btn-outline-danger fw-bold"><i class="fas fa-eraser"></i></button>
@@ -691,6 +692,127 @@
                 </div>
             </div>
 
+            <div v-if="currentTab === 'nghiemthubg'" class="flex-grow-1">
+                 <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
+                    <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-handshake me-2"></i> {{ t('Biên Bản Nghiệm Thu & Bàn Giao', 'Acceptance & Handover Record') }}</h3>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button @click="$refs.excelUploadNTBG.click()" class="btn btn-primary fw-bold shadow-sm"><i class="fas fa-file-import me-1"></i> {{ t('Nhập Excel', 'Import Excel') }}</button>
+                        <input type="file" ref="excelUploadNTBG" style="display: none" accept=".xlsx, .xls, .csv" @change="importNTBGFromExcel">
+                        
+                        <button @click="addBlankRow('nghiemthubg')" class="btn btn-outline-primary fw-bold"><i class="fas fa-plus"></i></button>
+                        <button @click="clearDraft('nghiemthubg')" class="btn btn-outline-danger fw-bold"><i class="fas fa-eraser"></i></button>
+                        <button @click="exportToExcel('nghiemthubg')" class="btn btn-success fw-bold shadow-sm"><i class="fas fa-file-excel me-1"></i> {{ t('XUẤT EXCEL', 'EXPORT EXCEL') }}</button>
+                        <button onclick="window.print()" class="btn btn-secondary fw-bold shadow-sm"><i class="fas fa-print me-1"></i> {{ t('IN PDF', 'PRINT PDF') }}</button>
+                    </div>
+                </div>
+                
+                <div id="print-nghiemthu-bg" class="print-area w-100">
+                    <div class="row mb-3 mx-0 align-items-center">
+                        <div class="col-3 text-center p-0">
+                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
+                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
+                            </div>
+                        </div>
+                        <div class="col-9 text-center">
+                            <h3 class="form-title text-dark mb-1">{{ t('BIÊN BẢN NGHIỆM THU BÀN GIAO CÔNG TRÌNH ĐƯA VÀO SỬ DỤNG', 'ACCEPTANCE RECORD') }}</h3>
+                            <textarea v-model="ntbgHeader.project" class="inline-edit txt-center fw-bold project-subtitle m-0 w-100" style="font-size: 16px;" placeholder="V/v: Sửa chữa, bảo trì máy móc thiết bị..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="page-break-inside-avoid">
+                        <h6 class="fw-bold text-dark mb-2 text-decoration-underline">I. THÀNH PHẦN:</h6>
+                        
+                        <div class="d-flex mb-1 align-items-center">
+                            <span class="fw-bold text-dark me-2 text-nowrap" style="width: 250px;"> BÊN A (BÊN THỰC HIỆN):</span>
+                            <textarea v-model="ntbgHeader.benA_company" class="inline-edit flex-grow-1 fw-bold text-uppercase p-0 m-0 border-0 text-dark"></textarea>
+                        </div>
+                        <div class="row mx-0 ps-3 mb-1 align-items-center">
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">- Ông/Bà:</span><textarea v-model="ntbgHeader.benA_rep1_name" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">Chức vụ:</span><textarea v-model="ntbgHeader.benA_rep1_title" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                        </div>
+                        <div class="row mx-0 ps-3 mb-3 align-items-center">
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">- Ông/Bà:</span><textarea v-model="ntbgHeader.benA_rep2_name" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">Chức vụ:</span><textarea v-model="ntbgHeader.benA_rep2_title" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                        </div>
+
+                        <div class="d-flex mb-1 align-items-center">
+                            <span class="fw-bold text-dark me-2 text-nowrap" style="width: 250px;"> BÊN B (BÊN THUÊ DỊCH VỤ):</span>
+                            <textarea v-model="ntbgHeader.benB_company" class="inline-edit flex-grow-1 fw-bold text-uppercase p-0 m-0 border-0 text-dark"></textarea>
+                        </div>
+                        <div class="row mx-0 ps-3 mb-1 align-items-center">
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">- Ông/Bà:</span><textarea v-model="ntbgHeader.benB_rep1_name" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">Chức vụ:</span><textarea v-model="ntbgHeader.benB_rep1_title" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                        </div>
+                        <div class="row mx-0 ps-3 mb-3 align-items-center">
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">- Ông/Bà:</span><textarea v-model="ntbgHeader.benB_rep2_name" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">Chức vụ:</span><textarea v-model="ntbgHeader.benB_rep2_title" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                        </div>
+                    </div>
+
+                    <div class="page-break-inside-avoid mb-3">
+                        <h6 class="fw-bold text-dark mb-2 text-decoration-underline">II. NỘI DUNG:</h6>
+                        <div class="d-flex mb-2 align-items-center">
+                            <span class="me-2 text-nowrap text-dark">Căn cứ vào:</span>
+                            <textarea v-model="ntbgHeader.baseOn" class="inline-edit flex-grow-1 p-0 m-0 border-0 border-bottom border-dark border-dashed text-dark" style="min-height: 25px;" placeholder="Hợp đồng số... / Yêu cầu công việc..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <textarea v-model="ntbgHeader.conclusion" class="inline-edit w-100 p-0 m-0 border-0 text-dark fst-italic"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive page-break-inside-avoid">
+                        <table class="table table-bordered align-middle border-dark">
+                            <thead class="table-light txt-center align-middle">
+                                <tr>
+                                    <th rowspan="2" width="4%" class="txt-nowrap border-dark border">STT</th>
+                                    <th rowspan="2" width="10%" class="border-dark border">Ngày đề nghị</th>
+                                    <th rowspan="2" width="15%" class="border-dark border">Thiết bị</th>
+                                    <th rowspan="2" width="28%" class="border-dark border">Hạng mục thi công</th>
+                                    <th colspan="2" width="16%" class="border-dark border">Thời gian</th>
+                                    <th colspan="2" width="12%" class="border-dark border">Xác nhận nghiệm thu</th>
+                                    <th rowspan="2" width="12%" class="border-dark border">Ghi chú</th>
+                                    <th rowspan="2" class="no-print border-dark border" width="3%">X</th>
+                                </tr>
+                                <tr>
+                                    <th class="border-dark border text-muted small">Bắt đầu</th>
+                                    <th class="border-dark border text-muted small">Kết thúc</th>
+                                    <th class="border-dark border text-success small">Đạt</th>
+                                    <th class="border-dark border text-danger small">Không đạt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(row, idx) in docNghiemThuBG" :key="idx">
+                                    <td class="txt-center fw-bold text-muted txt-nowrap border-dark border">{{ idx + 1 }}</td>
+                                    <td class="border-dark border"><textarea v-model="row.requestDate" class="inline-edit txt-center text-dark"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.equipment" class="inline-edit txt-left fw-bold text-primary"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.description" class="inline-edit txt-left text-dark"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.timeStart" class="inline-edit txt-center text-muted" style="font-size: 11px;"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.timeEnd" class="inline-edit txt-center text-muted" style="font-size: 11px;"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.statusPass" class="inline-edit txt-center text-success fw-bold text-uppercase"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.statusFail" class="inline-edit txt-center text-danger fw-bold text-uppercase"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.note" class="inline-edit txt-left text-dark"></textarea></td>
+                                    <td class="txt-center no-print border-dark border"><button @click="removeRow(docNghiemThuBG, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row signature-block mt-5 text-center mx-0 page-break-inside-avoid">
+                        <div class="col-6">
+                            <span class="fw-bold text-uppercase text-dark">{{ t('ĐẠI DIỆN BÊN A', 'PARTY A') }}</span><br>
+                            <em class="small text-muted">{{ t('(Ký và ghi rõ họ tên)', '(Signature & Full Name)') }}</em>
+                            <br><br><br><br><br><br>
+                        </div>
+                        <div class="col-6">
+                            <span class="fw-bold text-uppercase text-dark">{{ t('ĐẠI DIỆN BÊN B', 'PARTY B') }}</span><br>
+                            <em class="small text-muted">{{ t('(Ký và ghi rõ họ tên)', '(Signature & Full Name)') }}</em>
+                            <br><br><br><br><br><br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row no-print mt-auto pt-4 mb-2">
                 <div class="col-12 text-left text-muted small fw-bold" style="letter-spacing: 0.5px;">
                     <i class="fas fa-code me-1"></i> Design by: Quốc Việt
@@ -711,20 +833,19 @@
                 currentTab: 'database', lang: 'vi', isAdmin: false, showSavedToast: false,
                 roundDecimal: false, vatRate: 8,
                 
-                // Object chứa các timeout cho Debounce I/O
                 draftTimeouts: {},
                 
                 database: [], newItem: { partNo: '', name: '', specs: '', unit: '', priceVT: 0, priceNC: 0 },
                 searchQuery: '', showSearchDropdown: false, companyLogo: 'https://via.placeholder.com/150x60?text=CLICK+ĐỂ+THÊM+LOGO', globalProjectName: '',
                 
-                docDuToan: [], tyleNCGT: 10, tyleQLCVT: 15, tyleQLCNC: 10,
+                docDuToan: [], tyleNCGT: 0, tyleQLCVT: 0, tyleQLCNC: 0, dtVatRate: 8,
                 
                 bgHeader: { 
                     isoDoc: 'ADG_QĐ_KT_02/BM01', isoDate: '28/06/2022', isoRev: '01',
                     company: 'CÔNG TY CỔ PHẦN PHÁT TRIỂN CHÂU Á', 
                     address: 'Số 7, khu phố 6, Xã Bến Lức, Tỉnh Tây Ninh, Việt Nam', 
                     taxCode: '1100837040',
-                    ref: '0201/ 2026/ADG-LAIP', 
+                    ref: '0000/2026/ADG-LAIP', 
                     date: new Date().toLocaleDateString('vi-VN'),
                     cusCompany: 'CÔNG TY CỔ PHẦN QUẢN LÝ & KHAI THÁC CẢNG QUỐC TẾ LONG AN',
                     cusAddress: 'Số 68 Đường Tỉnh 830, ấp Vĩnh Hòa, Xã Tân Tập, Tây Ninh, Việt Nam',
@@ -753,15 +874,53 @@
                 ],
                 
                 dailyType: 'thicong', dailyHeader: { date: '', location: '', pic: '' }, dailyManpower: [], dailyEquipment: [], dailyTasks: [],
-                ntHeader: { contract: '', date: '' }, docNghiemThu: []
+                ntHeader: { contract: '', date: '' }, docNghiemThu: [],
+
+                ntbgHeader: {
+                    project: 'V/v: Sửa chữa, bảo trì máy móc thiết bị',
+                    monthYear: `Tháng ${(new Date().getMonth() + 1).toString().padStart(2, '0')} /${new Date().getFullYear()}`,
+                    refNo: 'Số: .....................',
+                    benA_company: 'CÔNG TY CỔ PHẦN PHÁT TRIỂN CHÂU Á',
+                    benA_rep1_name: '', benA_rep1_title: '',
+                    benA_rep2_name: '', benA_rep2_title: '',
+                    benB_company: '',
+                    benB_rep1_name: '', benB_rep1_title: '',
+                    benB_rep2_name: '', benB_rep2_title: '',
+                    baseOn: '',
+                    conclusion: 'Sau khi kiểm tra thực tế khối lượng công việc, Hai Bên thống nhất nghiệm thu khối lượng công việc như sau:'
+                },
+                docNghiemThuBG: []
             }
         },
         computed: {
             dtSumVT() { return this.docDuToan.reduce((sum, item) => sum + ((item.qty || 0) * (item.priceVT || 0)), 0); },
             dtSumNC() { return this.docDuToan.reduce((sum, item) => sum + ((item.qty || 0) * (item.priceNC || 0)), 0); },
-            dtCpNCGT() { return this.dtSumNC * (this.tyleNCGT / 100); }, dtCpQLCVT() { return this.dtSumVT * (this.tyleQLCVT / 100); }, dtCpQLCNC() { return (this.dtSumNC + this.dtCpNCGT) * (this.tyleQLCNC / 100); },
-            dtTongTruocThue() { return this.dtSumVT + this.dtSumNC + this.dtCpNCGT + this.dtCpQLCVT + this.dtCpQLCNC; },
-            totalBaoGia() { return this.docBaoGia.reduce((sum, item) => sum + ((item.qty || 0) * (item.priceGop || 0)), 0); },
+            dtCpNCGT() { return this.dtSumNC * (this.tyleNCGT / 100); }, 
+            dtCpQLCVT() { return this.dtSumVT * (this.tyleQLCVT / 100); }, 
+            dtCpQLCNC() { return (this.dtSumNC + this.dtCpNCGT) * (this.tyleQLCNC / 100); },
+            
+            // LÀM TRÒN CHUẨN KẾ TOÁN CHO TAB DỰ TOÁN
+            dtTotalBeforeVAT() { 
+                let t = this.dtSumVT + this.dtSumNC + this.dtCpNCGT + this.dtCpQLCVT + this.dtCpQLCNC; 
+                return this.roundDecimal ? Math.round(t) : t; 
+            },
+            dtVATAmount() { 
+    let v = this.dtTotalBeforeVAT * (this.dtVatRate / 100); 
+    return this.roundDecimal ? Math.round(v) : v; 
+},
+            dtTotalAfterVAT() { return this.dtTotalBeforeVAT + this.dtVATAmount; },
+
+            // LÀM TRÒN CHUẨN KẾ TOÁN CHO TAB BÁO GIÁ
+            bgTotalBeforeVAT() { 
+                let t = this.docBaoGia.reduce((sum, item) => sum + ((item.qty || 0) * (item.priceGop || 0)), 0); 
+                return this.roundDecimal ? Math.round(t) : t; 
+            },
+            bgVATAmount() { 
+                let v = this.bgTotalBeforeVAT * (this.vatRate / 100); 
+                return this.roundDecimal ? Math.round(v) : v; 
+            },
+            bgTotalAfterVAT() { return this.bgTotalBeforeVAT + this.bgVATAmount; },
+
             prTotalAmount() { return this.docPR.reduce((sum, item) => sum + ((item.qtyReq || 0) * (item.price || 0)), 0); },
             filteredDatabase() { if (!this.searchQuery) return []; const q = this.searchQuery.toLowerCase(); return this.database.filter(i => (i.partNo && i.partNo.toLowerCase().includes(q)) || (i.name && i.name.toLowerCase().includes(q))).slice(0, 30); }
         },
@@ -777,7 +936,11 @@
             docNghiemThu: { deep: true, handler(val) { this.saveDraft('nt_table', val); } }, 
             prHeader: { deep: true, handler(val) { this.saveDraft('pr_header', val); } }, 
             printPrWorkflow(val) { this.saveDraft('pr_flow_print_setting', val); },
-            vatRate(val) { this.saveDraft('global_vat_rate', val); }
+            vatRate(val) { this.saveDraft('global_vat_rate', val); },
+	    dtVatRate(val) { this.saveDraft('dt_vat_rate', val); },
+
+            ntbgHeader: { deep: true, handler(val) { this.saveDraft('ntbg_header', val); } },
+            docNghiemThuBG: { deep: true, handler(val) { this.saveDraft('ntbg_table', val); } }
         },
         async mounted() {
             await this.migrateDataToIndexedDB(); await this.loadDrafts(); 
@@ -792,7 +955,6 @@
                 return { base64: arr[1], ext: ext };
             },
 
-            // Xóa cache và tải lại trang
             async clearAllCache() {
                 if (confirm(this.t("CẢNH BÁO: Hành động này sẽ xóa TOÀN BỘ dữ liệu lưu nháp và Kho vật tư. Trang sẽ được tải lại. Bạn chắc chắn chứ?", "WARNING: This will clear ALL cached data, drafts, and Master Data. The page will reload. Are you sure?"))) {
                     try {
@@ -909,14 +1071,15 @@
                     rIdx++;
 
                     const startSumR = rIdx;
+                    // Đã thay thế biến tổng
                     const sumData = [
                         { t: this.t(`1. TỔNG CHI PHÍ TRỰC TIẾP (Vật tư + Nhân công):`, `1. TOTAL BASE COST (Mat. + Lab.):`), v: this.dtSumVT + this.dtSumNC },
                         { t: this.t(`2. Chi phí Quản lý (${this.tyleNCGT}% NC)`, `2. Management Cost (${this.tyleNCGT}% Lab)`), v: this.dtCpNCGT },
                         { t: this.t(`3. LN định mức Vật tư (${this.tyleQLCVT}% VT)`, `3. Mat. Profit Margin (${this.tyleQLCVT}% Mat)`), v: this.dtCpQLCVT },
                         { t: this.t(`4. LN định mức Nhân công (${this.tyleQLCNC}% NC)`, `4. Lab. Profit Margin (${this.tyleQLCNC}% Lab)`), v: this.dtCpQLCNC },
-                        { t: this.t(`TỔNG DỰ TOÁN (TRƯỚC THUẾ):`, `ESTIMATE BEFORE TAX:`), v: this.dtTongTruocThue, bold: true },
-                        { t: this.t(`Thuế GTGT (VAT 8%):`, `VAT (8%):`), v: this.dtTongTruocThue * 0.08 },
-                        { t: this.t(`TỔNG GIÁ TRỊ (SAU THUẾ):`, `TOTAL CONTRACT VALUE:`), v: this.dtTongTruocThue * 1.08, bold: true, color: 'FFDC2626', size: 12 },
+                        { t: this.t(`TỔNG DỰ TOÁN (TRƯỚC THUẾ):`, `ESTIMATE BEFORE TAX:`), v: this.dtTotalBeforeVAT, bold: true },
+                        { t: this.t(`Thuế GTGT (VAT ${this.dtVatRate}%):`, `VAT (${this.dtVatRate}%):`), v: this.dtVATAmount },
+                        { t: this.t(`TỔNG GIÁ TRỊ (SAU THUẾ):`, `TOTAL CONTRACT VALUE:`), v: this.dtTotalAfterVAT, bold: true, color: 'FFDC2626', size: 12 },
                     ];
                     
                     sumData.forEach(d => {
@@ -932,7 +1095,7 @@
                         rIdx++;
                     });
                     
-                    const rWords = ws.addRow([`${this.t('Bằng chữ:', 'In words:')} ${this.readMoney(this.dtTongTruocThue * 1.08)}`]);
+                    const rWords = ws.addRow([`${this.t('Bằng chữ:', 'In words:')} ${this.readMoney(this.dtTotalAfterVAT)}`]);
                     ws.mergeCells(`A${rIdx}:I${rIdx}`); 
                     rWords.font = {italic:true, name:'Times New Roman', size:11}; 
                     rWords.getCell(1).alignment=alignRight;
@@ -954,7 +1117,6 @@
                     ws.columns = [ {width: 5}, {width: 30}, {width: 25}, {width: 8}, {width: 8}, {width: 15}, {width: 18} ];
                     ws.pageSetup.printTitlesRow = '1:18';
 
-                    // Header
                     let r1 = ws.addRow([]); 
                     r1.getCell(1).value = 'BẢNG BÁO GIÁ'; r1.getCell(1).font={bold:true, name:'Times New Roman', size:20}; r1.getCell(1).alignment=alignCenter; 
                     r1.getCell(6).value = `Số hiệu: ${str(this.bgHeader.isoDoc)}`; r1.getCell(6).font=fontBold;
@@ -963,7 +1125,6 @@
                     ws.mergeCells('A1:E1'); ws.mergeCells('F1:G1'); ws.mergeCells('A2:E3'); ws.mergeCells('F2:G3'); 
                     applyStyle(1, 3, 7); ws.addRow([]); ws.addRow([]);
 
-                    // Company Info
                     let r6 = ws.addRow([]); r6.getCell(1).value = 'Công ty:'; r6.getCell(2).value = str(this.bgHeader.company); r6.getCell(6).value = 'Số:'; r6.getCell(7).value = str(this.bgHeader.ref); 
                     ws.mergeCells('B6:E6'); r6.getCell(1).font=fontBold; r6.getCell(2).font=fontBold; r6.getCell(6).font=fontBold; r6.getCell(7).font={bold:true, color:{argb:'FFDC2626'}};
                     let r7 = ws.addRow([]); r7.getCell(1).value = 'Địa chỉ:'; r7.getCell(2).value = str(this.bgHeader.address); r7.getCell(6).value = 'Ngày:'; r7.getCell(7).value = str(this.bgHeader.date); 
@@ -971,7 +1132,6 @@
                     let r8 = ws.addRow([]); r8.getCell(1).value = 'MST:'; r8.getCell(2).value = str(this.bgHeader.taxCode); 
                     ws.mergeCells('B8:E8'); r8.getCell(1).font=fontBold; ws.addRow([]);
 
-                    // Customer Info
                     ws.addRow(['Kính gửi Quý Công ty:']).font=fontBold;
                     ws.addRow(['Thông tin khách hàng:']).font=fontBold;
                     const cusArr = [
@@ -987,7 +1147,6 @@
 
                     ws.addRow(['Công ty chúng tôi trân trọng báo giá đến quý khách như sau:']).font = {italic:true, name:'Times New Roman', size:11};
                     
-                    // Table Header được đồng bộ với định dạng PDF (Hạng mục / Thông số kỹ thuật)
                     const head = ws.addRow([this.t('STT', 'No.'), this.t('Hạng mục', 'Item'), this.t('Thông số kỹ thuật', 'Specifications'), this.t('Đvt', 'Unit'), this.t('Số lượng', 'Qty'), this.t('Đơn giá', 'Price'), this.t('Thành tiền', 'Total Amount')]);
                     head.eachCell(c => { c.font=fontBold; c.fill=fillHeader; c.border=borderThin; c.alignment=alignCenter; });
                     let rIdx = startCus + 2;
@@ -1003,10 +1162,12 @@
                         rIdx++;
                     });
                     
-                    const rT1 = ws.addRow([]); rT1.getCell(6).value = this.t('Tổng giá (trước thuế):', 'Subtotal:'); rT1.getCell(7).value = this.roundDecimal ? Math.round(this.totalBaoGia) : this.totalBaoGia; ws.mergeCells(`A${rIdx}:E${rIdx}`); rT1.font=fontBold; rT1.getCell(1).alignment=alignRight; rT1.getCell(7).numFmt=FORMAT_MONEY; rIdx++;
-                    const rT2 = ws.addRow([]); rT2.getCell(6).value = `Thuế GTGT (VAT ${this.vatRate}%):`; rT2.getCell(7).value = this.roundDecimal ? Math.round(this.totalBaoGia*(this.vatRate/100)) : this.totalBaoGia*(this.vatRate/100); ws.mergeCells(`A${rIdx}:E${rIdx}`); rT2.font=fontBold; rT2.getCell(1).alignment=alignRight; rT2.getCell(7).numFmt=FORMAT_MONEY; rIdx++;
-                    const rT3 = ws.addRow([]); rT3.getCell(6).value = this.t('TỔNG GIÁ TRỊ (SAU THUẾ):', 'TOTAL AMOUNT:'); rT3.getCell(7).value = this.roundDecimal ? Math.round(this.totalBaoGia*(1+this.vatRate/100)) : this.totalBaoGia*(1+this.vatRate/100); ws.mergeCells(`A${rIdx}:E${rIdx}`); rT3.font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size:12}; rT3.getCell(1).alignment=alignRight; rT3.getCell(7).numFmt=FORMAT_MONEY; rIdx++;
-                    const rT4 = ws.addRow([]); rT4.getCell(1).value = `${this.t('Bằng chữ:', 'In words:')} ${this.readMoney(this.totalBaoGia * (1+this.vatRate/100))}`; ws.mergeCells(`A${rIdx}:G${rIdx}`); rT4.font={italic:true, name:'Times New Roman', size:11}; rT4.getCell(1).alignment=alignLeft; rIdx++;
+                    // Đã thay thế biến tổng
+                    const rT1 = ws.addRow([]); rT1.getCell(6).value = this.t('Tổng giá (trước thuế):', 'Subtotal:'); rT1.getCell(7).value = this.bgTotalBeforeVAT; ws.mergeCells(`A${rIdx}:E${rIdx}`); rT1.font=fontBold; rT1.getCell(1).alignment=alignRight; rT1.getCell(7).numFmt=FORMAT_MONEY; rIdx++;
+                    const rT2 = ws.addRow([]); rT2.getCell(6).value = `Thuế GTGT (VAT ${this.vatRate}%):`; rT2.getCell(7).value = this.bgVATAmount; ws.mergeCells(`A${rIdx}:E${rIdx}`); rT2.font=fontBold; rT2.getCell(1).alignment=alignRight; rT2.getCell(7).numFmt=FORMAT_MONEY; rIdx++;
+                    const rT3 = ws.addRow([]); rT3.getCell(6).value = this.t('TỔNG GIÁ TRỊ (SAU THUẾ):', 'TOTAL AMOUNT:'); rT3.getCell(7).value = this.bgTotalAfterVAT; ws.mergeCells(`A${rIdx}:E${rIdx}`); rT3.font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size:12}; rT3.getCell(1).alignment=alignRight; rT3.getCell(7).numFmt=FORMAT_MONEY; rIdx++;
+                    const rT4 = ws.addRow([]); rT4.getCell(1).value = `${this.t('Bằng chữ:', 'In words:')} ${this.readMoney(this.bgTotalAfterVAT)}`; ws.mergeCells(`A${rIdx}:G${rIdx}`); rT4.font={italic:true, name:'Times New Roman', size:11}; rT4.getCell(1).alignment=alignLeft; rIdx++;
+
                     applyStyle(startCus+1, rIdx-5, 7);
                     
                     ws.addRow([]); rIdx++; 
@@ -1178,7 +1339,6 @@
                     let h5 = ws.addRow([]); h5.getCell(1).value = this.t('Thời gian nghiệm thu:', 'Acceptance Date:'); h5.getCell(2).value = str(this.ntHeader.date); h5.font=fontBold; ws.mergeCells('B5:H5');
                     ws.addRow([]);
                     
-                    // Xử lý Table Header hai dòng tương ứng cấu trúc PDF
                     let tbHead1 = ws.addRow([this.t('STT', 'No.'), this.t('Hạng mục', 'Description'), this.t('Hình ảnh thực tế', 'Actual Image'), this.t('Tiêu chí Đánh giá', 'Evaluation Criteria'), '', this.t('Hồ sơ', 'Doc.'), this.t('Kết luận', 'Status'), this.t('Ghi chú', 'Remarks')]);
                     let tbHead2 = ws.addRow(['', '', '', this.t('Theo Hợp Đồng', 'By Contract'), this.t('Theo Thực Tế', 'Actual'), '', '', '']);
                     ws.mergeCells('A7:A8'); ws.mergeCells('B7:B8'); ws.mergeCells('C7:C8'); ws.mergeCells('D7:E7'); ws.mergeCells('F7:F8'); ws.mergeCells('G7:G8'); ws.mergeCells('H7:H8');
@@ -1221,9 +1381,171 @@
                     ws.mergeCells(`B${rIdx}:C${rIdx}`); ws.mergeCells(`D${rIdx}:E${rIdx}`); ws.mergeCells(`F${rIdx}:H${rIdx}`); sR.font=fontBold; sR.alignment=alignCenter; sR.height = 80;
                 }
 
+                else if (type === 'nghiemthubg') {
+                    fileName = `BBNT_BanGiao_${dateStr}.xlsx`;
+                    ws.columns = [ {width: 5}, {width: 15}, {width: 18}, {width: 35}, {width: 15}, {width: 15}, {width: 8}, {width: 8}, {width: 15} ];
+                    ws.pageSetup.printTitlesRow = '1:12';
+
+                    let r1 = ws.addRow([]); r1.getCell(1).value = 'BIÊN BẢN NGHIỆM THU'; r1.getCell(1).font={bold:true, name:'Times New Roman', size:18}; r1.getCell(1).alignment=alignCenter;
+                    let r2 = ws.addRow([]); r2.getCell(1).value = str(this.ntbgHeader.project).toUpperCase(); r2.getCell(1).font={bold:true, name:'Times New Roman', size:12}; r2.getCell(1).alignment=alignCenter;
+                    let r3 = ws.addRow([]); r3.getCell(1).value = str(this.ntbgHeader.monthYear); r3.getCell(1).font={italic:true, name:'Times New Roman', size:11}; r3.getCell(1).alignment=alignCenter;
+                    let r4 = ws.addRow([]); r4.getCell(1).value = str(this.ntbgHeader.refNo); r4.getCell(1).font=fontBold; r4.getCell(1).alignment=alignCenter;
+                    ws.mergeCells('A1:I1'); ws.mergeCells('A2:I2'); ws.mergeCells('A3:I3'); ws.mergeCells('A4:I4');
+                    ws.addRow([]);
+
+                    ws.addRow(['I. THÀNH PHẦN:']).font = {bold:true, underline:true, name:'Times New Roman', size:11};
+                    
+                    let aTitle = ws.addRow([]); aTitle.getCell(2).value = 'BÊN A (BÊN THỰC HIỆN):'; aTitle.getCell(4).value = str(this.ntbgHeader.benA_company);
+                    aTitle.getCell(2).font=fontBold; aTitle.getCell(4).font=fontBold; ws.mergeCells('B7:C7'); ws.mergeCells('D7:I7');
+                    
+                    let aR1 = ws.addRow([]); aR1.getCell(2).value = '- Ông/Bà:'; aR1.getCell(3).value = str(this.ntbgHeader.benA_rep1_name); aR1.getCell(5).value = 'Chức vụ:'; aR1.getCell(6).value = str(this.ntbgHeader.benA_rep1_title); ws.mergeCells('C8:D8'); ws.mergeCells('F8:I8');
+                    let aR2 = ws.addRow([]); aR2.getCell(2).value = '- Ông/Bà:'; aR2.getCell(3).value = str(this.ntbgHeader.benA_rep2_name); aR2.getCell(5).value = 'Chức vụ:'; aR2.getCell(6).value = str(this.ntbgHeader.benA_rep2_title); ws.mergeCells('C9:D9'); ws.mergeCells('F9:I9');
+                    
+                    let bTitle = ws.addRow([]); bTitle.getCell(2).value = 'BÊN B (BÊN THUÊ DỊCH VỤ):'; bTitle.getCell(4).value = str(this.ntbgHeader.benB_company);
+                    bTitle.getCell(2).font=fontBold; bTitle.getCell(4).font=fontBold; ws.mergeCells('B10:C10'); ws.mergeCells('D10:I10');
+                    
+                    let bR1 = ws.addRow([]); bR1.getCell(2).value = '- Ông/Bà:'; bR1.getCell(3).value = str(this.ntbgHeader.benB_rep1_name); bR1.getCell(5).value = 'Chức vụ:'; bR1.getCell(6).value = str(this.ntbgHeader.benB_rep1_title); ws.mergeCells('C11:D11'); ws.mergeCells('F11:I11');
+                    let bR2 = ws.addRow([]); bR2.getCell(2).value = '- Ông/Bà:'; bR2.getCell(3).value = str(this.ntbgHeader.benB_rep2_name); bR2.getCell(5).value = 'Chức vụ:'; bR2.getCell(6).value = str(this.ntbgHeader.benB_rep2_title); ws.mergeCells('C12:D12'); ws.mergeCells('F12:I12');
+
+                    ws.addRow(['II. NỘI DUNG:']).font = {bold:true, underline:true, name:'Times New Roman', size:11};
+                    let base = ws.addRow([]); base.getCell(2).value = 'Căn cứ vào:'; base.getCell(3).value = str(this.ntbgHeader.baseOn); ws.mergeCells('C14:I14');
+                    let conc = ws.addRow([]); conc.getCell(2).value = str(this.ntbgHeader.conclusion); conc.font={italic:true, name:'Times New Roman', size:11}; ws.mergeCells('B15:I15');
+
+                    let tbHead1 = ws.addRow(['STT', 'Ngày đề nghị', 'Thiết bị', 'Hạng mục thi công', 'Thời gian', '', 'Xác nhận nghiệm thu', '', 'Ghi chú']);
+                    let tbHead2 = ws.addRow(['', '', '', '', 'Bắt đầu', 'Kết thúc', 'Đạt', 'Không đạt', '']);
+                    ws.mergeCells('A16:A17'); ws.mergeCells('B16:B17'); ws.mergeCells('C16:C17'); ws.mergeCells('D16:D17'); ws.mergeCells('E16:F16'); ws.mergeCells('G16:H16'); ws.mergeCells('I16:I17');
+                    
+                    tbHead1.eachCell(c => { c.font=fontBold; c.fill=fillHeader; c.border=borderThin; c.alignment=alignCenter; });
+                    tbHead2.eachCell(c => { c.font=fontBold; c.fill=fillHeader; c.border=borderThin; c.alignment=alignCenter; });
+
+                    let rIdx = 18;
+                    this.docNghiemThuBG.forEach((row, i) => {
+                        let r = ws.addRow([]);
+                        r.getCell(1).value = i+1;
+                        r.getCell(2).value = str(row.requestDate);
+                        r.getCell(3).value = str(row.equipment);
+                        r.getCell(4).value = str(row.description);
+                        r.getCell(5).value = str(row.timeStart);
+                        r.getCell(6).value = str(row.timeEnd);
+                        r.getCell(7).value = str(row.statusPass);
+                        r.getCell(8).value = str(row.statusFail);
+                        r.getCell(9).value = str(row.note);
+                        
+                        r.getCell(1).alignment=alignCenter; r.getCell(2).alignment=alignCenter; r.getCell(5).alignment=alignCenter; r.getCell(6).alignment=alignCenter; r.getCell(7).alignment=alignCenter; r.getCell(8).alignment=alignCenter;
+                        r.getCell(3).alignment=alignLeft; r.getCell(4).alignment=alignLeft; r.getCell(9).alignment=alignLeft;
+                        rIdx++;
+                    });
+                    applyStyle(16, rIdx-1, 9);
+                    
+                    ws.addRow([]); rIdx++; 
+                    let sR = ws.addRow([]); sR.getCell(2).value = 'BÊN A'; sR.getCell(7).value = 'BÊN B';
+                    ws.mergeCells(`B${rIdx}:D${rIdx}`); ws.mergeCells(`G${rIdx}:I${rIdx}`); sR.font=fontBold; sR.alignment=alignCenter; sR.height = 80;
+                }
+
                 const buffer = await wb.xlsx.writeBuffer();
                 saveAs(new Blob([buffer], { type: "application/octet-stream" }), fileName);
                 setTimeout(() => this.showSavedToast = false, 2500);
+            },
+
+            // TÍCH HỢP HẠNG MỤC 1: IMPORT THÔNG MINH CHO TAB NGHIỆM THU BÀN GIAO
+            importNTBGFromExcel(event) {
+                const file = event.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                    let newDoc = [];
+                    let newHeader = { ...this.ntbgHeader };
+                    let isTable = false;
+
+                    for (let i = 0; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (!row || row.length === 0) continue;
+                        const rowStr = row.join(' ').toLowerCase();
+
+                        // Quét lấy Header (Tên dự án, Bên A, Bên B...)
+                        if (rowStr.includes('v/v:')) {
+                            let projectStr = row.find(c => c && c.toString().toLowerCase().includes('v/v:'));
+                            if (projectStr) newHeader.project = projectStr.toString().trim();
+                        }
+                        if (rowStr.includes('tháng') && (rowStr.includes('/20') || rowStr.includes('/ 20'))) {
+                             let mStr = row.find(c => c && c.toString().toLowerCase().includes('tháng'));
+                             if(mStr) newHeader.monthYear = mStr.toString().trim();
+                        }
+                        if (rowStr.includes('bên a') || rowStr.includes('bên thực hiện')) {
+                             let comp = row.find(c => c && c.toString().toLowerCase() !== 'bên a' && c.toString().toLowerCase().includes('công ty'));
+                             if(comp) newHeader.benA_company = comp.toString().trim();
+                        }
+                        if (rowStr.includes('bên b') || rowStr.includes('bên thuê')) {
+                             let comp = row.find(c => c && c.toString().toLowerCase() !== 'bên b' && c.toString().toLowerCase().includes('công ty'));
+                             if(comp) newHeader.benB_company = comp.toString().trim();
+                        }
+                        if (rowStr.includes('căn cứ vào')) {
+                            let baseStr = row.find(c => c && c.toString().toLowerCase().includes('căn cứ vào'));
+                            if(baseStr) newHeader.baseOn = baseStr.toString().trim();
+                        }
+
+                        // Định vị Bảng danh sách công việc
+                        if (!isTable && row.some(c => c && c.toString().toLowerCase() === 'stt')) {
+                            isTable = true;
+                            if (rows[i+1] && rows[i+1].join(' ').toLowerCase().includes('bắt đầu')) i++; // Bỏ qua dòng sub-header
+                            continue;
+                        }
+
+                        if (isTable) {
+                            const stt = row[0];
+                            if (stt && stt.toString().toLowerCase().includes('ngày')) break;
+
+                            if (stt && !isNaN(parseInt(stt))) {
+                                // Lọc bỏ các ô undefiend (Do Merge Cells trong excel gây ra)
+                                let rest = [];
+                                for(let k = 1; k < row.length; k++) {
+                                    if(row[k] !== undefined && row[k] !== null && row[k].toString().trim() !== '') {
+                                        rest.push(row[k].toString().trim());
+                                    }
+                                }
+                                
+                                let date = rest[0] || '';
+                                let eq = rest[1] || '';
+                                let desc = rest[2] || '';
+                                let timeStart = rest[3] || '';
+                                let timeEnd = rest[4] || '';
+                                let note = '';
+                                
+                                if(rest.length > 5) {
+                                    let lastItem = rest[rest.length - 1];
+                                    if (lastItem.toLowerCase() !== 'x' && lastItem.toLowerCase() !== 'đạt') note = lastItem;
+                                }
+
+                                newDoc.push({
+                                    requestDate: date,
+                                    equipment: eq,
+                                    description: desc,
+                                    timeStart: timeStart,
+                                    timeEnd: timeEnd,
+                                    statusPass: 'x', 
+                                    statusFail: '',
+                                    note: note
+                                });
+                            }
+                        }
+                    }
+                    
+                    if (newDoc.length > 0) {
+                        this.ntbgHeader = newHeader;
+                        this.docNghiemThuBG = newDoc;
+                        this.saveDraft('ntbg_header', newHeader);
+                        this.saveDraft('ntbg_table', newDoc);
+                        alert(this.t(`Đã Import thành công ${newDoc.length} công việc từ nhà thầu!`, `Imported ${newDoc.length} items!`));
+                    } else {
+                        alert(this.t('Không tìm thấy dữ liệu bảng hợp lệ trong file Excel.', 'No valid table data found.'));
+                    }
+                    event.target.value = '';
+                };
+                reader.readAsArrayBuffer(file);
             },
 
             async hashPassword(message) {
@@ -1266,7 +1588,6 @@
             blurNum(e) { 
                 let str = e.target.value.toString().trim();
                 if (!str) return 0;
-                
                 str = str.replace(/[^\d\.,\-]/g, '');
                 if(!str) return 0;
 
@@ -1287,14 +1608,9 @@
                 } else {
                     num = parseFloat(str);
                 }
-                
-                if (this.roundDecimal) {
-                    num = Math.round(num);
-                }
-                
+                if (this.roundDecimal) { num = Math.round(num); }
                 return isNaN(num) ? 0 : num;
             },
-
             readMoney(num) {
                 if (!num || isNaN(num) || num === 0) return this.t("Không đồng", "Zero VND"); 
                 num = Math.round(num); 
@@ -1351,14 +1667,8 @@
                 this.searchQuery = ''; this.showSearchDropdown = false;
             },
 
-            // TỐI ƯU HIỆU NĂNG: ÁP DỤNG DEBOUNCE CHO I/O
             saveDraft(key, data) { 
-                // Xóa bỏ timeout cũ nếu người dùng vẫn đang nhập liệu liên tục
-                if (this.draftTimeouts[key]) {
-                    clearTimeout(this.draftTimeouts[key]);
-                }
-                
-                // Thiết lập bộ đếm lùi 800ms
+                if (this.draftTimeouts[key]) { clearTimeout(this.draftTimeouts[key]); }
                 this.draftTimeouts[key] = setTimeout(() => {
                     localforage.setItem(key, JSON.parse(JSON.stringify(data))).then(() => { 
                         this.showSavedToast = true; 
@@ -1366,19 +1676,23 @@
                     });
                 }, 800); 
             },
-
             async loadDrafts() {
                 const parseL = async (k, defaultData) => { const data = await localforage.getItem(k); return data !== null ? data : defaultData; };
                 this.docDuToan = await parseL('dt_table', this.docDuToan); this.docBaoGia = await parseL('bg_table', this.docBaoGia); this.bgTerms = await parseL('bg_terms', this.bgTerms); this.docPR = await parseL('pr_table', this.docPR); this.prWorkflow = await parseL('pr_flow', this.prWorkflow); this.docNghiemThu = await parseL('nt_table', this.docNghiemThu); this.globalProjectName = await parseL('global_project_name', this.globalProjectName); this.prHeader = await parseL('pr_header', this.prHeader);
                 this.printPrWorkflow = await parseL('pr_flow_print_setting', this.printPrWorkflow);
                 this.vatRate = await parseL('global_vat_rate', this.vatRate);
+this.dtVatRate = await parseL('dt_vat_rate', this.dtVatRate);
                 this.bgHeader = await parseL('bg_header', this.bgHeader);
                 const cachedLogo = await parseL('company_logo_base64', null); if(cachedLogo) this.companyLogo = cachedLogo;
+
+                this.ntbgHeader = await parseL('ntbg_header', this.ntbgHeader);
+                this.docNghiemThuBG = await parseL('ntbg_table', this.docNghiemThuBG);
             },
             clearDraft(t) { 
                 if(!confirm(this.t("CẢNH BÁO: Xóa toàn bộ dữ liệu form hiện tại?", "WARNING: Clear all data in this form?"))) return; 
                 if(t==='dutoan') this.docDuToan=[]; if(t==='baogia') { this.docBaoGia=[]; this.bgTerms = [ { title: 'Thời gian giao hàng:', content: 'Trong vòng 15 ngày làm việc kể từ ngày nhận được tạm ứng hợp đồng.' }, { title: 'Thời gian bảo hành:', content: '12 tháng theo tiêu chuẩn của nhà sản xuất.' }, { title: 'Thanh toán:', content: 'Lần 1: Tạm ứng 30%. Lần 2: 70% sau khi bàn giao nghiệm thu.' },{ title: 'Hiệu lực báo giá:', content: '30 ngày kể từ ngày ban hành.' } ]; }
                 if(t==='pr') this.docPR=[]; if(t==='daily') { this.dailyTasks=[]; this.dailyManpower=[]; this.dailyEquipment=[]; } if(t==='nghiemthu') this.docNghiemThu=[]; 
+                if(t==='nghiemthubg') this.docNghiemThuBG=[];
             },
             async addToDatabase() { 
                 if(!this.newItem.name) return alert(this.t("Vui lòng nhập Tên Hạng Mục", "Please enter Description"));
@@ -1419,6 +1733,7 @@
                 if(t==='dailyManpower') this.dailyManpower.push({role: '', qty: 1}); 
                 if(t==='dailyEquipment') this.dailyEquipment.push({name: '', qty: 1});
                 if(t==='nghiemthu') this.docNghiemThu.push({name: '', specContract: '', specActual: '', doc: '', status: 'ĐẠT YÊU CẦU', note: '', image: null});
+                if(t==='nghiemthubg') this.docNghiemThuBG.push({requestDate: '', equipment: '', description: '', timeStart: '', timeEnd: '', statusPass: 'x', statusFail: '', note: ''});
             },
             removeRow(arr, i) { if(confirm(this.t("Xóa dòng này khỏi Bảng?", "Delete this row?"))) arr.splice(i, 1); },
             addTerm() { this.bgTerms.push({ title: 'Điều khoản mới:', content: '...' }); }, removeTerm(i) { this.bgTerms.splice(i, 1); },
