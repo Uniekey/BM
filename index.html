@@ -295,7 +295,7 @@
                         <div class="col-6 text-center">
                             <h2 class="form-title mb-1">{{ t('BẢNG DỰ TOÁN', 'BILL OF MATERIALS (BOM)') }}</h2>
                             <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle" :placeholder="t('NHẬP THÔNG TIN DỰ ÁN...', 'ENTER PROJECT INFO...')"></textarea>
-                            <div class="text-muted mt-1"><em>{{ t('(Phân tích chi phí nội bộ)', '(Internal Cost Breakdown Analysis)') }}</em></div>
+                            <div class="text-muted mt-1"><em>{{ t('', '') }}</em></div>
                         </div>
                         <div class="col-3"></div>
                     </div>
@@ -1341,7 +1341,7 @@
                     
                     ws.mergeCells('A1:I1'); ws.getCell('A1').value = this.t('BẢNG DỰ TOÁN CHI PHÍ (BOM)', 'BILL OF MATERIALS (BOM)'); ws.getCell('A1').font = fontTitle; ws.getCell('A1').alignment = alignCenter;
                     ws.mergeCells('A2:I2'); ws.getCell('A2').value = `${this.t('Dự án:', 'Project:')} ${str(projectName)}`; ws.getCell('A2').font = fontBold; ws.getCell('A2').alignment = alignCenter;
-                    ws.mergeCells('A3:I3'); ws.getCell('A3').value = this.t('(Phân tích chi phí nội bộ)', '(Internal Cost Breakdown Analysis)'); ws.getCell('A3').font = {italic:true, name:'Times New Roman', size:11}; ws.getCell('A3').alignment = alignCenter;
+                    ws.mergeCells('A3:I3'); ws.getCell('A3').value = this.t('', ''); ws.getCell('A3').font = {italic:true, name:'Times New Roman', size:11}; ws.getCell('A3').alignment = alignCenter;
                     ws.addRow([]);
                     
                     ws.addRow([this.t('STT', 'No.'), this.t('Hạng mục', 'Description'), this.t('Quy cách', 'Specs'), this.t('ĐVT', 'Unit'), this.t('SL', 'Qty'), this.t('Đơn giá (VNĐ)', 'Unit Price (VND)'), '', this.t('Thành tiền (VNĐ)', 'Total Amount (VND)'), '']);
