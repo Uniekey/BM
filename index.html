@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&E Portal | Design by Vietkey</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app" class="container-fluid p-0">
+    <div v-if="showSavedToast" class="toast-save no-print">
+        <i class="fas fa-check-circle me-2"></i> {{ t('Hệ thống đã lưu dữ liệu', 'System saved successfully') }}
+    </div>
+
+    <div class="row g-0">
+        <div class="col-md-2 sidebar no-print d-flex flex-column">
+            <h5 class="text-center mb-2 pb-2 border-bottom border-secondary form-title text-white" style="font-size: 18px; margin: 0 15px;">
+                <i class="fas fa-anchor text-info me-2"></i>M&E PORTAL
+            </h5>
+            
+            <div class="d-flex justify-content-center mt-2 px-3 no-print">
+                <div class="btn-group w-100 shadow-sm" role="group">
+                    <button type="button" class="btn btn-sm fw-bold" :class="lang === 'vi' ? 'btn-primary' : 'btn-outline-secondary text-light'" @click="lang = 'vi'">VI</button>
+                    <button type="button" class="btn btn-sm fw-bold" :class="lang === 'en' ? 'btn-primary' : 'btn-outline-secondary text-light'" @click="lang = 'en'">EN</button>
+                </div>
+            </div>
+            
+            <div class="switch-container mt-3 mx-3 no-print">
+                <span class="text-light small fw-bold"><i class="fas fa-calculator me-2"></i>{{ t('Làm tròn số', 'Round Decimals') }}</span>
+                <div class="form-check form-switch m-0">
+                    <input class="form-check-input" type="checkbox" role="switch" id="decimalToggle" v-model="roundDecimal" style="cursor: pointer;">
+                </div>
+            </div>
+
+            <div class="mt-2 mx-3 no-print mb-3">
+                <button @click="clearAllCache" class="btn btn-outline-danger btn-sm w-100 fw-bold border-secondary text-light" style="background: rgba(239, 68, 68, 0.2);" :title="t('Xóa toàn bộ dữ liệu lưu nháp & DB', 'Clear all cached data and DB')">
+                    <i class="fas fa-trash-alt me-2"></i>{{ t('Xóa Cache / Làm mới', 'Clear Cache / Reload') }}
+                </button>
+            </div>
+
+            <ul class="nav flex-column w-100 flex-grow-1 mt-2">
+                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'database' }" @click="currentTab = 'database'"><i class="fas fa-server"></i> {{ t('Kho Vật Tư', 'Master Data') }}</a></li>
+                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'dutoan' }" @click="currentTab = 'dutoan'"><i class="fas fa-calculator"></i> {{ t('Dự Toán', 'Cost Estimate BOM') }}</a></li>
+                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'baogia' }" @click="currentTab = 'baogia'"><i class="fas fa-file-invoice-dollar"></i> {{ t('Báo Giá', 'Quotation') }}</a></li>
+                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'pr' }" @click="currentTab = 'pr'"><i class="fas fa-file-signature text-warning"></i> {{ t('Phiếu ĐNMH', 'Purchase Req (PR)') }}</a></li>
+                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'daily' }" @click="currentTab = 'daily'"><i class="fas fa-clipboard-list"></i> {{ t('Nhật Ký Thi Công', 'Daily Site Report') }}</a></li>
+                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'nghiemthu' }" @click="currentTab = 'nghiemthu'"><i class="fas fa-check-circle"></i> {{ t('Nghiệm Thu Kỹ Thuật', 'Acceptance') }}</a></li>
+                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'nghiemthubg' }" @click="currentTab = 'nghiemthubg'"><i class="fas fa-handshake text-info"></i> {{ t('Nghiệm Thu Bàn Giao', 'Handover') }}</a></li>
+                <li class="nav-item mt-3"><a class="nav-link" :class="{ active: currentTab === 'library' }" @click="currentTab = 'library'"><i class="fas fa-book text-success"></i> {{ t('Thư Viện', 'Library Hub') }}</a></li>
+            </ul>
+        </div>
+
+        <div class="col-md-10 main-content">
+            
+            <div v-if="currentTab === 'database'" class="content-area flex-grow-1">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="m-0 text-primary fw-bold" @dblclick="loginAdmin" style="cursor: pointer;" :title="t('Nhấp đúp để đăng nhập Admin', 'Double click to login')">
+                            <i class="fas fa-server me-2"></i> {{ t('Kho Vật Tư', 'Material Master Data') }}
+                        </h3>
+                    </div>
+                    <div class="mt-3 mt-md-0 d-flex gap-2">
+                        <button @click="exportToExcel('database')" class="btn btn-success fw-bold shadow-sm"><i class="fas fa-file-excel me-1"></i> {{ t('Xuất Excel', 'Export Excel') }}</button>
+                        <button @click="$refs.excelUpload.click()" class="btn btn-primary fw-bold shadow-sm"><i class="fas fa-file-import me-1"></i> {{ t('Nhập Excel', 'Import Excel') }}</button>
+                        <input type="file" ref="excelUpload" style="display: none" accept=".xlsx, .xls, .csv" @change="importFromExcel">
+                    </div>
+                </div>
+                
+                <div v-if="isAdmin" class="card mb-4 bg-light border-0 shadow-sm no-print">
+                    <div class="card-body row g-2 align-items-end">
+                        <div class="col-6 col-md-2"><label class="form-label small fw-bold text-muted">{{ t('Mã / PartNo', 'Code') }}</label><input v-model="newItem.partNo" type="text" class="form-control form-control-sm"></div>
+                        <div class="col-12 col-md-3"><label class="form-label small fw-bold text-muted">{{ t('Tên Hạng mục', 'Description') }}</label><textarea v-model="newItem.name" rows="1" class="form-control form-control-sm"></textarea></div>
+                        <div class="col-12 col-md-2"><label class="form-label small fw-bold text-muted">{{ t('Thông số', 'Specs') }}</label><textarea v-model="newItem.specs" rows="1" class="form-control form-control-sm"></textarea></div>
+                        <div class="col-4 col-md-1"><label class="form-label small fw-bold text-muted">{{ t('ĐVT', 'Unit') }}</label><input v-model="newItem.unit" type="text" class="form-control form-control-sm text-center"></div>
+                        <div class="col-4 col-md-1"><label class="form-label small fw-bold text-muted">{{ t('Giá VT', 'Mat. Price') }}</label><input type="text" :value="formatNum(newItem.priceVT)" @focus="focusNum($event, newItem.priceVT)" @blur="newItem.priceVT = blurNum($event)" class="form-control form-control-sm text-end txt-nowrap"></div>
+                        <div class="col-4 col-md-1"><label class="form-label small fw-bold text-muted">{{ t('Giá NC', 'Lab. Price') }}</label><input type="text" :value="formatNum(newItem.priceNC)" @focus="focusNum($event, newItem.priceNC)" @blur="newItem.priceNC = blurNum($event)" class="form-control form-control-sm text-end txt-nowrap"></div>
+                        <div class="col-12 col-md-2 d-flex"><button @click="addToDatabase" class="btn btn-primary btn-sm flex-grow-1"><i class="fas fa-plus me-1"></i> {{ t('Thêm', 'Add') }}</button></div>
+                    </div>
+                </div>
+                
+                <div v-if="database.length === 0" class="empty-state"><i class="fas fa-box-open"></i><h5 class="fw-bold text-secondary">{{ t('Cơ sở dữ liệu đang trống', 'Database is empty') }}</h5></div>
+                <div v-else class="table-responsive">
+                    <table class="table table-hover align-middle bg-white m-0">
+                        <thead>
+                            <tr>
+                                <th width="5%">{{ t('STT', 'No.') }}</th>
+                                <th width="10%">{{ t('Mã Vật Tư', 'Code') }}</th>
+                                <th width="28%">{{ t('Tên Vật Tư', 'Description') }}</th>
+                                <th width="19%">{{ t('Thông Số', 'Specs') }}</th>
+                                <th width="6%">{{ t('ĐVT', 'Unit') }}</th>
+                                <th width="11%" class="txt-nowrap">{{ t('Giá Vật Tư', 'Mat. Price') }}</th>
+                                <th width="11%" class="txt-nowrap">{{ t('Giá Nhân Công', 'Lab. Price') }}</th>
+                                <th width="10%" class="no-print" v-if="isAdmin">{{ t('Xóa', 'Delete') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(item, index) in database" :key="index">
+                                <td class="txt-center text-muted fw-bold">{{ index + 1 }}</td>
+                                <td><textarea v-model="item.partNo" class="inline-edit txt-center fw-bold text-primary" :disabled="!isAdmin"></textarea></td>
+                                <td><textarea v-model="item.name" class="inline-edit txt-left" :disabled="!isAdmin"></textarea></td>
+                                <td><textarea v-model="item.specs" class="inline-edit txt-left text-muted" :disabled="!isAdmin"></textarea></td>
+                                <td><textarea v-model="item.unit" class="inline-edit txt-center" :disabled="!isAdmin"></textarea></td>
+                                <td><input type="text" :value="formatNum(item.priceVT)" @focus="focusNum($event, item.priceVT)" @blur="item.priceVT = blurNum($event)" class="inline-edit txt-right fw-bold txt-nowrap" :disabled="!isAdmin"></td>
+                                <td><input type="text" :value="formatNum(item.priceNC)" @focus="focusNum($event, item.priceNC)" @blur="item.priceNC = blurNum($event)" class="inline-edit txt-right fw-bold text-success txt-nowrap" :disabled="!isAdmin"></td>
+                                <td class="txt-center no-print" v-if="isAdmin"><button @click="removeRow(database, index)" class="btn btn-sm btn-outline-danger py-0 px-2 action-btn"><i class="fas fa-trash"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div v-if="currentTab === 'dutoan'" class="flex-grow-1">
+                <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
+                    <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-calculator me-2"></i> {{ t('Lập Dự Toán / BOM', 'Cost Estimate / BOM') }}</h3>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <div class="smart-search-wrapper me-2">
+                            <input type="text" v-model="searchQuery" @focus="showSearchDropdown = true" @blur="hideSearch" class="smart-search-input" :placeholder="t('Tìm vật tư...', 'Search material...')">
+                            <i class="fas fa-search smart-search-icon"></i>
+                            <ul v-if="showSearchDropdown && filteredDatabase.length > 0" class="smart-search-results">
+                                <li v-for="item in filteredDatabase" @mousedown.prevent="selectItemFromSearch(item, docDuToan)"><span class="highlight">{{ item.partNo }}</span> - {{ item.name }}</li>
+                            </ul>
+                        </div>
+                        <button @click="addBlankRow('dutoan')" class="btn btn-outline-primary fw-bold" :title="t('Thêm dòng', 'Add Row')"><i class="fas fa-plus"></i></button>
+                        <button @click="clearDraft('dutoan')" class="btn btn-outline-danger fw-bold" :title="t('Xóa form', 'Clear Form')"><i class="fas fa-eraser"></i></button>
+                        <button @click="exportToExcel('dutoan')" class="btn btn-success fw-bold shadow-sm"><i class="fas fa-file-excel me-1"></i> {{ t('XUẤT EXCEL', 'EXPORT EXCEL') }}</button>
+                        <button onclick="window.print()" class="btn btn-secondary fw-bold shadow-sm"><i class="fas fa-print me-1"></i> {{ t('IN PDF', 'PRINT PDF') }}</button>
+                    </div>
+                </div>
+                
+                <div id="print-dutoan" class="print-area">
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-3 text-center">
+                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
+                                <img :src="companyLogo" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
+                            </div>
+                        </div>
+                        <div class="col-6 text-center">
+                            <h2 class="form-title mb-1">{{ t('BẢNG DỰ TOÁN', 'BILL OF MATERIALS (BOM)') }}</h2>
+                            <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle" :placeholder="t('NHẬP THÔNG TIN DỰ ÁN...', 'ENTER PROJECT INFO...')"></textarea>
+                            <div class="text-muted mt-1"><em>{{ t('', '') }}</em></div>
+                        </div>
+                        <div class="col-3"></div>
+                    </div>
+                    
+                    <div class="table-responsive mt-4">
+                        <table class="table align-middle border-dark">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" width="4%" class="txt-nowrap border-dark border">{{ t('STT', 'No.') }}</th>
+                                    <th rowspan="2" width="22%" class="border-dark border">{{ t('Hạng mục', 'Description') }}</th>
+                                    <th rowspan="2" width="16%" class="border-dark border">{{ t('Quy cách', 'Specs') }}</th>
+                                    <th rowspan="2" width="5%" class="txt-nowrap border-dark border">{{ t('ĐVT', 'Unit') }}</th>
+                                    <th rowspan="2" width="6%" class="txt-nowrap border-dark border">{{ t('SL', 'Qty') }}</th>
+                                    <th colspan="2" class="border-dark border">{{ t('Đơn giá (VNĐ)', 'Unit Price (VND)') }}</th>
+                                    <th colspan="2" class="border-dark border">{{ t('Thành tiền (VNĐ)', 'Total Amount (VND)') }}</th>
+                                    <th rowspan="2" class="no-print" width="3%">X</th>
+                                </tr>
+                                <tr>
+                                    <th width="11%" class="txt-nowrap border-dark border">{{ t('Vật tư', 'Material') }}</th>
+                                    <th width="11%" class="txt-nowrap border-dark border">{{ t('Nhân công', 'Labor') }}</th>
+                                    <th width="11%" class="txt-nowrap border-dark border">{{ t('Vật tư', 'Material') }}</th>
+                                    <th width="11%" class="txt-nowrap border-dark border">{{ t('Nhân công', 'Labor') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(row, idx) in docDuToan" :key="idx">
+                                    <td class="txt-center text-muted border-dark border">{{ idx + 1 }}</td>
+                                    <td class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.specs" class="inline-edit txt-left text-muted"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td>
+                                    <td class="border-dark border"><input type="text" :value="formatNum(row.qty)" @focus="focusNum($event, row.qty)" @blur="row.qty = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td>
+                                    <td class="border-dark border"><input type="text" :value="formatNum(row.priceVT)" @focus="focusNum($event, row.priceVT)" @blur="row.priceVT = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
+                                    <td class="border-dark border"><input type="text" :value="formatNum(row.priceNC)" @focus="focusNum($event, row.priceNC)" @blur="row.priceNC = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
+                                    <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceVT) }}</td>
+                                    <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceNC) }}</td>
+                                    <td class="txt-center no-print"><button @click="removeRow(docDuToan, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
+                                </tr>
+                                
+                                <tr class="table-light fw-bold border-top border-2 border-dark">
+                                    <td colspan="7" class="txt-right text-uppercase border-dark border txt-nowrap">{{ t('Tổng chi phí trực tiếp:', 'Subtotal Direct Cost:') }}</td>
+                                    <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(dtSumVT) }}</td>
+                                    <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(dtSumNC) }}</td>
+                                    <td class="no-print"></td>
+                                </tr>
+                                
+                                <tr class="table-secondary fw-bold border-dark">
+                                    <td colspan="10" class="txt-center border-dark border text-uppercase txt-nowrap" style="letter-spacing: 1px;">{{ t('TỔNG HỢP CHI PHÍ & LỢI NHUẬN', 'COST & PROFIT SUMMARY') }}</td>
+                                </tr>
+                                <tr class="fw-bold bg-light">
+                                    <td colspan="7" class="txt-right border-dark border txt-nowrap">{{ t('1. TỔNG CHI PHÍ TRỰC TIẾP (Vật tư + Nhân công):', '1. TOTAL BASE COST (Mat. + Lab.):') }}</td>
+                                    <td colspan="2" class="txt-right txt-nowrap border-dark border px-2 fs-6">{{ formatNum(dtSumVT + dtSumNC) }}</td>
+                                    <td class="no-print"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="7" class="txt-right border-dark border text-muted txt-nowrap">
+                                        {{ t('2. Chi phí Quản lý (', '2. Management Cost (') }}
+                                        <input type="text" :value="formatNum(tyleNCGT)" @focus="focusNum($event, tyleNCGT)" @blur="tyleNCGT = blurNum($event)" class="inline-edit d-inline txt-center text-primary fw-bold p-0 border-bottom border-primary" style="width: 25px; height: 18px; min-height: 18px;">{{ t('% NC)', '% Lab)') }}
+                                    </td>
+                                    <td colspan="2" class="txt-right txt-nowrap border-dark border px-2 text-muted">{{ formatNum(dtCpNCGT) }}</td>
+                                    <td class="no-print"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="7" class="txt-right border-dark border text-muted txt-nowrap">
+                                        {{ t('3. Lợi nhuận định mức Vật tư (', '3. Mat. Profit Margin (') }}
+                                        <input type="text" :value="formatNum(tyleQLCVT)" @focus="focusNum($event, tyleQLCVT)" @blur="tyleQLCVT = blurNum($event)" class="inline-edit d-inline txt-center text-primary fw-bold p-0 border-bottom border-primary" style="width: 25px; height: 18px; min-height: 18px;">{{ t('% VT)', '% Mat)') }}
+                                    </td>
+                                    <td colspan="2" class="txt-right txt-nowrap border-dark border px-2 text-muted">{{ formatNum(dtCpQLCVT) }}</td>
+                                    <td class="no-print"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="7" class="txt-right border-dark border text-muted txt-nowrap">
+                                        {{ t('4. Lợi nhuận định mức Nhân công (', '4. Lab. Profit Margin (') }}
+                                        <input type="text" :value="formatNum(tyleQLCNC)" @focus="focusNum($event, tyleQLCNC)" @blur="tyleQLCNC = blurNum($event)" class="inline-edit d-inline txt-center text-primary fw-bold p-0 border-bottom border-primary" style="width: 25px; height: 18px; min-height: 18px;">{{ t('% NC)', '% Lab)') }}
+                                    </td>
+                                    <td colspan="2" class="txt-right txt-nowrap border-dark border px-2 text-muted">{{ formatNum(dtCpQLCNC) }}</td>
+                                    <td class="no-print"></td>
+                                </tr>
+                                <tr class="fw-bold">
+                                    <td colspan="7" class="txt-right border-dark border text-dark txt-nowrap">{{ t('TỔNG DỰ TOÁN (TRƯỚC THUẾ):', 'ESTIMATE BEFORE TAX:') }}</td>
+                                    <td colspan="2" class="txt-right txt-nowrap border-dark border px-2 text-dark fs-6">{{ formatNum(dtTotalBeforeVAT) }}</td>
+                                    <td class="no-print"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="7" class="txt-right border-dark border txt-nowrap">
+                                        {{ t('Thuế GTGT (VAT ', 'VAT (') }}
+                                        <input type="text" :value="formatNum(dtVatRate)" @focus="focusNum($event, dtVatRate)" @blur="dtVatRate = blurNum($event)" class="inline-edit d-inline txt-center text-primary fw-bold p-0 border-bottom border-primary" style="width: 25px; height: 18px; min-height: 18px;">%):
+                                    </td>
+                                    <td colspan="2" class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(dtVATAmount) }}</td>
+                                    <td class="no-print"></td>
+                                </tr>
+                                <tr class="table-light fw-bold border-dark border-2 border-bottom-0">
+                                    <td colspan="7" class="txt-right border-dark border text-danger fs-6 text-uppercase txt-nowrap">{{ t('TỔNG GIÁ TRỊ (SAU THUẾ):', 'TOTAL CONTRACT VALUE:') }}</td>
+                                    <td colspan="2" class="txt-right txt-nowrap border-dark border px-2 text-danger fs-5">{{ formatNum(dtTotalAfterVAT) }}</td>
+                                    <td class="no-print border-dark border-start-0 border-top"></td>
+                                </tr>
+                                <tr class="table-light border-dark border-2 border-top-0">
+                                    <td colspan="9" class="txt-right border-dark border text-muted fst-italic py-2 border-top-0">
+                                        {{ t('Bằng chữ: ', 'In words: ') }}<span class="text-dark fw-bold">{{ readMoney(dtTotalAfterVAT) }}</span>
+                                    </td>
+                                    <td class="no-print border-dark border border-top-0"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="row signature-block mt-4 text-center mx-0 page-break-inside-avoid text-dark">
+                        <div class="col-6">
+                            <span class="fw-bold text-uppercase">{{ t('NGƯỜI LẬP BẢNG', 'PREPARED BY') }}</span><br>
+                            <em class="small text-muted">{{ t('(Ký và ghi rõ họ tên)', '(Signature & Full Name)') }}</em>
+                            <br><br><br><br><br>
+                        </div>
+                        <div class="col-6">
+                            <span class="fw-bold text-uppercase">{{ t('NGƯỜI PHÊ DUYỆT', 'APPROVED BY') }}</span><br>
+                            <em class="small text-muted">{{ t('(Ký và ghi rõ họ tên)', '(Signature & Full Name)') }}</em>
+                            <br><br><br><br><br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="currentTab === 'baogia'" class="flex-grow-1">
+                <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
+                    <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-file-invoice-dollar me-2"></i> {{ t('Báo Giá', 'Quotation') }}</h3>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <div class="smart-search-wrapper me-2">
+                            <input type="text" v-model="searchQuery" @focus="showSearchDropdown = true" @blur="hideSearch" class="smart-search-input" :placeholder="t('Tìm vật tư...', 'Search material...')">
+                            <i class="fas fa-search smart-search-icon"></i>
+                            <ul v-if="showSearchDropdown && filteredDatabase.length > 0" class="smart-search-results">
+                                <li v-for="item in filteredDatabase" @mousedown.prevent="selectItemFromSearch(item, docBaoGia)"><span class="highlight">{{ item.partNo }}</span> - {{ item.name }}</li>
+                            </ul>
+                        </div>
+                        <button @click="addBlankRow('baogia')" class="btn btn-outline-primary fw-bold"><i class="fas fa-plus"></i></button>
+                        <button @click="copyFromDuToan" class="btn btn-warning fw-bold text-dark"><i class="fas fa-bolt me-1"></i> {{ t('Gộp từ BOM', 'Import from BOM') }}</button>
+                        <button @click="clearDraft('baogia')" class="btn btn-outline-danger fw-bold"><i class="fas fa-eraser"></i></button>
+                        <button @click="exportToExcel('baogia')" class="btn btn-success fw-bold shadow-sm"><i class="fas fa-file-excel me-1"></i> {{ t('XUẤT EXCEL', 'EXPORT EXCEL') }}</button>
+                        <button onclick="window.print()" class="btn btn-secondary fw-bold shadow-sm"><i class="fas fa-print me-1"></i> {{ t('IN PDF', 'PRINT PDF') }}</button>
+                    </div>
+                </div>
+                
+                <div id="print-baogia" class="print-area w-100">
+                    <div class="row align-items-stretch border border-dark mx-0 pr-header-row mb-4 page-break-inside-avoid">
+                        <div class="col-3 text-center border-end border-dark d-flex align-items-center justify-content-center p-1">
+                            <div class="logo-container position-relative w-100 pr-logo-box">
+                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
+                            </div>
+                        </div>
+                        <div class="col-6 text-center border-end border-dark d-flex flex-column justify-content-center p-1">
+                            <h2 class="form-title fw-bold pr-title mb-1">{{ t('BẢNG BÁO GIÁ', 'QUOTATION') }}</h2>
+                            <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold text-uppercase project-subtitle m-0 p-0" style="font-size: 14px;" :placeholder="t('NHẬP TÊN DỰ ÁN...', 'ENTER PROJECT INFO...')"></textarea>
+                        </div>
+                        <div class="col-3 p-1 d-flex flex-column justify-content-center">
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1 fw-bold">{{ t('Số hiệu:', 'Doc No:') }}</span> <textarea v-model="bgHeader.isoDoc" class="inline-edit fw-bold"></textarea></div>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Ngày HL:', 'Effective:') }}</span> <textarea v-model="bgHeader.isoDate" class="inline-edit"></textarea></div>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Lần BH:', 'Issue No:') }}</span> <textarea v-model="bgHeader.isoRev" class="inline-edit"></textarea></div>
+                        </div>
+                    </div>
+
+                    <div class="page-break-inside-avoid mb-4">
+                        <div class="row mb-1">
+                            <div class="col-8">
+                                <table class="table table-sm table-borderless align-middle m-0 info-table text-dark">
+                                    <tr><td width="15%" class="fw-bold">{{ t('Công ty:', 'Company:') }}</td><td><textarea v-model="bgHeader.company" class="inline-edit fw-bold text-uppercase p-0"></textarea></td></tr>
+                                    <tr><td class="fw-bold">{{ t('Địa chỉ:', 'Address:') }}</td><td><textarea v-model="bgHeader.address" class="inline-edit p-0"></textarea></td></tr>
+                                    <tr><td class="fw-bold">{{ t('MST:', 'Tax Code:') }}</td><td><textarea v-model="bgHeader.taxCode" class="inline-edit p-0"></textarea></td></tr>
+                                </table>
+                            </div>
+                            <div class="col-4">
+                                <table class="table table-sm table-borderless align-middle m-0 info-table text-dark">
+                                    <tr><td width="30%" class="fw-bold text-end pe-2">{{ t('Số:', 'Ref No:') }}</td><td><textarea v-model="bgHeader.ref" class="inline-edit text-danger fw-bold p-0"></textarea></td></tr>
+                                    <tr><td class="fw-bold text-end pe-2">{{ t('Ngày:', 'Date:') }}</td><td><textarea v-model="bgHeader.date" class="inline-edit p-0"></textarea></td></tr>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <div class="fw-bold text-dark mb-1">{{ t('Kính gửi Quý Khách hàng:', 'To our valued Customer:') }}</div>
+                            <table class="table table-sm table-borderless align-middle m-0 info-table text-dark">
+                                <tr><td width="15%" class="fw-bold">{{ t('Công ty/ Cá nhân:', 'Company/ Individual:') }}</td><td><textarea v-model="bgHeader.cusCompany" class="inline-edit fw-bold text-uppercase p-0"></textarea></td></tr>
+                                <tr><td class="fw-bold">{{ t('Địa chỉ:', 'Address:') }}</td><td><textarea v-model="bgHeader.cusAddress" class="inline-edit p-0"></textarea></td></tr>
+                                <tr><td class="fw-bold">{{ t('MST:', 'Tax Code:') }}</td><td><textarea v-model="bgHeader.cusTax" class="inline-edit p-0"></textarea></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 fst-italic text-dark">{{ t('Công ty chúng tôi trân trọng báo giá đến quý khách như sau:', 'We are pleased to submit our quotation as follows:') }}</div>
+
+                    <div class="table-responsive page-break-inside-avoid">
+                        <table class="table align-middle border-dark">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="4%" class="txt-nowrap border-dark border">{{ t('STT', 'No.') }}</th>
+                                    <th width="26%" class="border-dark border">{{ t('Hạng mục', 'Item') }}</th>
+                                    <th width="20%" class="border-dark border">{{ t('Thông số kỹ thuật', 'Specifications') }}</th>
+                                    <th width="8%" class="txt-nowrap border-dark border">{{ t('Đvt', 'Unit') }}</th>
+                                    <th width="8%" class="txt-nowrap border-dark border">{{ t('Số lượng', 'Qty') }}</th>
+                                    <th width="15%" class="txt-nowrap border-dark border">{{ t('Đơn giá', 'Price') }}</th>
+                                    <th width="16%" class="txt-nowrap border-dark border">{{ t('Thành tiền', 'Total Amount') }}</th>
+                                    <th class="no-print" width="3%">X</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(row, idx) in docBaoGia" :key="idx">
+                                    <td class="txt-center text-muted border-dark border">{{ idx + 1 }}</td>
+                                    <td class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.specs" class="inline-edit txt-left text-muted"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td>
+                                    <td class="border-dark border"><input type="text" :value="formatNum(row.qty)" @focus="focusNum($event, row.qty)" @blur="row.qty = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td>
+                                    <td class="border-dark border"><input type="text" :value="formatNum(row.priceGop)" @focus="focusNum($event, row.priceGop)" @blur="row.priceGop = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
+                                    <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceGop) }}</td>
+                                    <td class="txt-center no-print"><button @click="removeRow(docBaoGia, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
+                                </tr>
+                                <tr class="bg-light border-top border-dark border-2">
+                                    <td colspan="6" class="txt-right fw-bold text-uppercase border-dark border">{{ t('Tổng giá (trước thuế):', 'Subtotal:') }}</td>
+                                    <td class="txt-right fw-bold txt-nowrap border-dark border px-2">{{ formatNum(bgTotalBeforeVAT) }}</td>
+                                    <td class="no-print border-dark border"></td>
+                                </tr>
+                                <tr class="bg-light">
+                                    <td colspan="6" class="txt-right text-uppercase border-dark border">
+                                        {{ t('Thuế GTGT (VAT ', 'VAT (') }}
+                                        <input type="text" :value="formatNum(vatRate)" @focus="focusNum($event, vatRate)" @blur="vatRate = blurNum($event)" class="inline-edit d-inline txt-center text-danger p-0 border-bottom border-danger" style="width: 25px; height: 18px; min-height: 18px;">%):
+                                    </td>
+                                    <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(bgVATAmount) }}</td>
+                                    <td class="no-print border-dark border"></td>
+                                </tr>
+                                <tr class="table-secondary">
+                                    <td colspan="6" class="txt-right fw-bold text-uppercase border-dark border text-dark">{{ t('TỔNG GIÁ TRỊ (SAU THUẾ):', 'TOTAL AMOUNT:') }}</td>
+                                    <td class="txt-right fw-bold text-danger fs-5 txt-nowrap border-dark border px-2">{{ formatNum(bgTotalAfterVAT) }}</td>
+                                    <td class="no-print border-dark border"></td>
+                                </tr>
+                                <tr class="border-0">
+                                    <td colspan="8" class="txt-right py-2 border-dark border border-top-0 text-dark">
+                                        <span class="fst-italic text-muted">{{ t('Bằng chữ: ', 'In words: ') }}</span><span class="fw-bold">{{ readMoney(bgTotalAfterVAT) }}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 bg-transparent px-0 border-0 page-break-inside-avoid">
+                        <h6 class="fw-bold text-decoration-underline mb-2 text-dark">{{ t('ĐIỀU KHOẢN THƯƠNG MẠI (TERMS & CONDITIONS):', 'TERMS & CONDITIONS:') }}</h6>
+                        <table class="table table-borderless table-sm w-100 m-0 terms-table text-dark">
+                            <tr v-for="(term, tIdx) in bgTerms" :key="tIdx">
+                                <td width="3%" class="pt-2 text-center"><i class="fas fa-check-square text-success"></i></td>
+                                <td width="20%"><textarea v-model="term.title" class="inline-edit fw-bold p-0 m-0"></textarea></td>
+                                <td><textarea v-model="term.content" class="inline-edit p-0 m-0"></textarea></td>
+                                <td class="no-print text-center" width="3%"><button @click="removeTerm(tIdx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times"></i></button></td>
+                            </tr>
+                        </table>
+                        <div class="mt-2 no-print"><button class="btn btn-sm btn-outline-primary py-0" @click="addTerm()"><i class="fas fa-plus me-1"></i>{{ t('Thêm điều khoản', 'Add Term') }}</button></div>
+                    </div>
+                    
+                    <div class="row signature-block text-center mt-5 page-break-inside-avoid text-dark">
+                        <div class="col-6"><span class="fw-bold text-uppercase">{{ t('ĐẠI DIỆN KHÁCH HÀNG', 'CUSTOMER REPRESENTATIVE') }}</span><br><br><br><br><br><br></div>
+                        <div class="col-6"><span class="fw-bold text-uppercase">{{ t('ĐẠI DIỆN CÔNG TY', 'COMPANY REPRESENTATIVE') }}</span><br><br><br><br><br><br></div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="currentTab === 'pr'" class="flex-grow-1">
+                <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
+                    <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-file-signature me-2"></i> {{ t('Phiếu Đề Nghị Mua Hàng', 'Purchase Requisition') }}</h3>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <div class="smart-search-wrapper me-2">
+                            <input type="text" v-model="searchQuery" @focus="showSearchDropdown = true" @blur="hideSearch" class="smart-search-input" :placeholder="t('Tìm vật tư...', 'Search material...')">
+                            <i class="fas fa-search smart-search-icon"></i>
+                            <ul v-if="showSearchDropdown && filteredDatabase.length > 0" class="smart-search-results">
+                                <li v-for="item in filteredDatabase" @mousedown.prevent="selectItemFromSearch(item, docPR)"><span class="highlight">{{ item.partNo }}</span> - {{ item.name }}</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="form-check form-switch me-2 d-none d-md-flex align-items-center bg-light p-2 rounded border">
+                            <input class="form-check-input mt-0 me-2" type="checkbox" v-model="printPrWorkflow" id="togglePrFlow" style="cursor: pointer;">
+                            <label class="form-check-label fw-bold text-secondary small mb-0" for="togglePrFlow" style="cursor: pointer;">{{ t('In Quá trình', 'Print Workflow') }}</label>
+                        </div>
+
+                        <button @click="addBlankRow('pr')" class="btn btn-outline-primary fw-bold"><i class="fas fa-plus"></i></button>
+                        <button @click="copyFromDuToanToPR" class="btn btn-warning fw-bold text-dark"><i class="fas fa-bolt me-1"></i> {{ t('Nhập từ BOM', 'Import from BOM') }}</button>
+                        <button @click="clearDraft('pr')" class="btn btn-outline-danger fw-bold"><i class="fas fa-eraser"></i></button>
+                        <button @click="exportToExcel('pr')" class="btn btn-success fw-bold shadow-sm"><i class="fas fa-file-excel me-1"></i> {{ t('XUẤT EXCEL', 'EXPORT EXCEL') }}</button>
+                        <button onclick="window.print()" class="btn btn-danger fw-bold shadow-sm"><i class="fas fa-print me-1"></i> {{ t('IN PDF', 'PRINT PDF') }}</button>
+                    </div>
+                </div>
+                
+                <div id="print-pr" class="print-area w-100">
+                    <div class="row align-items-stretch border border-dark mx-0 pr-header-row">
+                        <div class="col-3 text-center border-end border-dark d-flex align-items-center justify-content-center p-1">
+                            <div class="logo-container position-relative w-100 pr-logo-box">
+                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
+                            </div>
+                        </div>
+                        <div class="col-6 text-center border-end border-dark d-flex flex-column justify-content-center p-1">
+                            <h2 class="form-title fw-bold pr-title">{{ t('PHIẾU ĐỀ NGHỊ MUA HÀNG', 'PURCHASE REQUISITION') }}</h2>
+                        </div>
+                        <div class="col-3 p-1 d-flex flex-column justify-content-center">
+                            <div class="fw-bold doc-no">{{ t('Số hiệu: ADG_QT_KH_01/BM01', 'Doc No: ADG_QT_KH_01/BM01') }}</div>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Ngày HL:', 'Effective:') }}</span> <textarea v-model="prHeader.isoDate" class="inline-edit"></textarea></div>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Lần BH:', 'Issue No:') }}</span> <textarea v-model="prHeader.isoRev" class="inline-edit"></textarea></div>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Lần SX:', 'Rev No:') }}</span> <textarea v-model="prHeader.isoCheck" class="inline-edit"></textarea></div>
+                        </div>
+                    </div>
+
+                    <table class="table table-bordered border-dark table-sm w-100 text-dark pr-info-table mb-2 align-middle">
+                        <tbody>
+                            <tr>
+                                <td width="12%" class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Số phiếu:', 'PR No:') }}</td>
+                                <td width="38%">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-bold text-dark me-1">ADG_ĐNMH_</span>
+                                        <textarea v-model="prHeader.prNo" class="inline-edit text-danger fw-bold flex-grow-1 p-0 m-0 border-0"></textarea>
+                                    </div>
+                                </td>
+                                <td width="50%" colspan="2" class="text-left">
+                                    <label class="mb-0 d-inline-flex align-items-center cursor-pointer fw-bold txt-nowrap">
+                                        <input type="checkbox" v-model="prHeader.isPlan" class="me-2" style="transform: scale(1.1);">{{ t('Theo kế hoạch', 'Planned') }}
+                                    </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Đơn vị lập:', 'Company:') }}</td>
+                                <td colspan="3"><textarea v-model="prHeader.company" class="inline-edit fw-bold p-0 m-0 border-0"></textarea></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Bộ phận:', 'Department:') }}</td>
+                                <td><textarea v-model="prHeader.dept" class="inline-edit fw-bold p-0 m-0 border-0"></textarea></td>
+                                <td width="12%" class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Mã code:', 'Dept Code:') }}</td>
+                                <td width="38%"><textarea v-model="prHeader.deptCode" class="inline-edit fw-bold text-primary p-0 m-0 border-0"></textarea></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Kho hàng:', 'Warehouse:') }}</td>
+                                <td><textarea v-model="prHeader.warehouse" class="inline-edit p-0 m-0 border-0"></textarea></td>
+                                <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Thủ kho:', 'Storekeeper:') }}</td>
+                                <td><textarea v-model="prHeader.storekeeper" class="inline-edit p-0 m-0 border-0"></textarea></td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Ngày duyệt:', 'Approved:') }}</td>
+                                <td colspan="3">
+                                    <textarea v-model="prHeader.approvedDate" class="inline-edit fw-bold p-0 m-0 border-0"></textarea></td>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="table-responsive" style="overflow-x: auto;">
+                        <table class="table table-bordered align-middle border-dark table-micro-font mb-0 table-pr-print" style="min-width: 1400px; font-size: 11px;">
+                            <colgroup>
+                                <col style="width: 2.5%;"> <col style="width: 12%;">  <col style="width: 7%;">   <col style="width: 6%;">   <col style="width: 3.5%;"> <col style="width: 4%;">   <col style="width: 4%;">   <col style="width: 4%;">   <col style="width: 6%;">   <col style="width: 8%;">   <col style="width: 5.5%;"> <col style="width: 6.5%;"> <col style="width: 4%;">   <col style="width: 5%;">   <col style="width: 5%;">   <col style="width: 6%;">   <col style="width: 5%;">   <col style="width: 6%;">   <col style="width: 2%;" class="no-print"> 
+                            </colgroup>
+                            <thead class="table-light txt-center align-middle">
+                                <tr>
+                                    <th rowspan="2">{{ t('STT', 'No.') }}</th>
+                                    <th colspan="2">{{ t('Mô tả hàng hóa', 'Item Description') }}</th>
+                                    <th rowspan="2">{{ t('Mã vật tư', 'Material Code') }}<br>(*)</th>
+                                    <th rowspan="2">{{ t('ĐVT', 'Unit') }}<br>(*)</th>
+                                    <th rowspan="2">{{ t('Bình quân sử dụng hàng tháng', 'Avg Monthly Usage') }}<br>(*)</th>
+                                    <th colspan="2">{{ t('Số lượng', 'Quantity') }}</th>
+                                    <th rowspan="2">{{ t('Đơn giá tham khảo (có VAT)', 'Est. Price (VAT incl.)') }}<br>(*)</th>
+                                    <th rowspan="2">{{ t('Thành tiền (Có VAT)', 'Total Amount') }}<br>(*)</th>
+                                    <th rowspan="2">{{ t('Thời gian cần hàng', 'Required Date') }}<br>(*)</th>
+                                    <th rowspan="2">{{ t('Mục đích sử dụng', 'Purpose') }}<br>(*)</th>
+                                    <th rowspan="2">{{ t('Tài khoản chi phí (Người lập)', 'Expense Acc (Creator)') }}</th>
+                                    <th rowspan="2">{{ t('Tài khoản chi phí (KTT)', 'Expense Acc (Chief Acct)') }}</th>
+                                    <th rowspan="2">{{ t('Ngân sách còn lại', 'Remaining Budget') }}</th>
+                                    <th rowspan="2">{{ t('Nhà cung cấp tham khảo', 'Suggested Supplier') }}</th>
+                                    <th rowspan="2">{{ t('Công ty sử dụng', 'Company Use') }}<br>(*)</th>
+                                    <th rowspan="2">{{ t('Điều kiện nghiệm thu/ Đánh giá chất lượng', 'QC Conditions') }}</th>
+                                    <th rowspan="2" class="no-print">X</th>
+                                </tr>
+                                <tr>
+                                    <th>{{ t('Tên hàng hóa', 'Item Name') }}<br>(*)</th>
+                                    <th>{{ t('Quy cách', 'Specs') }}<br>(*)</th>
+                                    <th>{{ t('Tồn Kho', 'Stock') }}<br>(*)</th>
+                                    <th>{{ t('Đề xuất', 'Request') }}<br>(*)</th>
+                                </tr>
+                                <tr class="bg-secondary text-white" style="font-size: 8px; line-height: 1;">
+                                    <th>(1)</th><th>(2)</th><th>(3)</th><th>(4)</th><th>(5)</th><th>(6)</th><th>(7)</th><th>(8)</th><th>(9)</th><th>(10)</th><th>(11)</th><th>(12)</th><th>(13)</th><th>(14)</th><th>(15)</th><th>(16)</th><th>(17)</th><th>(18)</th><th class="no-print"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(row, idx) in docPR" :key="idx">
+                                    <td class="txt-center">{{ idx + 1 }}</td>
+                                    <td><textarea v-model="row.name" class="inline-edit txt-left"></textarea></td>
+                                    <td><textarea v-model="row.specs" class="inline-edit txt-left"></textarea></td>
+                                    <td><textarea v-model="row.partNo" class="inline-edit txt-center"></textarea></td>
+                                    <td><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td>
+                                    <td><input type="text" :value="formatNum(row.avgUsage)" @focus="focusNum($event, row.avgUsage)" @blur="row.avgUsage = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td>
+                                    <td><input type="text" :value="formatNum(row.qtyStock)" @focus="focusNum($event, row.qtyStock)" @blur="row.qtyStock = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td>
+                                    <td><input type="text" :value="formatNum(row.qtyReq)" @focus="focusNum($event, row.qtyReq)" @blur="row.qtyReq = blurNum($event)" class="inline-edit txt-center border border-primary txt-nowrap"></td>
+                                    <td><input type="text" :value="formatNum(row.price)" @focus="focusNum($event, row.price)" @blur="row.price = blurNum($event)" class="inline-edit txt-right txt-nowrap pr-num-fix"></td>
+                                    <td class="txt-right txt-nowrap px-1 pr-num-fix">{{ formatNum(row.qtyReq * row.price) }}</td>
+                                    <td><textarea v-model="row.timeNeeded" class="inline-edit txt-center text-muted"></textarea></td>
+                                    <td><textarea v-model="row.purpose" class="inline-edit txt-left"></textarea></td>
+                                    <td><textarea v-model="row.accCreator" class="inline-edit txt-center"></textarea></td>
+                                    <td><textarea v-model="row.accKTT" class="inline-edit txt-center"></textarea></td>
+                                    <td><input type="text" :value="formatNum(row.budget)" @focus="focusNum($event, row.budget)" @blur="row.budget = blurNum($event)" class="inline-edit txt-right txt-nowrap pr-num-fix"></td>
+                                    <td><textarea v-model="row.supplier" class="inline-edit txt-left"></textarea></td>
+                                    <td><textarea v-model="row.companyUse" class="inline-edit txt-center"></textarea></td>
+                                    <td><textarea v-model="row.qcCond" class="inline-edit txt-left"></textarea></td>
+                                    <td class="txt-center no-print"><button @click="removeRow(docPR, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times"></i></button></td>
+                                </tr>
+                                <tr class="table-light border-top border-dark fw-bold">
+                                    <td colspan="9" class="txt-right text-uppercase">{{ t('Tổng cộng:', 'Total:') }}</td>
+                                    <td class="txt-right txt-nowrap px-1 pr-num-fix">{{ formatNum(prTotalAmount) }}</td>
+                                    <td colspan="8"></td><td class="no-print"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="row mt-2 mx-0 page-break-inside-avoid" :class="{'no-print': !printPrWorkflow}">
+                        <div class="col-12 p-0">
+                            <h6 class="fw-bold m-0 p-1" style="font-size: 11px;">{{ t('QUÁ TRÌNH XỬ LÝ:', 'WORKFLOW PROCESS:') }}</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered border-dark align-middle txt-center mb-1 workflow-table" style="table-layout: fixed;">
+                                    <thead class="table-light"><tr><th width="15%">{{ t('Thời điểm xử lý', 'Timestamp') }}</th><th width="35%">{{ t('Bước xử lý', 'Process Step') }}</th><th width="20%">{{ t('Người xử lý', 'Person in Charge') }}</th><th width="30%">{{ t('Ý kiến người xử lý', 'Remarks/Comments') }}</th></tr></thead>
+                                    <tbody>
+                                        <tr v-for="(step, sIdx) in prWorkflow" :key="sIdx">
+                                            <td><textarea v-model="step.time" class="inline-edit text-center text-primary" placeholder="dd/mm/yy hh:mm"></textarea></td>
+                                            <td class="txt-left text-dark"><textarea :value="lang === 'vi' ? step.stepVi : step.stepEn" class="inline-edit text-left" readonly></textarea></td>
+                                            <td><textarea v-model="step.person" class="inline-edit text-left"></textarea></td>
+                                            <td><textarea v-model="step.note" class="inline-edit text-left"></textarea></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row signature-block text-center mt-1 pt-1 text-dark mx-0 page-break-inside-avoid" style="font-size: 11px;">
+                        <div class="col">{{ t('Ngày ….. tháng ….. năm ……', 'Date ...../...../.....') }}<br><br><span class="fw-bold">{{ t('Người lập phiếu', 'Prepared by') }}</span><br><br><br><br></div>
+                        <div class="col">{{ t('Ngày ….. tháng ….. năm ……', 'Date ...../...../.....') }}<br><br><span class="fw-bold">{{ t('Trưởng phòng', 'Dept. Manager') }}</span><br><br><br><br></div>
+                        <div class="col">{{ t('Ngày ….. tháng ….. năm ……', 'Date ...../...../.....') }}<br><br><span class="fw-bold">{{ t('TP Cung ứng', 'Purchasing Mgr') }}</span><br><br><br><br></div>
+                        <div class="col">{{ t('Ngày ….. tháng ….. năm ……', 'Date ...../...../.....') }}<br><br><span class="fw-bold">{{ t('Kế toán trưởng', 'Chief Accountant') }}</span><br><br><br><br></div>
+                        <div class="col">{{ t('Ngày ….. tháng ….. năm ……', 'Date ...../...../.....') }}<br><br><span class="fw-bold">{{ t('Ban Giám đốc', 'Board of Directors') }}</span><br><br><br><br></div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="currentTab === 'daily'" class="flex-grow-1">
+                <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
+                    <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-hard-hat me-2"></i> {{ t('Nhật Ký Hiện Trường', 'Daily Site Report') }}</h3>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <select v-model="dailyType" class="form-select form-select-sm w-auto border-primary fw-bold text-primary">
+                            <option value="baotri">📝 {{ t('Bảo trì / Khắc phục sự cố', 'Maintenance / Troubleshooting') }}</option>
+                            <option value="thicong">🏗️ {{ t('Thi công / Lắp đặt mới', 'Construction / Installation') }}</option>
+                        </select>
+                        <button @click="clearDraft('daily')" class="btn btn-outline-danger fw-bold"><i class="fas fa-eraser"></i></button>
+                        <button @click="exportToExcel('daily')" class="btn btn-success fw-bold shadow-sm"><i class="fas fa-file-excel me-1"></i> {{ t('XUẤT EXCEL', 'EXPORT EXCEL') }}</button>
+                        <button onclick="window.print()" class="btn btn-secondary fw-bold shadow-sm"><i class="fas fa-print me-1"></i> {{ t('IN PDF', 'PRINT PDF') }}</button>
+                    </div>
+                </div>
+                
+                <div id="print-daily" class="print-area">
+                    <div class="row mb-3 align-items-center mx-0">
+                        <div class="col-3 text-center p-0">
+                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
+                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
+                            </div>
+                        </div>
+                        <div class="col-6 text-center">
+                            <h3 class="form-title mb-1">{{ t('NHẬT KÝ THI CÔNG', 'DAILY SITE REPORT') }}</h3>
+                            <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle" :placeholder="t('NHẬP THÔNG TIN DỰ ÁN...', 'ENTER PROJECT INFO...')"></textarea>
+                            <div class="text-muted fw-bold mt-1"><em>{{ dailyType === 'baotri' ? t('(Công tác Bảo trì & Khắc phục sự cố)', '(Maintenance & Troubleshooting)') : t('(Công tác Thi công & Lắp đặt)', '(Construction & Installation)') }}</em></div>
+                        </div>
+                        <div class="col-3 p-0"></div>
+                    </div>
+                    
+                    <div class="table-responsive mt-3">
+                        <table class="table table-bordered border-dark mb-4 align-middle">
+                            <tr>
+                                <td width="15%" class="table-light fw-bold txt-left p-2">{{ t('Dự án/Hạng mục:', 'Project/Item:') }}</td>
+                                <td width="35%"><textarea v-model="globalProjectName" class="inline-edit fw-bold text-primary txt-left text-uppercase"></textarea></td>
+                                <td width="15%" class="table-light fw-bold txt-left p-2">{{ t('Ngày thực hiện:', 'Date:') }}</td>
+                                <td width="35%"><input type="date" v-model="dailyHeader.date" class="inline-edit w-auto fw-bold txt-center text-danger"></td>
+                            </tr>
+                            <tr>
+                                <td class="table-light fw-bold txt-left p-2">{{ t('Địa chỉ:', 'Location:') }}</td>
+                                <td><textarea v-model="dailyHeader.location" class="inline-edit txt-left"></textarea></td>
+                                <td class="table-light fw-bold txt-left p-2">{{ t('Người phụ trách:', 'Person In Charge:') }}</td>
+                                <td><textarea v-model="dailyHeader.pic" class="inline-edit txt-left fw-bold"></textarea></td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="row mb-4 g-3 mx-0 page-break-inside-avoid">
+                        <div class="col-6">
+                            <h6 class="fw-bold text-uppercase bg-light p-2 border border-dark border-bottom-0 m-0 d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-users me-2 text-primary"></i>1. {{ t('Nhân lực', 'Manpower') }}</span>
+                                <button class="btn btn-sm text-primary p-0 no-print" @click="addBlankRow('dailyManpower')"><i class="fas fa-plus-circle fs-5"></i></button>
+                            </h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered border-dark m-0 align-middle">
+                                    <thead class="table-light text-center">
+                                        <tr><th width="10%">{{ t('STT', 'No.') }}</th><th width="40%">{{ t('Vai trò / Chức danh', 'Role / Title') }}</th><th width="10%">{{ t('SL', 'Qty') }}</th><th class="no-print" width="40%"></th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(mp, idx) in dailyManpower" :key="idx">
+                                            <td class="txt-center fw-bold text-muted">{{ idx + 1 }}</td>
+                                            <td><textarea v-model="mp.role" class="inline-edit txt-left"></textarea></td>
+                                            <td><input type="text" :value="formatNum(mp.qty)" @focus="focusNum($event, mp.qty)" @blur="mp.qty = blurNum($event)" class="inline-edit txt-center fw-bold text-primary txt-nowrap"></td>
+                                            <td class="txt-center no-print"><button @click="removeRow(dailyManpower, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times"></i></button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="fw-bold text-uppercase bg-light p-2 border border-dark border-bottom-0 m-0 d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-truck-loading me-2 text-primary"></i>2. {{ t('Thiết bị thi công', 'Equipment') }}</span>
+                                <button class="btn btn-sm text-primary p-0 no-print" @click="addBlankRow('dailyEquipment')"><i class="fas fa-plus-circle fs-5"></i></button>
+                            </h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered border-dark m-0 align-middle">
+                                    <thead class="table-light text-center">
+                                        <tr><th width="10%">{{ t('STT', 'No.') }}</th><th width="40%">{{ t('Tên Thiết bị', 'Equipment Name') }}</th><th width="10%">{{ t('SL', 'Qty') }}</th><th class="no-print" width="40%"></th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(eq, idx) in dailyEquipment" :key="idx">
+                                            <td class="txt-center fw-bold text-muted">{{ idx + 1 }}</td>
+                                            <td><textarea v-model="eq.name" class="inline-edit txt-left"></textarea></td>
+                                            <td><input type="text" :value="formatNum(eq.qty)" @focus="focusNum($event, eq.qty)" @blur="eq.qty = blurNum($event)" class="inline-edit txt-center fw-bold text-primary txt-nowrap"></td>
+                                            <td class="txt-center no-print"><button @click="removeRow(dailyEquipment, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times"></i></button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="fw-bold text-uppercase bg-light p-2 border border-dark border-bottom-0 m-0 d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-clipboard-check me-2 text-success"></i>3. {{ t('Chi tiết công việc thực hiện', 'Detailed Tasks') }}</span>
+                        <button class="btn btn-sm btn-primary py-0 px-2 no-print" @click="addBlankRow('dailyTasks')"><i class="fas fa-plus me-1"></i> {{ t('Thêm', 'Add') }}</button>
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered border-dark align-middle">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th width="4%">{{ t('STT', 'No.') }}</th>
+                                    <th width="16%">{{ dailyType === 'baotri' ? t('Thiết bị', 'Area / Machine') : t('Hạng mục thi công', 'Construction Item') }}</th>
+                                    <th width="22%">{{ dailyType === 'baotri' ? t('Mô tả sự cố', 'Initial Symptom') : t('Nội dung chi tiết', 'Details') }}</th>
+                                    <th width="20%">{{ dailyType === 'baotri' ? t('Nguyên nhân (RCA)', 'Root Cause (RCA)') : t('Tỷ lệ Hoàn thành (%)', 'Completion (%)') }}</th>
+                                    <th width="24%">{{ dailyType === 'baotri' ? t('Phương án Khắc phục', 'Corrective Action') : t('Vướng mắc tại hiện trường', 'Site Issues') }}</th>
+                                    <th width="14%">{{ t('Ghi chú', 'Remarks') }}</th>
+                                    <th class="no-print" width="4%"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(task, idx) in dailyTasks" :key="idx">
+                                    <td class="txt-center fw-bold text-muted">{{ idx + 1 }}</td>
+                                    <td><textarea class="inline-edit txt-left fw-bold" v-model="task.col1"></textarea></td>
+                                    <td><textarea class="inline-edit txt-left" v-model="task.col2"></textarea></td>
+                                    <td><textarea class="inline-edit txt-left text-primary fw-bold" v-model="task.col3"></textarea></td>
+                                    <td><textarea class="inline-edit txt-left" v-model="task.col4"></textarea></td>
+                                    <td><textarea class="inline-edit txt-left" v-model="task.col5"></textarea></td>
+                                    <td class="txt-center no-print"><button @click="removeRow(dailyTasks, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="row signature-block mt-5 text-center mx-0 page-break-inside-avoid">
+                        <div class="col-4"><span class="fw-bold">{{ t('NGƯỜI LẬP BÁO CÁO', 'PREPARED BY') }}</span><br><br><br><br></div>
+                        <div class="col-4"><span class="fw-bold">{{ t('CHỈ HUY TRƯỞNG', 'SITE MANAGER') }}</span><br><br><br><br></div>
+                        <div class="col-4"><span class="fw-bold">{{ t('ĐẠI DIỆN KHÁCH HÀNG', 'CUSTOMER REP.') }}</span><br><br><br><br></div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="currentTab === 'nghiemthu'" class="flex-grow-1">
+                 <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
+                    <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-check-circle me-2"></i> {{ t('Biên Bản Nghiệm Thu Kỹ Thuật', 'Technical Acceptance Record') }}</h3>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button @click="addBlankRow('nghiemthu')" class="btn btn-outline-primary fw-bold"><i class="fas fa-plus"></i></button>
+                        <button @click="clearDraft('nghiemthu')" class="btn btn-outline-danger fw-bold"><i class="fas fa-eraser"></i></button>
+                        <button @click="exportToExcel('nghiemthu')" class="btn btn-success fw-bold shadow-sm"><i class="fas fa-file-excel me-1"></i> {{ t('XUẤT EXCEL', 'EXPORT EXCEL') }}</button>
+                        <button onclick="window.print()" class="btn btn-secondary fw-bold shadow-sm"><i class="fas fa-print me-1"></i> {{ t('IN PDF', 'PRINT PDF') }}</button>
+                    </div>
+                </div>
+                
+                <div id="print-nghiemthu" class="print-area">
+                    <div class="row mb-3 align-items-center mx-0">
+                        <div class="col-3 text-center p-0">
+                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
+                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
+                            </div>
+                        </div>
+                        <div class="col-9 text-center">
+                            <h3 class="form-title mb-1 text-dark">{{ t('BIÊN BẢN NGHIỆM THU KỸ THUẬT', 'TECHNICAL ACCEPTANCE RECORD') }}</h3>
+                            <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle" :placeholder="t('NHẬP THÔNG TIN DỰ ÁN...', 'ENTER PROJECT INFO...')"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4 mt-3">
+                        <table class="table table-borderless table-sm w-100 w-md-75 align-middle">
+                            <tr><td width="20%" class="fw-bold txt-left txt-nowrap p-1">{{ t('Căn cứ Hợp đồng số:', 'Based on Contract No:') }}</td><td><textarea v-model="ntHeader.contract" class="inline-edit border-bottom border-dark text-primary fw-bold txt-left"></textarea></td></tr>
+                            <tr><td class="fw-bold txt-left txt-nowrap p-1">{{ t('Tên Dự án / Gói thầu:', 'Project / Package:') }}</td><td><textarea v-model="globalProjectName" class="inline-edit border-bottom border-dark text-uppercase fw-bold txt-left"></textarea></td></tr>
+                            <tr><td class="fw-bold txt-left txt-nowrap p-1">{{ t('Thời gian nghiệm thu:', 'Acceptance Date:') }}</td><td><input type="datetime-local" v-model="ntHeader.date" class="inline-edit w-auto border-bottom border-dark txt-center fw-bold"></td></tr>
+                        </table>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle border-dark">
+                            <thead class="table-light txt-center">
+                                <tr>
+                                    <th rowspan="2" width="4%" class="txt-nowrap">{{ t('STT', 'No.') }}</th>
+                                    <th rowspan="2" width="20%">{{ t('Hạng mục', 'Description') }}</th>
+                                    <th rowspan="2" width="20%">{{ t('Hình ảnh thực tế', 'Actual Image') }}</th>
+                                    <th colspan="2">{{ t('Tiêu chí Đánh giá', 'Evaluation Criteria') }}</th>
+                                    <th rowspan="2" width="10%">{{ t('Hồ sơ', 'Doc.') }}</th>
+                                    <th rowspan="2" width="12%">{{ t('Kết luận', 'Status') }}</th>
+                                    <th rowspan="2" width="14%">{{ t('Ghi chú', 'Remarks') }}</th>
+                                    <th rowspan="2" class="no-print" width="3%">X</th>
+                                </tr>
+                                <tr>
+                                    <th width="12%">{{ t('Theo Hợp Đồng', 'By Contract') }}</th>
+                                    <th width="12%">{{ t('Theo Thực Tế', 'Actual') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(row, idx) in docNghiemThu" :key="idx">
+                                    <td class="txt-center fw-bold text-muted txt-nowrap">{{ idx + 1 }}</td>
+                                    <td><textarea v-model="row.name" class="inline-edit txt-left fw-bold"></textarea></td>
+                                    <td class="p-1 align-middle text-center">
+                                        <div class="position-relative w-100 d-flex align-items-center justify-content-center img-preview-box" style="min-height: 80px;">
+                                            <img v-if="row.image" :src="row.image" style="max-width: 100%; max-height: 150px; object-fit: contain;">
+                                            <div v-else class="text-muted small no-print py-3"><i class="fas fa-cloud-upload-alt mb-1 fs-5 d-block"></i> {{ t('Tải ảnh lên', 'Upload Image') }}</div>
+                                            <input type="file" @change="uploadRowImage($event, row)" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
+                                            <button v-if="row.image" @click.stop="row.image = null" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 py-0 px-1 no-print" style="z-index: 10;"><i class="fas fa-trash-alt"></i></button>
+                                        </div>
+                                    </td>
+                                    <td><textarea v-model="row.specContract" class="inline-edit txt-left"></textarea></td>
+                                    <td><textarea v-model="row.specActual" class="inline-edit txt-left"></textarea></td>
+                                    <td><textarea v-model="row.doc" class="inline-edit txt-center"></textarea></td>
+                                    <td>
+                                        <select v-model="row.status" class="inline-edit txt-center fw-bold" :class="{'text-success': row.status.includes('ĐẠT') || row.status.includes('PASS'), 'text-danger': row.status.includes('LỖI') || row.status.includes('FAIL'), 'text-warning': row.status.includes('TẠM') || row.status.includes('MINOR')}">
+                                            <option v-if="lang==='vi'">ĐẠT YÊU CẦU</option>
+                                            <option v-if="lang==='vi'">KHÔNG ĐẠT</option>
+                                            <option v-if="lang==='en'">PASSED</option>
+                                            <option v-if="lang==='en'">FAILED</option>
+                                        </select>
+                                    </td>
+                                    <td><textarea v-model="row.note" class="inline-edit txt-left"></textarea></td>
+                                    <td class="txt-center no-print"><button @click="removeRow(docNghiemThu, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="row signature-block mt-5 text-center mx-0 page-break-inside-avoid">
+                        <div class="col-4"><span class="fw-bold">{{ t('BÊN GIAO (NHÀ THẦU)', 'CONTRACTOR') }}</span><br><br><br><br><br></div>
+                        <div class="col-4"><span class="fw-bold">{{ t('TƯ VẤN GIÁM SÁT', 'CONSULTANT') }}</span><br><br><br><br><br></div>
+                        <div class="col-4"><span class="fw-bold">{{ t('BÊN NHẬN (CHỦ ĐẦU TƯ)', 'OWNER / INVESTOR') }}</span><br><br><br><br><br></div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="currentTab === 'nghiemthubg'" class="flex-grow-1">
+                 <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
+                    <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-handshake me-2"></i> {{ t('Biên Bản Nghiệm Thu & Bàn Giao', 'Handover Acceptance Record') }}</h3>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button @click="$refs.excelUploadNTBG.click()" class="btn btn-primary fw-bold shadow-sm"><i class="fas fa-file-import me-1"></i> {{ t('Nhập Excel', 'Import Excel') }}</button>
+                        <input type="file" ref="excelUploadNTBG" style="display: none" accept=".xlsx, .xls, .csv" @change="importNTBGFromExcel">
+                        
+                        <button @click="addBlankRow('nghiemthubg')" class="btn btn-outline-primary fw-bold"><i class="fas fa-plus"></i></button>
+                        <button @click="clearDraft('nghiemthubg')" class="btn btn-outline-danger fw-bold"><i class="fas fa-eraser"></i></button>
+                        <button @click="exportToExcel('nghiemthubg')" class="btn btn-success fw-bold shadow-sm"><i class="fas fa-file-excel me-1"></i> {{ t('XUẤT EXCEL', 'EXPORT EXCEL') }}</button>
+                        <button onclick="window.print()" class="btn btn-secondary fw-bold shadow-sm"><i class="fas fa-print me-1"></i> {{ t('IN PDF', 'PRINT PDF') }}</button>
+                    </div>
+                </div>
+                
+                <div id="print-nghiemthu-bg" class="print-area w-100">
+                    <div class="row mb-3 mx-0 align-items-center">
+                        <div class="col-3 text-center p-0">
+                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
+                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
+                            </div>
+                        </div>
+                        <div class="col-9 text-center">
+                            <h3 class="form-title text-dark mb-1">{{ t('BIÊN BẢN NGHIỆM THU BÀN GIAO CÔNG TRÌNH ĐƯA VÀO SỬ DỤNG', 'HANDOVER ACCEPTANCE RECORD') }}</h3>
+                            <textarea v-model="ntbgHeader.project" class="inline-edit txt-center fw-bold project-subtitle m-0 w-100" style="font-size: 16px;" placeholder="V/v: Sửa chữa, bảo trì máy móc thiết bị..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="page-break-inside-avoid ntbg-thanhphan">
+                        <h6 class="fw-bold text-dark mb-1 text-decoration-underline">{{ t('I. THÀNH PHẦN:', 'I. PARTICIPANTS:') }}</h6>
+                        
+                        <div class="d-flex mb-0 align-items-center">
+                            <span class="fw-bold text-dark me-2 text-nowrap" style="width: 250px;"> {{ t('BÊN A (BÊN THỰC HIỆN):', 'PARTY A (CONTRACTOR):') }}</span>
+                            <textarea v-model="ntbgHeader.benA_company" class="inline-edit flex-grow-1 fw-bold text-uppercase p-0 m-0 border-0 text-dark"></textarea>
+                        </div>
+                        <div class="row mx-0 ps-3 mb-0 align-items-center">
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">{{ t('- Ông/Bà:', '- Mr/Ms:') }}</span><textarea v-model="ntbgHeader.benA_rep1_name" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">{{ t('Chức vụ:', 'Position:') }}</span><textarea v-model="ntbgHeader.benA_rep1_title" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                        </div>
+                        <div class="row mx-0 ps-3 mb-0 align-items-center">
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">{{ t('- Ông/Bà:', '- Mr/Ms:') }}</span><textarea v-model="ntbgHeader.benA_rep2_name" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">{{ t('Chức vụ:', 'Position:') }}</span><textarea v-model="ntbgHeader.benA_rep2_title" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                        </div>
+                        
+                        <div class="d-flex mb-0 mt-2 align-items-center">
+                            <span class="fw-bold text-dark me-2 text-nowrap" style="width: 250px;"> {{ t('BÊN B (BÊN THUÊ DỊCH VỤ):', 'PARTY B (OWNER):') }}</span>
+                            <textarea v-model="ntbgHeader.benB_company" class="inline-edit flex-grow-1 fw-bold text-uppercase p-0 m-0 border-0 text-dark"></textarea>
+                        </div>
+                        <div class="row mx-0 ps-3 mb-1 align-items-center">
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">{{ t('- Ông/Bà:', '- Mr/Ms:') }}</span><textarea v-model="ntbgHeader.benB_rep1_name" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">{{ t('Chức vụ:', 'Position:') }}</span><textarea v-model="ntbgHeader.benB_rep1_title" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                        </div>
+                        <div class="row mx-0 ps-3 mb-3 align-items-center">
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">{{ t('- Ông/Bà:', '- Mr/Ms:') }}</span><textarea v-model="ntbgHeader.benB_rep2_name" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                            <div class="col-6 d-flex align-items-center"><span class="me-2 text-nowrap">{{ t('Chức vụ:', 'Position:') }}</span><textarea v-model="ntbgHeader.benB_rep2_title" class="inline-edit flex-grow-1 p-0 m-0 border-0 text-dark"></textarea></div>
+                        </div>
+                    </div>
+
+                    <div class="page-break-inside-avoid mb-3">
+                        <h6 class="fw-bold text-dark mb-2 text-decoration-underline">{{ t('II. NỘI DUNG:', 'II. CONTENT:') }}</h6>
+                        <div class="d-flex mb-2 align-items-center">
+                            <span class="me-2 text-nowrap text-dark">{{ t('Căn cứ vào:', 'Based on:') }}</span>
+                            <textarea v-model="ntbgHeader.baseOn" class="inline-edit flex-grow-1 p-0 m-0 border-0 border-bottom border-dark border-dashed text-dark" style="min-height: 25px;" placeholder="Hợp đồng số... / Yêu cầu công việc..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <textarea v-model="ntbgHeader.conclusion" class="inline-edit w-100 p-0 m-0 border-0 text-dark fst-italic"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive page-break-inside-avoid">
+                        <table class="table table-bordered align-middle border-dark">
+                            <thead class="table-light txt-center align-middle">
+                                <tr>
+                                    <th rowspan="2" width="4%" class="txt-nowrap border-dark border">{{ t('STT', 'No.') }}</th>
+                                    <th rowspan="2" width="10%" class="border-dark border">{{ t('Ngày đề nghị', 'Request Date') }}</th>
+                                    <th rowspan="2" width="15%" class="border-dark border">{{ t('Thiết bị', 'Equipment') }}</th>
+                                    <th rowspan="2" width="28%" class="border-dark border">{{ t('Hạng mục thi công', 'Construction Item') }}</th>
+                                    <th colspan="2" width="16%" class="border-dark border">{{ t('Thời gian', 'Duration') }}</th>
+                                    <th colspan="2" width="12%" class="border-dark border">{{ t('Xác nhận nghiệm thu', 'Acceptance Confirm') }}</th>
+                                    <th rowspan="2" width="12%" class="border-dark border">{{ t('Ghi chú', 'Remarks') }}</th>
+                                    <th rowspan="2" class="no-print border-dark border" width="3%">X</th>
+                                </tr>
+                                <tr>
+                                    <th class="border-dark border text-muted small">{{ t('Bắt đầu', 'Start') }}</th>
+                                    <th class="border-dark border text-muted small">{{ t('Kết thúc', 'End') }}</th>
+                                    <th class="border-dark border text-success small">{{ t('Đạt', 'Pass') }}</th>
+                                    <th class="border-dark border text-danger small">{{ t('Không đạt', 'Fail') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(row, idx) in docNghiemThuBG" :key="idx">
+                                    <td class="txt-center fw-bold text-muted txt-nowrap border-dark border">{{ idx + 1 }}</td>
+                                    <td class="border-dark border"><textarea v-model="row.requestDate" class="inline-edit txt-center text-dark"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.equipment" class="inline-edit txt-left fw-bold text-primary"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.description" class="inline-edit txt-left text-dark"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.timeStart" class="inline-edit txt-center text-muted" style="font-size: 11px;"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.timeEnd" class="inline-edit txt-center text-muted" style="font-size: 11px;"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.statusPass" class="inline-edit txt-center text-success fw-bold text-uppercase"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.statusFail" class="inline-edit txt-center text-danger fw-bold text-uppercase"></textarea></td>
+                                    <td class="border-dark border"><textarea v-model="row.note" class="inline-edit txt-left text-dark"></textarea></td>
+                                    <td class="txt-center no-print border-dark border"><button @click="removeRow(docNghiemThuBG, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row signature-block mt-5 text-center mx-0 page-break-inside-avoid">
+                        <div class="col-6">
+                            <span class="fw-bold text-uppercase text-dark">{{ t('ĐẠI DIỆN BÊN A', 'PARTY A') }}</span><br>
+                            <em class="small text-muted">{{ t('(Ký và ghi rõ họ tên)', '(Signature & Full Name)') }}</em>
+                            <br><br><br><br><br><br>
+                        </div>
+                        <div class="col-6">
+                            <span class="fw-bold text-uppercase text-dark">{{ t('ĐẠI DIỆN BÊN B', 'PARTY B') }}</span><br>
+                            <em class="small text-muted">{{ t('(Ký và ghi rõ họ tên)', '(Signature & Full Name)') }}</em>
+                            <br><br><br><br><br><br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="currentTab === 'library'" class="flex-grow-1">
+                <div class="content-area mb-4 d-flex flex-wrap justify-content-between align-items-center no-print">
+                    <h3 class="m-0 text-primary fw-bold"><i class="fas fa-book text-success me-2"></i> {{ t('Thư Viện(Knowledge Hub)', 'Library Hub') }}</h3>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-4" v-for="(link, idx) in libraryLinks" :key="idx">
+                        <a :href="link.url" target="_blank" class="text-decoration-none text-dark">
+                            <div class="card h-100 border-0 shadow-sm lib-card p-4" style="border-radius: 12px; border: 1px solid var(--border-color) !important;">
+                                <div class="text-center">
+                                    <i :class="link.icon" class="fs-1 text-primary mb-3"></i>
+                                    <h5 class="fw-bold">{{ t(link.title, link.titleEn) }}</h5>
+                                    <p class="text-muted small mb-0">{{ t(link.desc, link.descEn) }}</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row no-print mt-auto pt-4 mb-2">
+                <div class="col-12 text-left text-muted small fw-bold" style="letter-spacing: 0.5px;">
+                    <i class="fas fa-code me-1"></i> Design by: Quốc Việt
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
