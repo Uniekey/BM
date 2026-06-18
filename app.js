@@ -59,13 +59,13 @@ createApp({
             docPR: [], 
             prWorkflow: [ 
                 { time: '', stepVi: '01. Lập phiếu ĐNMH', stepEn: '01. Create Purchase Requisition', person: 'Người lập phiếu', note: '' }, 
-                { time: '', stepVi: '02. Xác nhận tồn kho', stepEn: '02. Confirm Inventory / Stock', person: 'Phạm Thị Như Huỳnh', note: '' }, 
-                { time: '', stepVi: '03. Tổng hợp lại các mặt hàng cần mua/cấp', stepEn: '03. Consolidate Items', person: 'Phạm Thị Như Huỳnh', note: '' }, 
+                { time: '', stepVi: '02. Xác nhận tồn kho', stepEn: '02. Confirm Inventory / Stock', person: 'Nhân viên Kế hoạch', note: '' }, 
+                { time: '', stepVi: '03. Tổng hợp lại các mặt hàng cần mua/cấp', stepEn: '03. Consolidate Items', person: 'Nhân viên Kế hoạch', note: '' }, 
                 { time: '', stepVi: '04. Kiểm tra phiếu đề nghị', stepEn: '04. Check PR Details', person: 'Trưởng phòng Cơ Điện', note: '' }, 
-                { time: '', stepVi: '05. Xác nhận đơn hàng', stepEn: '05. Order Confirmation', person: 'Lưu Thị Cẩm Hồng', note: '' }, 
+                { time: '', stepVi: '05. Xác nhận đơn hàng', stepEn: '05. Order Confirmation', person: 'Trưởng phòng Cung ứng', note: '' }, 
                 { time: '', stepVi: '06. Kiểm tra ngân sách ĐNMH', stepEn: '06. Budget Verification', person: 'Kế toán trưởng', note: '' }, 
                 { time: '', stepVi: '07. Phê duyệt đề nghị mua hàng', stepEn: '07. Final Approval', person: 'Ban Giám đốc', note: '' }, 
-                { time: '', stepVi: '08. Tiếp nhận phiếu đề nghị', stepEn: '08. PR Received', person: 'Phạm Thị Như Huỳnh', note: '' } 
+                { time: '', stepVi: '08. Tiếp nhận phiếu đề nghị', stepEn: '08. PR Received', person: 'Nhân viên Kế hoạch', note: '' } 
             ],
             
             dailyType: 'thicong', 
