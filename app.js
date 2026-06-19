@@ -23,10 +23,13 @@ createApp({
             
             // Dữ liệu Thư Viện
             libraryLinks: [
-                { title: 'Link sharepoint Tài liệu MMTB Cảng', titleEn: 'Port Equipment Documents (Sharepoint)', desc: 'Hồ sơ MMTB', descEn: 'Equipment Profiles', icon: 'fas fa-anchor', url: 'https://dongtam365.sharepoint.com/sites/ctycpptca/05%20Phng%20Dch%20V%20C%20in%20Cng/Forms/AllItems.aspx?id=%2Fsites%2Fctycpptca%2F05%20Phng%20Dch%20V%20C%20in%20Cng%2F5%2E7%2ET%C3%80I%20LI%E1%BB%86U%20%2D%20H%E1%BB%92%20S%C6%A0%20MMTB&viewid=ca8054c9%2D7c9c%2D4c5b%2Da730%2D3722d554e029' },
+                { title: 'Link sharepoint Tài liệu MMTB', titleEn: 'Port Equipment Documents (Sharepoint)', desc: 'Hồ sơ MMTB', descEn: 'Equipment Profiles', icon: 'fas fa-anchor', url: 'https://dongtam365.sharepoint.com/sites/ctycpptca/05%20Phng%20Dch%20V%20C%20in%20Cng/Forms/AllItems.aspx?id=%2Fsites%2Fctycpptca%2F05%20Phng%20Dch%20V%20C%20in%20Cng%2F5%2E7%2ET%C3%80I%20LI%E1%BB%86U%20%2D%20H%E1%BB%92%20S%C6%A0%20MMTB&viewid=ca8054c9%2D7c9c%2D4c5b%2Da730%2D3722d554e029' },
                 { title: 'Hiệu chỉnh cân xe tải - Cảng', titleEn: 'Truck Scale Calibration', desc: 'Chỉnh góc - calib cân xe tải', descEn: 'Corner adjustment & Calibration', icon: 'fas fa-balance-scale', url: 'https://uniekey.github.io/truck-scale/' },
                 { title: 'Quy định/Quy trình/HDCV', titleEn: 'SOPs & Regulations', desc: 'Tài liệu nội bộ công ty', descEn: 'Internal Documents', icon: 'fas fa-envelope-open-text', url: '#' },
                 { title: 'Tính toán điện NLMT', titleEn: 'Solar PV Calculator', desc: 'Tính PV, INV, BESS', descEn: 'Calculate PV, INV, BESS', icon: 'fas fa-search-dollar', url: 'https://uniekey.github.io/solar/' },
+                { title: 'Dự phòng', titleEn: 'Spare', desc: 'Chưa biết ghi gì', descEn: 'Nothing to do', icon: 'fas fa-anchor', url: '#' },
+                { title: 'Dự phòng', titleEn: 'Spare', desc: 'Chưa biết ghi gì', descEn: 'Nothing to do', icon: 'fas fa-anchor', url: '#' },
+                { title: 'Dự phòng', titleEn: 'Spare', desc: 'Chưa biết ghi gì', descEn: 'Nothing to do', icon: 'fas fa-anchor', url: '#' },
                 { title: 'Dự phòng', titleEn: 'Spare', desc: 'Chưa biết ghi gì', descEn: 'Nothing to do', icon: 'fas fa-anchor', url: '#' },
                 { title: 'Dự phòng', titleEn: 'Spare', desc: 'Chưa biết ghi gì', descEn: 'Nothing to do', icon: 'fas fa-anchor', url: '#' }
             ],
