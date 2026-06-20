@@ -134,6 +134,7 @@
                                 <li v-for="item in filteredDatabase" @mousedown.prevent="selectItemFromSearch(item, docDuToan)"><span class="highlight">{{ item.partNo }}</span> - {{ item.name }}</li>
                             </ul>
                         </div>
+                        <button @click="addCategoryRow('dutoan')" class="btn btn-info text-white fw-bold shadow-sm" :title="t('Thêm Tiêu đề Nhóm', 'Add Category')"><i class="fas fa-folder-plus me-1"></i> {{ t('Nhóm', 'Group') }}</button>
                         <button @click="addBlankRow('dutoan')" class="btn btn-outline-primary fw-bold" :title="t('Thêm dòng', 'Add Row')"><i class="fas fa-plus"></i></button>
                         <button @click="clearDraft('dutoan')" class="btn btn-outline-danger fw-bold" :title="t('Xóa form', 'Clear Form')"><i class="fas fa-eraser"></i></button>
                         <button @click="exportToExcel('dutoan')" class="btn btn-success fw-bold shadow-sm"><i class="fas fa-file-excel me-1"></i> {{ t('XUẤT EXCEL', 'EXPORT EXCEL') }}</button>
@@ -162,52 +163,65 @@
                             <thead>
                                 <tr>
                                     <th rowspan="2" width="4%" class="txt-nowrap border-dark border">{{ t('STT', 'No.') }}</th>
-                                    <th rowspan="2" width="22%" class="border-dark border">{{ t('Hạng mục', 'Description') }}</th>
-                                    <th rowspan="2" width="16%" class="border-dark border">{{ t('Quy cách/ Xuất xứ', 'Specs') }}</th>
+                                    <th rowspan="2" width="20%" class="border-dark border">{{ t('Hạng mục', 'Description') }}</th>
+                                    <th rowspan="2" width="14%" class="border-dark border">{{ t('Quy cách/ Xuất xứ', 'Specs') }}</th>
                                     <th rowspan="2" width="5%" class="txt-nowrap border-dark border">{{ t('ĐVT', 'Unit') }}</th>
-                                    <th rowspan="2" width="6%" class="txt-nowrap border-dark border">{{ t('SL', 'Qty') }}</th>
+                                    <th rowspan="2" width="5%" class="txt-nowrap border-dark border">{{ t('SL', 'Qty') }}</th>
                                     <th colspan="2" class="border-dark border">{{ t('Đơn giá (VNĐ)', 'Unit Price (VND)') }}</th>
                                     <th colspan="2" class="border-dark border">{{ t('Thành tiền (VNĐ)', 'Total Amount (VND)') }}</th>
+                                    <th rowspan="2" width="11%" class="border-dark border text-danger">{{ t('Tổng cộng (VNĐ)', 'Grand Total') }}</th>
                                     <th rowspan="2" class="no-print" width="3%">X</th>
                                 </tr>
                                 <tr>
-                                    <th width="11%" class="txt-nowrap border-dark border">{{ t('Vật tư', 'Material') }}</th>
-                                    <th width="11%" class="txt-nowrap border-dark border">{{ t('Nhân công', 'Labor') }}</th>
-                                    <th width="11%" class="txt-nowrap border-dark border">{{ t('Vật tư', 'Material') }}</th>
-                                    <th width="11%" class="txt-nowrap border-dark border">{{ t('Nhân công', 'Labor') }}</th>
+                                    <th width="9%" class="txt-nowrap border-dark border">{{ t('Vật tư', 'Material') }}</th>
+                                    <th width="9%" class="txt-nowrap border-dark border">{{ t('Nhân công', 'Labor') }}</th>
+                                    <th width="9%" class="txt-nowrap border-dark border">{{ t('Vật tư', 'Material') }}</th>
+                                    <th width="9%" class="txt-nowrap border-dark border">{{ t('Nhân công', 'Labor') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(row, idx) in docDuToan" :key="idx">
-                                    <td class="txt-center text-muted border-dark border">{{ idx + 1 }}</td>
-                                    <td class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left"></textarea></td>
-                                    <td class="border-dark border"><textarea v-model="row.specs" class="inline-edit txt-left text-muted"></textarea></td>
-                                    <td class="border-dark border"><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td>
-                                    <td class="border-dark border"><input type="text" :value="formatNum(row.qty)" @focus="focusNum($event, row.qty)" @blur="row.qty = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td>
-                                    <td class="border-dark border"><input type="text" :value="formatNum(row.priceVT)" @focus="focusNum($event, row.priceVT)" @blur="row.priceVT = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
-                                    <td class="border-dark border"><input type="text" :value="formatNum(row.priceNC)" @focus="focusNum($event, row.priceNC)" @blur="row.priceNC = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
-                                    <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceVT) }}</td>
-                                    <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceNC) }}</td>
-                                    <td class="txt-center no-print"><button @click="removeRow(docDuToan, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
+                                <tr v-for="(row, idx) in docDuToan" :key="idx" :class="{'bg-light border-bottom border-dark border-2': row.isCategory}">
+                                    <template v-if="row.isCategory">
+                                        <td class="txt-center fw-bold text-primary border-dark border fs-6">{{ getRowIndex(idx) }}</td>
+                                        <td colspan="6" class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left fw-bold text-uppercase text-primary fs-6" placeholder="NHẬP TIÊU ĐỀ NHÓM (VD: I. HẠNG MỤC ĐIỆN)"></textarea></td>
+                                        <td class="txt-right txt-nowrap border-dark border px-2 fw-bold text-dark">{{ formatNum(getCategoryTotal(idx).vt) }}</td>
+                                        <td class="txt-right txt-nowrap border-dark border px-2 fw-bold text-dark">{{ formatNum(getCategoryTotal(idx).nc) }}</td>
+                                        <td class="txt-right txt-nowrap border-dark border px-2 fw-bold text-danger">{{ formatNum(getCategoryTotal(idx).total) }}</td>
+                                        <td class="txt-center no-print"><button @click="removeRow(docDuToan, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
+                                    </template>
+                                    <template v-else>
+                                        <td class="txt-center text-muted border-dark border fw-bold">{{ getRowIndex(idx) }}</td>
+                                        <td class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left"></textarea></td>
+                                        <td class="border-dark border"><textarea v-model="row.specs" class="inline-edit txt-left text-muted"></textarea></td>
+                                        <td class="border-dark border"><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td>
+                                        <td class="border-dark border"><input type="text" :value="formatNum(row.qty)" @focus="focusNum($event, row.qty)" @blur="row.qty = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td>
+                                        <td class="border-dark border"><input type="text" :value="formatNum(row.priceVT)" @focus="focusNum($event, row.priceVT)" @blur="row.priceVT = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
+                                        <td class="border-dark border"><input type="text" :value="formatNum(row.priceNC)" @focus="focusNum($event, row.priceNC)" @blur="row.priceNC = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
+                                        <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceVT) }}</td>
+                                        <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceNC) }}</td>
+                                        <td class="txt-right txt-nowrap border-dark border px-2 fw-bold text-danger">{{ formatNum((row.qty * row.priceVT) + (row.qty * row.priceNC)) }}</td>
+                                        <td class="txt-center no-print"><button @click="removeRow(docDuToan, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
+                                    </template>
                                 </tr>
                                 
                                 <tr class="table-light fw-bold border-top border-2 border-dark">
                                     <td colspan="7" class="txt-right text-uppercase border-dark border txt-nowrap">{{ t('Tổng chi phí trực tiếp:', 'Subtotal Direct Cost:') }}</td>
                                     <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(dtSumVT) }}</td>
                                     <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(dtSumNC) }}</td>
+                                    <td class="txt-right txt-nowrap border-dark border px-2 text-danger">{{ formatNum(dtSumVT + dtSumNC) }}</td>
                                     <td class="no-print"></td>
                                 </tr>
                                 
                                 <tr class="table-secondary fw-bold border-dark">
-                                    <td colspan="10" class="txt-center border-dark border text-uppercase txt-nowrap" style="letter-spacing: 1px;">{{ t('TỔNG HỢP CHI PHÍ & LỢI NHUẬN', 'COST & PROFIT SUMMARY') }}</td>
+                                    <td colspan="11" class="txt-center border-dark border text-uppercase txt-nowrap" style="letter-spacing: 1px;">{{ t('TỔNG HỢP CHI PHÍ & LỢI NHUẬN', 'COST & PROFIT SUMMARY') }}</td>
                                 </tr>
                                 <tr class="fw-bold bg-light">
-                                    <td colspan="7" class="txt-right border-dark border txt-nowrap">{{ t('1. TỔNG CHI PHÍ TRỰC TIẾP (Vật tư + Nhân công):', '1. TOTAL BASE COST (Mat. + Lab.):') }}</td>
+                                    <td colspan="8" class="txt-right border-dark border txt-nowrap">{{ t('1. TỔNG CHI PHÍ TRỰC TIẾP (Vật tư + Nhân công):', '1. TOTAL BASE COST (Mat. + Lab.):') }}</td>
                                     <td colspan="2" class="txt-right txt-nowrap border-dark border px-2 fs-6">{{ formatNum(dtSumVT + dtSumNC) }}</td>
                                     <td class="no-print"></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="7" class="txt-right border-dark border text-muted txt-nowrap">
+                                    <td colspan="8" class="txt-right border-dark border text-muted txt-nowrap">
                                         {{ t('2. Chi phí Quản lý (', '2. Management Cost (') }}
                                         <input type="text" :value="formatNum(tyleNCGT)" @focus="focusNum($event, tyleNCGT)" @blur="tyleNCGT = blurNum($event)" class="inline-edit d-inline txt-center text-primary fw-bold p-0 border-bottom border-primary" style="width: 25px; height: 18px; min-height: 18px;">{{ t('% NC)', '% Lab)') }}
                                     </td>
@@ -215,7 +229,7 @@
                                     <td class="no-print"></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="7" class="txt-right border-dark border text-muted txt-nowrap">
+                                    <td colspan="8" class="txt-right border-dark border text-muted txt-nowrap">
                                         {{ t('3. Lợi nhuận định mức Vật tư (', '3. Mat. Profit Margin (') }}
                                         <input type="text" :value="formatNum(tyleQLCVT)" @focus="focusNum($event, tyleQLCVT)" @blur="tyleQLCVT = blurNum($event)" class="inline-edit d-inline txt-center text-primary fw-bold p-0 border-bottom border-primary" style="width: 25px; height: 18px; min-height: 18px;">{{ t('% VT)', '% Mat)') }}
                                     </td>
@@ -223,7 +237,7 @@
                                     <td class="no-print"></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="7" class="txt-right border-dark border text-muted txt-nowrap">
+                                    <td colspan="8" class="txt-right border-dark border text-muted txt-nowrap">
                                         {{ t('4. Lợi nhuận định mức Nhân công (', '4. Lab. Profit Margin (') }}
                                         <input type="text" :value="formatNum(tyleQLCNC)" @focus="focusNum($event, tyleQLCNC)" @blur="tyleQLCNC = blurNum($event)" class="inline-edit d-inline txt-center text-primary fw-bold p-0 border-bottom border-primary" style="width: 25px; height: 18px; min-height: 18px;">{{ t('% NC+QL)', '% Lab)') }}
                                     </td>
@@ -231,12 +245,12 @@
                                     <td class="no-print"></td>
                                 </tr>
                                 <tr class="fw-bold">
-                                    <td colspan="7" class="txt-right border-dark border text-dark txt-nowrap">{{ t('TỔNG DỰ TOÁN (TRƯỚC THUẾ):', 'ESTIMATE BEFORE TAX:') }}</td>
+                                    <td colspan="8" class="txt-right border-dark border text-dark txt-nowrap">{{ t('TỔNG DỰ TOÁN (TRƯỚC THUẾ):', 'ESTIMATE BEFORE TAX:') }}</td>
                                     <td colspan="2" class="txt-right txt-nowrap border-dark border px-2 text-dark fs-6">{{ formatNum(dtTotalBeforeVAT) }}</td>
                                     <td class="no-print"></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="7" class="txt-right border-dark border txt-nowrap">
+                                    <td colspan="8" class="txt-right border-dark border txt-nowrap">
                                         {{ t('Thuế GTGT (VAT ', 'VAT (') }}
                                         <input type="text" :value="formatNum(dtVatRate)" @focus="focusNum($event, dtVatRate)" @blur="dtVatRate = blurNum($event)" class="inline-edit d-inline txt-center text-primary fw-bold p-0 border-bottom border-primary" style="width: 25px; height: 18px; min-height: 18px;">%):
                                     </td>
@@ -244,12 +258,12 @@
                                     <td class="no-print"></td>
                                 </tr>
                                 <tr class="table-light fw-bold border-dark border-2 border-bottom-0">
-                                    <td colspan="7" class="txt-right border-dark border text-danger fs-6 text-uppercase txt-nowrap">{{ t('TỔNG GIÁ TRỊ (SAU THUẾ):', 'TOTAL CONTRACT VALUE:') }}</td>
+                                    <td colspan="8" class="txt-right border-dark border text-danger fs-6 text-uppercase txt-nowrap">{{ t('TỔNG GIÁ TRỊ (SAU THUẾ):', 'TOTAL CONTRACT VALUE:') }}</td>
                                     <td colspan="2" class="txt-right txt-nowrap border-dark border px-2 text-danger fs-5">{{ formatNum(dtTotalAfterVAT) }}</td>
                                     <td class="no-print border-dark border-start-0 border-top"></td>
                                 </tr>
                                 <tr class="table-light border-dark border-2 border-top-0">
-                                    <td colspan="9" class="txt-right border-dark border text-muted fst-italic py-2 border-top-0">
+                                    <td colspan="10" class="txt-right border-dark border text-muted fst-italic py-2 border-top-0">
                                         {{ t('Bằng chữ: ', 'In words: ') }}<span class="text-dark fw-bold">{{ readMoney(dtTotalAfterVAT) }}</span>
                                     </td>
                                     <td class="no-print border-dark border border-top-0"></td>
@@ -284,6 +298,7 @@
                                 <li v-for="item in filteredDatabase" @mousedown.prevent="selectItemFromSearch(item, docBaoGia)"><span class="highlight">{{ item.partNo }}</span> - {{ item.name }}</li>
                             </ul>
                         </div>
+                        <button @click="addCategoryRow('baogia')" class="btn btn-info text-white fw-bold shadow-sm" :title="t('Thêm Tiêu đề Nhóm', 'Add Category')"><i class="fas fa-folder-plus me-1"></i> {{ t('Nhóm', 'Group') }}</button>
                         <button @click="addBlankRow('baogia')" class="btn btn-outline-primary fw-bold"><i class="fas fa-plus"></i></button>
                         <button @click="copyFromDuToan" class="btn btn-warning fw-bold text-dark"><i class="fas fa-bolt me-1"></i> {{ t('Gộp từ BOM', 'Import from BOM') }}</button>
                         <button @click="clearDraft('baogia')" class="btn btn-outline-danger fw-bold"><i class="fas fa-eraser"></i></button>
@@ -355,15 +370,23 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(row, idx) in docBaoGia" :key="idx">
-                                    <td class="txt-center text-muted border-dark border">{{ idx + 1 }}</td>
-                                    <td class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left"></textarea></td>
-                                    <td class="border-dark border"><textarea v-model="row.specs" class="inline-edit txt-left text-muted"></textarea></td>
-                                    <td class="border-dark border"><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td>
-                                    <td class="border-dark border"><input type="text" :value="formatNum(row.qty)" @focus="focusNum($event, row.qty)" @blur="row.qty = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td>
-                                    <td class="border-dark border"><input type="text" :value="formatNum(row.priceGop)" @focus="focusNum($event, row.priceGop)" @blur="row.priceGop = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
-                                    <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceGop) }}</td>
-                                    <td class="txt-center no-print"><button @click="removeRow(docBaoGia, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
+                                <tr v-for="(row, idx) in docBaoGia" :key="idx" :class="{'bg-light border-bottom border-dark border-2': row.isCategory}">
+                                    <template v-if="row.isCategory">
+                                        <td class="txt-center fw-bold text-primary border-dark border fs-6">{{ getRowIndexBG(idx) }}</td>
+                                        <td colspan="5" class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left fw-bold text-uppercase text-primary fs-6" placeholder="NHẬP TIÊU ĐỀ NHÓM"></textarea></td>
+                                        <td class="txt-right txt-nowrap border-dark border px-2 fw-bold text-danger">{{ formatNum(getBGCategoryTotal(idx)) }}</td>
+                                        <td class="txt-center no-print"><button @click="removeRow(docBaoGia, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
+                                    </template>
+                                    <template v-else>
+                                        <td class="txt-center text-muted border-dark border fw-bold">{{ getRowIndexBG(idx) }}</td>
+                                        <td class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left"></textarea></td>
+                                        <td class="border-dark border"><textarea v-model="row.specs" class="inline-edit txt-left text-muted"></textarea></td>
+                                        <td class="border-dark border"><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td>
+                                        <td class="border-dark border"><input type="text" :value="formatNum(row.qty)" @focus="focusNum($event, row.qty)" @blur="row.qty = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td>
+                                        <td class="border-dark border"><input type="text" :value="formatNum(row.priceGop)" @focus="focusNum($event, row.priceGop)" @blur="row.priceGop = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
+                                        <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceGop) }}</td>
+                                        <td class="txt-center no-print"><button @click="removeRow(docBaoGia, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
+                                    </template>
                                 </tr>
                                 <tr class="bg-light border-top border-dark border-2">
                                     <td colspan="6" class="txt-right fw-bold text-uppercase border-dark border">{{ t('Tổng giá (trước thuế):', 'Subtotal:') }}</td>
