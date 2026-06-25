@@ -54,6 +54,7 @@
 
             <ul class="nav flex-column w-100 flex-grow-1 mt-2">
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'database' }" @click="currentTab = 'database'"><i class="fas fa-server"></i> {{ t('Kho Vật Tư', 'Master Data') }}</a></li>
+                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'employees' }" @click="currentTab = 'employees'"><i class="fas fa-users-cog"></i> {{ t('Nhân Viên', 'Employees') }}</a></li>
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'dutoan' }" @click="currentTab = 'dutoan'"><i class="fas fa-calculator"></i> {{ t('Dự Toán', 'Cost Estimate BOM') }}</a></li>
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'baogia' }" @click="currentTab = 'baogia'"><i class="fas fa-file-invoice-dollar"></i> {{ t('Báo Giá', 'Quotation') }}</a></li>
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'pr' }" @click="currentTab = 'pr'"><i class="fas fa-file-signature text-warning"></i> {{ t('Phiếu ĐNMH', 'Purchase Req (PR)') }}</a></li>
@@ -123,6 +124,61 @@
                 </div>
             </div>
 
+            <div v-if="currentTab === 'employees'" class="content-area flex-grow-1">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="m-0 text-primary fw-bold" @dblclick="loginAdmin" style="cursor: pointer;" :title="t('Nhấp đúp để đăng nhập Admin', 'Double click to login')">
+                            <i class="fas fa-users-cog me-2"></i> {{ t('Danh Sách Nhân Viên', 'Employee Database') }}
+                        </h3>
+                    </div>
+                    <div class="mt-3 mt-md-0 d-flex gap-2">
+                        <button @click="exportToExcel('employees')" class="btn btn-success fw-bold shadow-sm"><i class="fas fa-file-excel me-1"></i> {{ t('Xuất Excel', 'Export Excel') }}</button>
+                    </div>
+                </div>
+                
+                <div v-if="isAdmin" class="card mb-4 bg-light border-0 shadow-sm no-print">
+                    <div class="card-body row g-2 align-items-end">
+                        <div class="col-6 col-md-2"><label class="form-label small fw-bold text-muted">{{ t('MSNV', 'Emp ID') }}</label><input v-model="newEmployee.id" type="text" class="form-control form-control-sm"></div>
+                        <div class="col-12 col-md-3"><label class="form-label small fw-bold text-muted">{{ t('Họ và tên', 'Full Name') }}</label><input v-model="newEmployee.name" type="text" class="form-control form-control-sm"></div>
+                        <div class="col-6 col-md-2"><label class="form-label small fw-bold text-muted">{{ t('Vị trí CV', 'Position') }}</label><input v-model="newEmployee.position" type="text" class="form-control form-control-sm"></div>
+                        <div class="col-4 col-md-2"><label class="form-label small fw-bold text-muted">{{ t('Tổ', 'Team') }}</label><input v-model="newEmployee.team" type="text" class="form-control form-control-sm"></div>
+                        <div class="col-4 col-md-1"><label class="form-label small fw-bold text-muted">{{ t('Nhóm', 'Group') }}</label><input v-model="newEmployee.group" type="text" class="form-control form-control-sm"></div>
+                        <div class="col-4 col-md-1"><label class="form-label small fw-bold text-muted">{{ t('SĐT', 'Phone') }}</label><input v-model="newEmployee.phone" type="text" class="form-control form-control-sm"></div>
+                        <div class="col-12 col-md-1 d-flex"><button @click="addEmployee" class="btn btn-primary btn-sm flex-grow-1"><i class="fas fa-plus"></i></button></div>
+                    </div>
+                </div>
+                
+                <div v-if="employees.length === 0" class="empty-state"><i class="fas fa-users-slash"></i><h5 class="fw-bold text-secondary">{{ t('Chưa có dữ liệu nhân viên', 'No employee data') }}</h5></div>
+                <div v-else class="table-responsive">
+                    <table class="table table-hover align-middle bg-white m-0">
+                        <thead>
+                            <tr>
+                                <th width="5%">{{ t('STT', 'No.') }}</th>
+                                <th width="10%">{{ t('MSNV', 'Emp ID') }}</th>
+                                <th width="15%">{{ t('Họ và tên', 'Full Name') }}</th>
+                                <th width="15%">{{ t('Vị trí công việc', 'Position') }}</th>
+                                <th width="5%">{{ t('Tổ', 'Team') }}</th>
+                                <th width="5%">{{ t('Nhóm', 'Group') }}</th>
+                                <th width="10%">{{ t('SĐT', 'Phone') }}</th>
+                                <th width="35%" class="no-print" v-if="isAdmin">{{ t('Xóa', 'Del') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(emp, index) in employees" :key="index">
+                                <td class="txt-center text-muted fw-bold">{{ index + 1 }}</td>
+                                <td><textarea v-model="emp.id" class="inline-edit txt-left fw-bold text-primary" :disabled="!isAdmin"></textarea></td>
+                                <td><textarea v-model="emp.name" class="inline-edit txt-left fw-bold text-dark" :disabled="!isAdmin"></textarea></td>
+                                <td><textarea v-model="emp.position" class="inline-edit txt-left text-muted" :disabled="!isAdmin"></textarea></td>
+                                <td><textarea v-model="emp.team" class="inline-edit txt-center" :disabled="!isAdmin"></textarea></td>
+                                <td><textarea v-model="emp.group" class="inline-edit txt-center" :disabled="!isAdmin"></textarea></td>
+                                <td><textarea v-model="emp.phone" class="inline-edit txt-left" :disabled="!isAdmin"></textarea></td>
+                                <td class="txt-center no-print" v-if="isAdmin"><button @click="removeRow(employees, index)" class="btn btn-sm btn-outline-danger py-0 px-2 action-btn"><i class="fas fa-trash"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div v-if="currentTab === 'dutoan'" class="flex-grow-1">
                 <div class="content-area mb-3 d-flex flex-wrap justify-content-between align-items-center no-print">
                     <h3 class="m-0 text-primary fw-bold mb-2 mb-md-0"><i class="fas fa-calculator me-2"></i> {{ t('Lập Dự Toán / BOM', 'Cost Estimate / BOM') }}</h3>
@@ -143,20 +199,12 @@
                 </div>
                 
                 <div id="print-dutoan" class="print-area">
-                    <div class="row mb-3 align-items-center">
-                        <div class="col-3 text-center">
-                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
-                                <img :src="companyLogo" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
-                            </div>
-                        </div>
-                        <div class="col-6 text-center">
-                            <h2 class="form-title mb-1">{{ t('BẢNG DỰ TOÁN', 'BILL OF MATERIALS (BOM)') }}</h2>
+                    <print-header :title="t('BẢNG DỰ TOÁN', 'BILL OF MATERIALS (BOM)')" :logo="companyLogo" @logo-upload="uploadLogo" :bordered="false" :show-meta="false">
+                        <template #subtitle>
                             <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle" :placeholder="t('NHẬP THÔNG TIN DỰ ÁN...', 'ENTER PROJECT INFO...')"></textarea>
                             <div class="text-muted mt-1"><em>{{ t('', '') }}</em></div>
-                        </div>
-                        <div class="col-3"></div>
-                    </div>
+                        </template>
+                    </print-header>
                     
                     <div class="table-responsive mt-4">
                         <table class="table align-middle border-dark">
@@ -181,27 +229,25 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(row, idx) in docDuToan" :key="idx" :class="{'bg-light border-bottom border-dark border-2': row.isCategory}">
-                                    <template v-if="row.isCategory">
-                                        <td class="txt-center fw-bold text-primary border-dark border fs-6">{{ getRowIndex(idx) }}</td>
-                                        <td colspan="6" class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left fw-bold text-uppercase text-primary fs-6" placeholder="NHẬP TIÊU ĐỀ NHÓM (VD: I. HẠNG MỤC ĐIỆN)"></textarea></td>
-                                        <td class="txt-right txt-nowrap border-dark border px-2 fw-bold text-dark">{{ formatNum(getCategoryTotal(idx).vt) }}</td>
-                                        <td class="txt-right txt-nowrap border-dark border px-2 fw-bold text-dark">{{ formatNum(getCategoryTotal(idx).nc) }}</td>
-                                        <td class="txt-right txt-nowrap border-dark border px-2 fw-bold text-danger">{{ formatNum(getCategoryTotal(idx).total) }}</td>
-                                        <td class="txt-center no-print"><button @click="removeRow(docDuToan, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
-                                    </template>
-                                    <template v-else>
-                                        <td class="txt-center text-muted border-dark border fw-bold">{{ getRowIndex(idx) }}</td>
-                                        <td class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left"></textarea></td>
-                                        <td class="border-dark border"><textarea v-model="row.specs" class="inline-edit txt-left text-muted"></textarea></td>
-                                        <td class="border-dark border"><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td>
-                                        <td class="border-dark border"><input type="text" :value="formatNum(row.qty)" @focus="focusNum($event, row.qty)" @blur="row.qty = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td>
-                                        <td class="border-dark border"><input type="text" :value="formatNum(row.priceVT)" @focus="focusNum($event, row.priceVT)" @blur="row.priceVT = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
-                                        <td class="border-dark border"><input type="text" :value="formatNum(row.priceNC)" @focus="focusNum($event, row.priceNC)" @blur="row.priceNC = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
-                                        <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceVT) }}</td>
-                                        <td class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceNC) }}</td>
-                                        <td class="txt-right txt-nowrap border-dark border px-2 fw-bold text-danger">{{ formatNum((row.qty * row.priceVT) + (row.qty * row.priceNC)) }}</td>
-                                        <td class="txt-center no-print"><button @click="removeRow(docDuToan, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
-                                    </template>
+                                    
+                                    <td v-if="row.isCategory" class="txt-center fw-bold text-primary border-dark border fs-6">{{ getRowIndex(idx) }}</td>
+                                    <td v-if="row.isCategory" colspan="6" class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left fw-bold text-uppercase text-primary fs-6" placeholder="NHẬP TIÊU ĐỀ NHÓM (VD: I. HẠNG MỤC ĐIỆN)"></textarea></td>
+                                    <td v-if="row.isCategory" class="txt-right txt-nowrap border-dark border px-2 fw-bold text-dark">{{ formatNum(getCategoryTotal(idx).vt) }}</td>
+                                    <td v-if="row.isCategory" class="txt-right txt-nowrap border-dark border px-2 fw-bold text-dark">{{ formatNum(getCategoryTotal(idx).nc) }}</td>
+                                    <td v-if="row.isCategory" class="txt-right txt-nowrap border-dark border px-2 fw-bold text-danger">{{ formatNum(getCategoryTotal(idx).total) }}</td>
+                                    <td v-if="row.isCategory" class="txt-center no-print"><button @click="removeRow(docDuToan, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
+                                    
+                                    <td v-if="!row.isCategory" class="txt-center text-muted border-dark border fw-bold">{{ getRowIndex(idx) }}</td>
+                                    <td v-if="!row.isCategory" class="border-dark border"><textarea v-model="row.name" class="inline-edit txt-left"></textarea></td>
+                                    <td v-if="!row.isCategory" class="border-dark border"><textarea v-model="row.specs" class="inline-edit txt-left text-muted"></textarea></td>
+                                    <td v-if="!row.isCategory" class="border-dark border"><textarea v-model="row.unit" class="inline-edit txt-center txt-nowrap"></textarea></td>
+                                    <td v-if="!row.isCategory" class="border-dark border"><input type="text" :value="formatNum(row.qty)" @focus="focusNum($event, row.qty)" @blur="row.qty = blurNum($event)" class="inline-edit txt-center txt-nowrap"></td>
+                                    <td v-if="!row.isCategory" class="border-dark border"><input type="text" :value="formatNum(row.priceVT)" @focus="focusNum($event, row.priceVT)" @blur="row.priceVT = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
+                                    <td v-if="!row.isCategory" class="border-dark border"><input type="text" :value="formatNum(row.priceNC)" @focus="focusNum($event, row.priceNC)" @blur="row.priceNC = blurNum($event)" class="inline-edit txt-right txt-nowrap"></td>
+                                    <td v-if="!row.isCategory" class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceVT) }}</td>
+                                    <td v-if="!row.isCategory" class="txt-right txt-nowrap border-dark border px-2">{{ formatNum(row.qty * row.priceNC) }}</td>
+                                    <td v-if="!row.isCategory" class="txt-right txt-nowrap border-dark border px-2 fw-bold text-danger">{{ formatNum((row.qty * row.priceVT) + (row.qty * row.priceNC)) }}</td>
+                                    <td v-if="!row.isCategory" class="txt-center no-print"><button @click="removeRow(docDuToan, idx)" class="btn btn-sm text-danger action-btn py-0"><i class="fas fa-times fs-6"></i></button></td>
                                 </tr>
                                 
                                 <tr class="table-light fw-bold border-top border-2 border-dark">
@@ -308,23 +354,16 @@
                 </div>
                 
                 <div id="print-baogia" class="print-area w-100">
-                    <div class="row align-items-stretch border border-dark mx-0 pr-header-row mb-4 page-break-inside-avoid">
-                        <div class="col-3 text-center border-end border-dark d-flex align-items-center justify-content-center p-1">
-                            <div class="logo-container position-relative w-100 pr-logo-box">
-                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
-                            </div>
-                        </div>
-                        <div class="col-6 text-center border-end border-dark d-flex flex-column justify-content-center p-1">
-                            <h2 class="form-title fw-bold pr-title mb-1">{{ t('BẢNG BÁO GIÁ', 'QUOTATION') }}</h2>
+                    <print-header :title="t('BẢNG BÁO GIÁ', 'QUOTATION')" :logo="companyLogo" @logo-upload="uploadLogo" :bordered="true" :show-meta="true">
+                        <template #subtitle>
                             <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold text-uppercase project-subtitle m-0 p-0" style="font-size: 14px;" :placeholder="t('NHẬP TÊN DỰ ÁN...', 'ENTER PROJECT INFO...')"></textarea>
-                        </div>
-                        <div class="col-3 p-1 d-flex flex-column justify-content-center">
-                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1 fw-bold">{{ t('Số hiệu:', 'Doc No:') }}</span> <textarea v-model="bgHeader.isoDoc" class="inline-edit fw-bold"></textarea></div>
-                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Ngày HL:', 'Effective:') }}</span> <textarea v-model="bgHeader.isoDate" class="inline-edit"></textarea></div>
-                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Lần BH:', 'Issue No:') }}</span> <textarea v-model="bgHeader.isoRev" class="inline-edit"></textarea></div>
-                        </div>
-                    </div>
+                        </template>
+                        <template #meta>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1 fw-bold">{{ t('Số hiệu:', 'Doc No:') }}</span> <textarea v-model="bgHeader.isoDoc" class="inline-edit fw-bold p-0"></textarea></div>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Ngày HL:', 'Effective:') }}</span> <textarea v-model="bgHeader.isoDate" class="inline-edit p-0"></textarea></div>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Lần BH:', 'Issue No:') }}</span> <textarea v-model="bgHeader.isoRev" class="inline-edit p-0"></textarea></div>
+                        </template>
+                    </print-header>
 
                     <div class="page-break-inside-avoid mb-4">
                         <div class="row mb-1">
@@ -461,23 +500,14 @@
                 </div>
                 
                 <div id="print-pr" class="print-area w-100">
-                    <div class="row align-items-stretch border border-dark mx-0 pr-header-row">
-                        <div class="col-3 text-center border-end border-dark d-flex align-items-center justify-content-center p-1">
-                            <div class="logo-container position-relative w-100 pr-logo-box">
-                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
-                            </div>
-                        </div>
-                        <div class="col-6 text-center border-end border-dark d-flex flex-column justify-content-center p-1">
-                            <h2 class="form-title fw-bold pr-title">{{ t('PHIẾU ĐỀ NGHỊ MUA HÀNG', 'PURCHASE REQUISITION') }}</h2>
-                        </div>
-                        <div class="col-3 p-1 d-flex flex-column justify-content-center">
-                            <div class="fw-bold doc-no">{{ t('Số hiệu: ADG_QT_KH_01/BM01', 'Doc No: ADG_QT_KH_01/BM01') }}</div>
-                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Ngày HL:', 'Effective:') }}</span> <textarea v-model="prHeader.isoDate" class="inline-edit"></textarea></div>
-                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Lần BH:', 'Issue No:') }}</span> <textarea v-model="prHeader.isoRev" class="inline-edit"></textarea></div>
-                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Lần SX:', 'Rev No:') }}</span> <textarea v-model="prHeader.isoCheck" class="inline-edit"></textarea></div>
-                        </div>
-                    </div>
+                    <print-header :title="t('PHIẾU ĐỀ NGHỊ MUA HÀNG', 'PURCHASE REQUISITION')" :logo="companyLogo" @logo-upload="uploadLogo" :bordered="true" :show-meta="true">
+                        <template #meta>
+                            <div class="fw-bold doc-no" style="font-size: 11px;">{{ t('Số hiệu: ADG_QT_KH_01/BM01', 'Doc No: ADG_QT_KH_01/BM01') }}</div>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Ngày HL:', 'Effective:') }}</span> <textarea v-model="prHeader.isoDate" class="inline-edit p-0 m-0"></textarea></div>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Lần BH:', 'Issue No:') }}</span> <textarea v-model="prHeader.isoRev" class="inline-edit p-0 m-0"></textarea></div>
+                            <div class="d-flex align-items-center doc-meta"><span class="txt-nowrap me-1">{{ t('Lần SX:', 'Rev No:') }}</span> <textarea v-model="prHeader.isoCheck" class="inline-edit p-0 m-0"></textarea></div>
+                        </template>
+                    </print-header>
 
                     <table class="table table-bordered border-dark table-sm w-100 text-dark pr-info-table mb-2 align-middle">
                         <tbody>
@@ -513,9 +543,7 @@
                             </tr>
                             <tr>
                                 <td class="fw-bold txt-nowrap bg-light text-end pe-2">{{ t('Ngày duyệt:', 'Approved:') }}</td>
-                                <td colspan="3">
-                                    <textarea v-model="prHeader.approvedDate" class="inline-edit fw-bold p-0 m-0 border-0"></textarea></td>
-                                </td>
+                                <td colspan="3"><textarea v-model="prHeader.approvedDate" class="inline-edit fw-bold p-0 m-0 border-0"></textarea></td>
                             </tr>
                         </tbody>
                     </table>
@@ -630,20 +658,12 @@
                 </div>
                 
                 <div id="print-daily" class="print-area">
-                    <div class="row mb-3 align-items-center mx-0">
-                        <div class="col-3 text-center p-0">
-                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
-                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
-                            </div>
-                        </div>
-                        <div class="col-6 text-center">
-                            <h3 class="form-title mb-1">{{ t('NHẬT KÝ THI CÔNG', 'DAILY SITE REPORT') }}</h3>
+                    <print-header :title="t('NHẬT KÝ THI CÔNG', 'DAILY SITE REPORT')" :logo="companyLogo" @logo-upload="uploadLogo" :bordered="false" :show-meta="false">
+                        <template #subtitle>
                             <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle" :placeholder="t('NHẬP THÔNG TIN DỰ ÁN...', 'ENTER PROJECT INFO...')"></textarea>
                             <div class="text-muted fw-bold mt-1"><em>{{ dailyType === 'baotri' ? t('(Công tác Bảo trì & Khắc phục sự cố)', '(Maintenance & Troubleshooting)') : t('(Công tác Thi công & Lắp đặt)', '(Construction & Installation)') }}</em></div>
-                        </div>
-                        <div class="col-3 p-0"></div>
-                    </div>
+                        </template>
+                    </print-header>
                     
                     <div class="table-responsive mt-3">
                         <table class="table table-bordered border-dark mb-4 align-middle">
@@ -758,18 +778,11 @@
                 </div>
                 
                 <div id="print-nghiemthu" class="print-area">
-                    <div class="row mb-3 align-items-center mx-0">
-                        <div class="col-3 text-center p-0">
-                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
-                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
-                            </div>
-                        </div>
-                        <div class="col-9 text-center">
-                            <h3 class="form-title mb-1 text-dark">{{ t('BIÊN BẢN NGHIỆM THU KỸ THUẬT', 'TECHNICAL ACCEPTANCE RECORD') }}</h3>
+                    <print-header :title="t('BIÊN BẢN NGHIỆM THU KỸ THUẬT', 'TECHNICAL ACCEPTANCE RECORD')" :logo="companyLogo" @logo-upload="uploadLogo" :bordered="false" :show-meta="false">
+                        <template #subtitle>
                             <textarea v-model="globalProjectName" class="inline-edit txt-center fw-bold project-subtitle" :placeholder="t('NHẬP THÔNG TIN DỰ ÁN...', 'ENTER PROJECT INFO...')"></textarea>
-                        </div>
-                    </div>
+                        </template>
+                    </print-header>
                     
                     <div class="mb-4 mt-3">
                         <table class="table table-borderless table-sm w-100 w-md-75 align-middle">
@@ -850,18 +863,11 @@
                 </div>
                 
                 <div id="print-nghiemthu-bg" class="print-area w-100">
-                    <div class="row mb-3 mx-0 align-items-center">
-                        <div class="col-3 text-center p-0">
-                            <div class="logo-container border border-dashed border-secondary p-1 position-relative" style="height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px;">
-                                <img :src="companyLogo" alt="Logo Công ty" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                                <input type="file" @change="uploadLogo" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
-                            </div>
-                        </div>
-                        <div class="col-9 text-center">
-                            <h3 class="form-title text-dark mb-1">{{ t('BIÊN BẢN NGHIỆM THU BÀN GIAO CÔNG TRÌNH ĐƯA VÀO SỬ DỤNG', 'HANDOVER ACCEPTANCE RECORD') }}</h3>
+                    <print-header :title="t('BIÊN BẢN NGHIỆM THU BÀN GIAO CÔNG TRÌNH ĐƯA VÀO SỬ DỤNG', 'HANDOVER ACCEPTANCE RECORD')" :logo="companyLogo" @logo-upload="uploadLogo" :bordered="false" :show-meta="false">
+                        <template #subtitle>
                             <textarea v-model="ntbgHeader.project" class="inline-edit txt-center fw-bold project-subtitle m-0 w-100" style="font-size: 16px;" placeholder="V/v: Sửa chữa, bảo trì máy móc thiết bị..."></textarea>
-                        </div>
-                    </div>
+                        </template>
+                    </print-header>
 
                     <div class="page-break-inside-avoid ntbg-thanhphan">
                         <h6 class="fw-bold text-dark mb-1 text-decoration-underline">{{ t('I. THÀNH PHẦN:', 'I. PARTICIPANTS:') }}</h6>
@@ -984,6 +990,25 @@
         </div>
     </div>
 </div>
+
+<script type="text/x-template" id="print-header-template">
+    <div class="row align-items-stretch mx-0 mb-4 page-break-inside-avoid" :class="{'border border-dark pr-header-row': bordered}">
+        <div class="col-3 text-center d-flex align-items-center justify-content-center p-1" :class="{'border-end border-dark': bordered}">
+            <div class="logo-container border-secondary position-relative w-100" :class="{'pr-logo-box': bordered, 'border border-dashed p-1': !bordered}" style="display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 4px; height: 70px;">
+                <img :src="logo" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                <input type="file" @change="$emit('logo-upload', $event)" class="no-print" accept="image/*" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor: pointer;">
+            </div>
+        </div>
+        <div :class="showMeta ? 'col-6' : 'col-9'" class="text-center d-flex flex-column justify-content-center p-1" :class="{'border-end border-dark': showMeta && bordered}">
+            <h2 :class="{'form-title mb-1': !bordered, 'form-title fw-bold pr-title mb-1': bordered}">{{ title }}</h2>
+            <slot name="subtitle"></slot>
+        </div>
+        <div v-if="showMeta" class="col-3 p-1 d-flex flex-column justify-content-center">
+            <slot name="meta"></slot>
+        </div>
+    </div>
+</script>
+
 <script src="app.js"></script>
 </body>
 </html>
