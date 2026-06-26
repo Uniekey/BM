@@ -54,13 +54,13 @@
 
             <ul class="nav flex-column w-100 flex-grow-1 mt-2">
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'database' }" @click="currentTab = 'database'"><i class="fas fa-server"></i> {{ t('Kho Vật Tư', 'Master Data') }}</a></li>
-                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'employees' }" @click="currentTab = 'employees'"><i class="fas fa-users-cog"></i> {{ t('Nhân Viên', 'Employees') }}</a></li>
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'dutoan' }" @click="currentTab = 'dutoan'"><i class="fas fa-calculator"></i> {{ t('Dự Toán', 'Cost Estimate BOM') }}</a></li>
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'baogia' }" @click="currentTab = 'baogia'"><i class="fas fa-file-invoice-dollar"></i> {{ t('Báo Giá', 'Quotation') }}</a></li>
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'pr' }" @click="currentTab = 'pr'"><i class="fas fa-file-signature text-warning"></i> {{ t('Phiếu ĐNMH', 'Purchase Req (PR)') }}</a></li>
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'daily' }" @click="currentTab = 'daily'"><i class="fas fa-clipboard-list"></i> {{ t('Nhật Ký Thi Công', 'Daily Site Report') }}</a></li>
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'nghiemthu' }" @click="currentTab = 'nghiemthu'"><i class="fas fa-check-circle"></i> {{ t('Nghiệm Thu Kỹ Thuật', 'Acceptance') }}</a></li>
                 <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'nghiemthubg' }" @click="currentTab = 'nghiemthubg'"><i class="fas fa-handshake text-info"></i> {{ t('Nghiệm Thu Bàn Giao', 'Handover') }}</a></li>
+                <li class="nav-item"><a class="nav-link" :class="{ active: currentTab === 'employees' }" @click="currentTab = 'employees'"><i class="fas fa-users-cog"></i> {{ t('Nhân Viên', 'Employees') }}</a></li>
                 <li class="nav-item mt-3"><a class="nav-link" :class="{ active: currentTab === 'library' }" @click="currentTab = 'library'"><i class="fas fa-book text-success"></i> {{ t('Thư Viện', 'Library Hub') }}</a></li>
             </ul>
         </div>
