@@ -3,7 +3,7 @@ const { createApp } = Vue;
 localforage.config({ driver: localforage.INDEXEDDB, name: 'ME_Portal_DB', version: 1.0, storeName: 'port_documents' });
 
 // ==========================================
-// 1. THUẬT TOÁN DEBOUNCE (TỐI ƯU HIỆU NĂNG I/O)
+// 1. THUẬT TOÁN DEBOUNCE & VUE.TORAW (TỐI ƯU I/O VÀ CPU)
 // ==========================================
 const debouncedFunctions = {};
 
@@ -12,11 +12,13 @@ function debouncedSaveData(key, data, context) {
         clearTimeout(debouncedFunctions[key]);
     }
     debouncedFunctions[key] = setTimeout(() => {
-        localforage.setItem(key, JSON.parse(JSON.stringify(data))).then(() => { 
+        // Sử dụng Vue.toRaw loại bỏ Proxy overhead, giúp JSON.stringify chạy cực nhanh với ảnh Base64
+        const rawData = Vue.toRaw(data);
+        localforage.setItem(key, JSON.parse(JSON.stringify(rawData))).then(() => { 
             context.showSavedToast = true; 
             setTimeout(() => context.showSavedToast = false, 2000); 
         });
-    }, 2000); // 2 giây
+    }, 2500); // Lưu nháp sau khi ngừng gõ 2.5 giây
 }
 
 // ==========================================
@@ -28,7 +30,6 @@ class ExcelReportBuilder {
         this.wb.creator = creator;
         this.ws = this.wb.addWorksheet('Bao_Cao', { views: [{ showGridLines: false, pageBreakPreview: true }] });
         
-        // Setup in ấn chuẩn A4
         this.ws.pageSetup.paperSize = 9; 
         this.ws.pageSetup.orientation = isPortrait ? 'portrait' : 'landscape';
         this.ws.pageSetup.fitToPage = true;
@@ -68,7 +69,6 @@ class ExcelReportBuilder {
                 if(!c.alignment) c.alignment = this.alignCenter; 
                 if(!c.font) c.font = { name: 'Times New Roman', size: size, color: {argb: 'FF000000'} }; 
                 
-                // Thuật toán Wrap-text & Auto-height cho Excel
                 if (c.value && typeof c.value === 'string') {
                     const colWidth = this.ws.getColumn(j).width || 15;
                     const lines = c.value.split('\n');
@@ -116,45 +116,44 @@ createApp({
             roundDecimal: false, 
             vatRate: 8,
             
-            // DỮ LIỆU NHÂN VIÊN (MỚI BỔ SUNG)
             employees: [
-                { id: 'ME-001', name: 'Phạm Thanh Khang', position: 'Trưởng phòng Cơ Điện', team: '', group: '', phone: '' },
-                { id: 'ME-002', name: 'Nguyễn Công Văn', position: 'Kỹ sư Cơ Điện', team: '6', group: '', phone: '' },
-                { id: 'ME-003', name: 'Trần Minh Thiện', position: 'Kỹ sư Cơ Điện', team: '6', group: '14', phone: '' },
-                { id: 'ME-004', name: 'Nguyễn Văn Hai', position: 'Công nhân Cơ Điện', team: '6', group: '14', phone: '' },
-                { id: 'ME-005', name: 'Ngô Khúc Khải', position: 'Công nhân Cơ Điện', team: '6', group: '14', phone: '' },
-                { id: 'ME-006', name: 'Huỳnh Ngọc Hoàng Em', position: 'Công nhân Cơ Điện', team: '6', group: '14', phone: '' },
-                { id: 'ME-007', name: 'Nguyễn Ngọc Sáu', position: 'Công nhân Cơ Điện', team: '6', group: '14', phone: '' },
-                { id: 'ME-008', name: 'Dương Hữu Nghĩa', position: 'Công nhân Cơ Điện', team: '6', group: '14', phone: '' },
-                { id: 'ME-009', name: 'Nguyễn Thành Phát', position: 'Kỹ sư Cơ Điện', team: '6', group: '15', phone: '' },
-                { id: 'ME-010', name: 'Trần Nguyễn Duy', position: 'Công nhân Cơ Điện', team: '6', group: '15', phone: '' },
-                { id: 'ME-011', name: 'Trần Minh Tân', position: 'Công nhân Cơ Điện', team: '6', group: '15', phone: '' },
-                { id: 'ME-012', name: 'Lê Văn Nhị', position: 'Công nhân Cơ Điện', team: '6', group: '15', phone: '' },
-                { id: 'ME-013', name: 'Quách Văn Tăng', position: 'Kỹ sư Cơ Điện', team: '6', group: '16', phone: '' },
-                { id: 'ME-014', name: 'Phạm Trần Hoàng Giang', position: 'Kỹ sư Cơ Điện', team: '6', group: '16', phone: '' },
-                { id: 'ME-015', name: 'Huỳnh Minh Vương', position: 'Kỹ sư Cơ Điện', team: '6', group: '17', phone: '' },
-                { id: 'ME-016', name: 'Phạm Hữu Tùng', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '' },
-                { id: 'ME-017', name: 'Trần Phương Bằng', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '' },
-                { id: 'ME-018', name: 'Lê Trần Hoàng Lộc', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '' },
-                { id: 'ME-019', name: 'Nguyễn Đức Toàn', position: 'Kỹ sư Cơ Điện', team: '6', group: '17', phone: '' },
-                { id: 'ME-020', name: 'Nguyễn Lê Duy Thịnh', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '' },
-                { id: 'ME-021', name: 'Trần Hoài Hận', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '' },
-                { id: 'ME-022', name: 'Tô Hoài Thanh', position: 'Nhân viên Cơ Điện', team: '6', group: '17', phone: '' },
-                { id: 'ME-023', name: 'Hồ Minh Nhịnh', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '' },
-                { id: 'ME-024', name: 'Huỳnh Tấn Khương', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '' },
-                { id: 'ME-025', name: 'Nguyễn Hải Tiến', position: 'Công nhân Cơ Điện', team: '6', group: '15', phone: '' },
-                { id: 'ME-026', name: 'Trịnh Quốc Việt', position: 'Kỹ sư Cơ Điện', team: '7', group: '', phone: '' },
-                { id: 'ME-027', name: 'Lâm Võ Thanh', position: 'Kỹ sư Cơ Điện', team: '7', group: '18', phone: '' },
-                { id: 'ME-028', name: 'Hồ Trọng Hiếu', position: 'Nhân viên Cơ Điện', team: '7', group: '18', phone: '' },
-                { id: 'ME-029', name: 'Nguyễn Văn Phi', position: 'Công nhân Cơ Điện', team: '7', group: '18', phone: '' },
-                { id: 'ME-030', name: 'Nguyễn Tuấn An', position: 'Công nhân Cơ Điện', team: '7', group: '18', phone: '' },
-                { id: 'ME-031', name: 'Đào Ngọc Toàn', position: 'Công nhân Cơ Điện', team: '7', group: '19', phone: '' },
-                { id: 'ME-032', name: 'Ngô Long Hội', position: 'Kỹ sư Cơ Điện', team: '7', group: '19', phone: '' },
-                { id: 'ME-033', name: 'Trương Tuấn Vũ', position: 'Kỹ sư Cơ Điện', team: '7', group: '19', phone: '' },
-                { id: 'ME-034', name: 'Phạm Khánh Duy', position: 'Công nhân Cơ Điện', team: '7', group: '19', phone: '' },
-                { id: 'ME-035', name: 'Lê Thanh Phong', position: 'Công nhân Cơ Điện', team: '7', group: '19', phone: '' },
-                { id: 'ME-036', name: 'Lê Thanh Hải', position: 'Nhân viên Cơ Điện', team: '7', group: '19', phone: '' },
-                { id: 'ME-037', name: 'Phạm Ngọc Diện', position: 'Kỹ sư Cơ Điện', team: '8', group: '', phone: '' },
+                { id: 'ME-001', name: 'Phạm Thanh Khang', position: 'Trưởng phòng Cơ Điện', team: '', group: '', phone: '0982 992 025' },
+                { id: 'ME-002', name: 'Nguyễn Công Văn', position: 'Kỹ sư Cơ Điện', team: '6', group: '', phone: '0934 048 801' },
+                { id: 'ME-003', name: 'Trần Minh Thiện', position: 'Kỹ sư Cơ Điện', team: '6', group: '14', phone: '0886 678 165' },
+                { id: 'ME-004', name: 'Nguyễn Văn Hai', position: 'Công nhân Cơ Điện', team: '6', group: '14', phone: '0909 485 876' },
+                { id: 'ME-005', name: 'Ngô Khúc Khải', position: 'Công nhân Cơ Điện', team: '6', group: '14', phone: '0937 171 110' },
+                { id: 'ME-006', name: 'Huỳnh Ngọc Hoàng Em', position: 'Công nhân Cơ Điện', team: '6', group: '14', phone: '0926 275 303' },
+                { id: 'ME-007', name: 'Nguyễn Ngọc Sáu', position: 'Công nhân Cơ Điện', team: '6', group: '14', phone: '0985 432 053' },
+                { id: 'ME-008', name: 'Dương Hữu Nghĩa', position: 'Công nhân Cơ Điện', team: '6', group: '14', phone: '0367 127 241' },
+                { id: 'ME-009', name: 'Nguyễn Thành Phát', position: 'Kỹ sư Cơ Điện', team: '6', group: '15', phone: '0823 942 459' },
+                { id: 'ME-010', name: 'Trần Nguyễn Duy', position: 'Công nhân Cơ Điện', team: '6', group: '15', phone: '0704 488 132' },
+                { id: 'ME-011', name: 'Trần Minh Tân', position: 'Công nhân Cơ Điện', team: '6', group: '15', phone: '0375 009 508' },
+                { id: 'ME-012', name: 'Lê Văn Nhị', position: 'Công nhân Cơ Điện', team: '6', group: '15', phone: '033 202 4382' },
+                { id: 'ME-013', name: 'Quách Văn Tăng', position: 'Kỹ sư Cơ Điện', team: '6', group: '16', phone: '0352 770 887' },
+                { id: 'ME-014', name: 'Phạm Trần Hoàng Giang', position: 'Kỹ sư Cơ Điện', team: '6', group: '16', phone: '0937 904 646' },
+                { id: 'ME-015', name: 'Huỳnh Minh Vương', position: 'Kỹ sư Cơ Điện', team: '6', group: '17', phone: '0333 376 468' },
+                { id: 'ME-016', name: 'Phạm Hữu Tùng', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '0974 874 229' },
+                { id: 'ME-017', name: 'Trần Phương Bằng', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '0792 557 197' },
+                { id: 'ME-018', name: 'Lê Trần Hoàng Lộc', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '0353 933 303' },
+                { id: 'ME-019', name: 'Nguyễn Đức Toàn', position: 'Kỹ sư Cơ Điện', team: '6', group: '17', phone: '0779 1111 07' },
+                { id: 'ME-020', name: 'Nguyễn Lê Duy Thịnh', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '0792 557 197' },
+                { id: 'ME-021', name: 'Trần Hoài Hận', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '0353 933 303' },
+                { id: 'ME-022', name: 'Tô Hoài Thanh', position: 'Nhân viên Cơ Điện', team: '6', group: '17', phone: '0792 003 018' },
+                { id: 'ME-023', name: 'Hồ Minh Nhịnh', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '087 7850 310' },
+                { id: 'ME-024', name: 'Huỳnh Tấn Khương', position: 'Công nhân Cơ Điện', team: '6', group: '17', phone: '0797 819 272' },
+                { id: 'ME-025', name: 'Nguyễn Hải Tiến', position: 'Công nhân Cơ Điện', team: '6', group: '15', phone: '0833 885 910' },
+                { id: 'ME-026', name: 'Trịnh Quốc Việt', position: 'Kỹ sư Cơ Điện', team: '7', group: '', phone: '0905 048 308' },
+                { id: 'ME-027', name: 'Lâm Võ Thanh', position: 'Kỹ sư Cơ Điện', team: '7', group: '18', phone: '0937 654 812' },
+                { id: 'ME-028', name: 'Hồ Trọng Hiếu', position: 'Nhân viên Cơ Điện', team: '7', group: '18', phone: '0965 764 453' },
+                { id: 'ME-029', name: 'Nguyễn Văn Phi', position: 'Công nhân Cơ Điện', team: '7', group: '18', phone: '0964 698 412' },
+                { id: 'ME-030', name: 'Nguyễn Tuấn An', position: 'Công nhân Cơ Điện', team: '7', group: '18', phone: '0338 721 631' },
+                { id: 'ME-031', name: 'Đào Ngọc Toàn', position: 'Công nhân Cơ Điện', team: '7', group: '19', phone: '0792 721 059' },
+                { id: 'ME-032', name: 'Ngô Long Hội', position: 'Kỹ sư Cơ Điện', team: '7', group: '19', phone: '0909 082 784' },
+                { id: 'ME-033', name: 'Trương Tuấn Vũ', position: 'Kỹ sư Cơ Điện', team: '7', group: '19', phone: '0858 433 363' },
+                { id: 'ME-034', name: 'Phạm Khánh Duy', position: 'Công nhân Cơ Điện', team: '7', group: '19', phone: '079 8867 481' },
+                { id: 'ME-035', name: 'Lê Thanh Phong', position: 'Công nhân Cơ Điện', team: '7', group: '19', phone: '0964 852 754' },
+                { id: 'ME-036', name: 'Lê Thanh Hải', position: 'Nhân viên Cơ Điện', team: '7', group: '19', phone: '0339 019 213' },
+                { id: 'ME-037', name: 'Phạm Ngọc Diện', position: 'Kỹ sư Cơ Điện', team: '8', group: '', phone: '0903 079 209' },
             ],
             newEmployee: { id: '', name: '', position: '', team: '', group: '', phone: '' },
 
@@ -278,31 +277,21 @@ createApp({
     },
     watch: {
         currentTab() { this.searchQuery = ''; },
-        // Sử dụng debouncedSave thay vì ghi trực tiếp để bảo vệ CPU
-	employees: { deep: true, handler(val) { debouncedSaveData('employees_db', val, this); } },
-	globalProjectName(val) { debouncedSaveData('global_project_name', val, this); },
+        employees: { deep: true, handler(val) { debouncedSaveData('employees_db', val, this); } },
+        globalProjectName(val) { debouncedSaveData('global_project_name', val, this); },
         docDuToan: { deep: true, handler(val) { debouncedSaveData('dt_table', val, this); } },
-        docBaoGia: { deep: true, handler(val) { debouncedSaveData('bg_table', val); } }, 
-        bgHeader: { deep: true, handler(val) { debouncedSaveData('bg_header', val); } },
-        bgTerms: { deep: true, handler(val) { debouncedSaveData('bg_terms', val); } }, 
-        docPR: { deep: true, handler(val) { debouncedSaveData('pr_table', val); } }, 
-        prWorkflow: { deep: true, handler(val) { debouncedSaveData('pr_flow', val); } }, 
-        docNghiemThu: { deep: true, handler(val) { debouncedSaveData('nt_table', val); } }, 
-        prHeader: { deep: true, handler(val) { debouncedSaveData('pr_header', val); } }, 
-        printPrWorkflow(val) { debouncedSaveData('pr_flow_print_setting', val); },
-        vatRate(val) { debouncedSaveData('global_vat_rate', val); },
-        dtVatRate(val) { debouncedSaveData('dt_vat_rate', val); },
-        ntbgHeader: { deep: true, handler(val) { debouncedSaveData('ntbg_header', val); } },
-        docNghiemThuBG: { deep: true, handler(val) { debouncedSaveData('ntbg_table', val); } }
-    },
-    async created() {
-        // Cấu hình lưu nháp tự động sau khi NGỪNG gõ phím 2.5 giây
-        this.debouncedSave = debounce((key, data) => {
-            localforage.setItem(key, JSON.parse(JSON.stringify(data))).then(() => { 
-                this.showSavedToast = true; 
-                setTimeout(() => this.showSavedToast = false, 2000); 
-            });
-        }, 2500);
+        docBaoGia: { deep: true, handler(val) { debouncedSaveData('bg_table', val, this); } }, 
+        bgHeader: { deep: true, handler(val) { debouncedSaveData('bg_header', val, this); } },
+        bgTerms: { deep: true, handler(val) { debouncedSaveData('bg_terms', val, this); } }, 
+        docPR: { deep: true, handler(val) { debouncedSaveData('pr_table', val, this); } }, 
+        prWorkflow: { deep: true, handler(val) { debouncedSaveData('pr_flow', val, this); } }, 
+        docNghiemThu: { deep: true, handler(val) { debouncedSaveData('nt_table', val, this); } }, 
+        prHeader: { deep: true, handler(val) { debouncedSaveData('pr_header', val, this); } }, 
+        printPrWorkflow(val) { debouncedSaveData('pr_flow_print_setting', val, this); },
+        vatRate(val) { debouncedSaveData('global_vat_rate', val, this); },
+        dtVatRate(val) { debouncedSaveData('dt_vat_rate', val, this); },
+        ntbgHeader: { deep: true, handler(val) { debouncedSaveData('ntbg_header', val, this); } },
+        docNghiemThuBG: { deep: true, handler(val) { debouncedSaveData('ntbg_table', val, this); } }
     },
     async mounted() {
         await this.migrateDataToIndexedDB(); 
@@ -376,7 +365,6 @@ createApp({
             }
         },
 
-        // QUẢN LÝ NHÂN VIÊN (MỚI)
         addEmployee() {
             if (!this.newEmployee.name || !this.newEmployee.id) {
                 return alert(this.t("Vui lòng nhập Họ tên và MSNV", "Please enter Full Name and Emp ID"));
@@ -385,6 +373,9 @@ createApp({
             this.newEmployee = { id: '', name: '', position: '', team: '', group: '', phone: '' };
         },
 
+        // ==========================================
+        // 4. STRATEGY PATTERN CHO XUẤT EXCEL
+        // ==========================================
         async exportToExcel(type) {
             if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
             this.showSavedToast = true;
@@ -393,293 +384,306 @@ createApp({
             const num = (v) => Number(v) || 0;
             const projectName = this.globalProjectName || "Du_An_ME";
             const dateStr = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-');
-            let fileName = `Bao_Cao_${projectName}_${dateStr}.xlsx`;
-
-            // Khởi tạo Excel bằng Lớp (Abstract Class)
+            
             const builder = new ExcelReportBuilder('M&E Portal');
-            const ws = builder.ws;
-            const FORMAT_MONEY = this.roundDecimal ? '#,##0' : '#,##0.000'; 
             const logoData = this.getBase64Data(this.companyLogo);
+            const FORMAT_MONEY = this.roundDecimal ? '#,##0' : '#,##0.000'; 
 
-            /* ========================= TAB NHÂN VIÊN (MỚI) ========================= */
-            if (type === 'employees') {
-                fileName = `Danh_Sach_Nhan_Vien_${dateStr}.xlsx`;
-                ws.columns = [ {width: 6}, {width: 15}, {width: 30}, {width: 25}, {width: 15}, {width: 15}, {width: 20} ];
-                ws.pageSetup.printTitlesRow = '1:6';
+            const strategies = {
+                'employees': this.exportExcel_employees,
+                'dutoan': this.exportExcel_dutoan,
+                'baogia': this.exportExcel_baogia,
+                'pr': this.exportExcel_pr
+            };
 
-                builder.addLogo(logoData, 140, 50);
-                
-                ws.mergeCells('A1:G1'); ws.getCell('A1').value = this.t('DANH SÁCH NHÂN VIÊN', 'EMPLOYEE LIST'); ws.getCell('A1').font = { bold: true, name: 'Times New Roman', size: 16 }; ws.getCell('A1').alignment = builder.alignCenter; ws.getRow(1).height = 30;
-                ws.addRow([]); ws.addRow([]); ws.addRow([]); ws.addRow([]);
-                
-                const head = ws.addRow([this.t('STT', 'No.'), this.t('MSNV', 'Emp ID'), this.t('Họ và tên', 'Full Name'), this.t('Vị trí công việc', 'Position'), this.t('Tổ', 'Team'), this.t('Nhóm', 'Group'), this.t('SĐT', 'Phone')]);
-                head.eachCell(c => { c.font={ bold: true, name: 'Times New Roman', size: 11 }; c.fill={ type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } }; c.border=builder.borderThin; c.alignment=builder.alignCenter; });
-                
-                let rIdx = 7;
-                this.employees.forEach((emp, i) => {
-                    const r = ws.addRow([i + 1, str(emp.id), str(emp.name), str(emp.position), str(emp.team), str(emp.group), str(emp.phone)]);
-                    r.getCell(1).alignment = builder.alignCenter; r.getCell(2).alignment = builder.alignCenter;
-                    r.getCell(3).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-                    r.getCell(4).alignment = builder.alignCenter; r.getCell(5).alignment = builder.alignCenter;
-                    r.getCell(6).alignment = builder.alignCenter; r.getCell(7).alignment = builder.alignCenter;
-                    rIdx++;
-                });
-                builder.applyTableStyle(6, rIdx-1, 7, 11);
-            }
-
-            /* ========================= TAB DỰ TOÁN (BOM) ========================= */
-            else if (type === 'dutoan') {
-                fileName = `BOM_${projectName}_${dateStr}.xlsx`;
-                ws.columns = [ {width: 5}, {width: 35}, {width: 15}, {width: 6}, {width: 6}, {width: 12}, {width: 12}, {width: 12}, {width: 12}, {width: 15} ];
-                ws.pageSetup.printTitlesRow = '1:6';
-
-                builder.addLogo(logoData, 140, 50);
-                
-                ws.mergeCells('A1:J1'); ws.getCell('A1').value = this.t('BẢNG DỰ TOÁN CHI PHÍ (BOM)', 'BILL OF MATERIALS (BOM)'); ws.getCell('A1').font = { bold: true, name: 'Times New Roman', size: 16 }; ws.getCell('A1').alignment = builder.alignCenter; ws.getRow(1).height = 30;
-                ws.mergeCells('A2:J2'); ws.getCell('A2').value = `${this.t('Dự án:', 'Project:')} ${str(projectName)}`; ws.getCell('A2').font = { bold: true, name: 'Times New Roman', size: 11 }; ws.getCell('A2').alignment = builder.alignCenter; ws.getRow(2).height = 20;
-                ws.mergeCells('A3:J3'); ws.getCell('A3').value = this.t('', ''); ws.getCell('A3').font = {italic:true, name:'Times New Roman', size:10}; ws.getCell('A3').alignment = builder.alignCenter;
-                ws.addRow([]);
-                
-                ws.addRow([this.t('STT', 'No.'), this.t('Hạng mục', 'Description'), this.t('Quy cách', 'Specs'), this.t('ĐVT', 'Unit'), this.t('SL', 'Qty'), this.t('Đơn giá (VNĐ)', 'Unit Price (VND)'), '', this.t('Thành tiền (VNĐ)', 'Total Amount (VND)'), '', this.t('Tổng cộng (VNĐ)', 'Grand Total')]);
-                ws.addRow(['', '', '', '', '', this.t('Vật tư', 'Material'), this.t('Nhân công', 'Labor'), this.t('Vật tư', 'Material'), this.t('Nhân công', 'Labor'), '']);
-                ['A5:A6', 'B5:B6', 'C5:C6', 'D5:D6', 'E5:E6', 'F5:G5', 'H5:I5', 'J5:J6'].forEach(m => ws.mergeCells(m));
-                [5, 6].forEach(r => ws.getRow(r).eachCell(c => { c.font = { bold: true, name: 'Times New Roman', size: 10 }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } }; c.border = builder.borderThin; c.alignment = builder.alignCenter; }));
-                
-                let rIdx = 7;
-                this.docDuToan.forEach((row, i) => {
-                    const r = ws.addRow([]);
-                    if (row.isCategory) {
-                        r.getCell(1).value = this.getRowIndex(i); 
-                        r.getCell(2).value = str(row.name).toUpperCase();
-                        r.getCell(8).value = this.getCategoryTotal(i).vt;
-                        r.getCell(9).value = this.getCategoryTotal(i).nc;
-                        r.getCell(10).value = this.getCategoryTotal(i).total;
-                        
-                        ws.mergeCells(`B${rIdx}:G${rIdx}`);
-                        r.getCell(1).alignment = builder.alignCenter; r.getCell(1).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FF0284C7'} };
-                        r.getCell(2).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }; r.getCell(2).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FF0284C7'} }; 
-                        r.getCell(8).font = { bold: true, name: 'Times New Roman', size: 10 }; r.getCell(9).font = { bold: true, name: 'Times New Roman', size: 10 }; r.getCell(10).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FFDC2626'} };
-                        r.getCell(8).numFmt = FORMAT_MONEY; r.getCell(9).numFmt = FORMAT_MONEY; r.getCell(10).numFmt = FORMAT_MONEY;
-                        r.getCell(8).alignment = { vertical: 'middle', horizontal: 'right' }; r.getCell(9).alignment = { vertical: 'middle', horizontal: 'right' }; r.getCell(10).alignment = { vertical: 'middle', horizontal: 'right' };
-                        r.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
-                    } else {
-                        r.getCell(1).value = this.getRowIndex(i); 
-                        r.getCell(2).value = str(row.name); r.getCell(3).value = str(row.specs); r.getCell(4).value = str(row.unit);
-                        let q = num(row.qty); let vt = num(row.priceVT); let nc = num(row.priceNC);
-                        if(this.roundDecimal) { q=Math.round(q); vt=Math.round(vt); nc=Math.round(nc); }
-                        r.getCell(5).value = q; r.getCell(6).value = vt; r.getCell(7).value = nc; r.getCell(8).value = q * vt; r.getCell(9).value = q * nc; r.getCell(10).value = (q * vt) + (q * nc);
-                        
-                        r.getCell(2).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }; r.getCell(3).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }; 
-                        for(let c=5; c<=10; c++) { r.getCell(c).numFmt=FORMAT_MONEY; r.getCell(c).alignment={ vertical: 'middle', horizontal: 'right' }; } 
-                        r.getCell(10).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FFDC2626'} };
-                    }
-                    rIdx++;
-                });
-                
-                const rT = ws.addRow([]);
-                rT.getCell(8).value = this.t('Tổng chi phí trực tiếp:', 'Subtotal Direct Cost:'); rT.getCell(9).value = this.roundDecimal ? Math.round(this.dtSumVT) : this.dtSumVT; rT.getCell(10).value = this.roundDecimal ? Math.round(this.dtSumNC) : this.dtSumNC;
-                ws.mergeCells(`A${rIdx}:H${rIdx}`); rT.font={ bold: true, name: 'Times New Roman', size: 10 }; rT.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; rT.getCell(9).numFmt=FORMAT_MONEY; rT.getCell(10).numFmt=FORMAT_MONEY;
-                builder.applyTableStyle(5, rIdx, 10);
-                
-                ws.addRow([]); rIdx++;
-                const sumTitle = ws.addRow([this.t('TỔNG HỢP CHI PHÍ & LỢI NHUẬN', 'COST & PROFIT SUMMARY')]);
-                ws.mergeCells(`A${rIdx}:J${rIdx}`); sumTitle.font = {bold:true, name:'Times New Roman', size:11}; sumTitle.alignment = builder.alignCenter; sumTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } }; sumTitle.border = builder.borderThin;
-                rIdx++;
-
-                const startSumR = rIdx;
-                const sumData = [
-                    { t: this.t(`1. TỔNG CHI PHÍ TRỰC TIẾP (Vật tư + Nhân công):`, `1. TOTAL BASE COST (Mat. + Lab.):`), v: this.dtSumVT + this.dtSumNC },
-                    { t: this.t(`2. Chi phí Quản lý (${this.tyleNCGT}% NC)`, `2. Management Cost (${this.tyleNCGT}% Lab)`), v: this.dtCpNCGT },
-                    { t: this.t(`3. LN định mức Vật tư (${this.tyleQLCVT}% VT)`, `3. Mat. Profit Margin (${this.tyleQLCVT}% Mat)`), v: this.dtCpQLCVT },
-                    { t: this.t(`4. LN định mức Nhân công (${this.tyleQLCNC}% NC+QL)`, `4. Lab. Profit Margin (${this.tyleQLCNC}% Lab)`), v: this.dtCpQLCNC },
-                    { t: this.t(`TỔNG DỰ TOÁN (TRƯỚC THUẾ):`, `ESTIMATE BEFORE TAX:`), v: this.dtTotalBeforeVAT, bold: true },
-                    { t: this.t(`Thuế GTGT (VAT ${this.dtVatRate}%):`, `VAT (${this.dtVatRate}%):`), v: this.dtVATAmount },
-                    { t: this.t(`TỔNG GIÁ TRỊ (SAU THUẾ):`, `TOTAL CONTRACT VALUE:`), v: this.dtTotalAfterVAT, bold: true, color: 'FFDC2626', size: 12 },
-                ];
-                
-                sumData.forEach(d => {
-                    const r = ws.addRow([]); r.getCell(1).value = d.t; r.getCell(9).value = this.roundDecimal ? Math.round(d.v) : d.v;
-                    ws.mergeCells(`A${rIdx}:H${rIdx}`); ws.mergeCells(`I${rIdx}:J${rIdx}`); 
-                    r.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; r.getCell(9).numFmt=FORMAT_MONEY; r.getCell(9).alignment={ vertical: 'middle', horizontal: 'right' };
-                    if(d.bold) { r.font = {bold:true, name:'Times New Roman', size: d.size||10, color: d.color ? {argb: d.color} : undefined}; } 
-                    rIdx++;
-                });
-                
-                const rWords = ws.addRow([`${this.t('Bằng chữ:', 'In words:')} ${this.readMoney(this.dtTotalAfterVAT)}`]); ws.mergeCells(`A${rIdx}:J${rIdx}`); 
-                rWords.font = {italic:true, name:'Times New Roman', size:10}; rWords.getCell(1).alignment={ vertical: 'middle', horizontal: 'left' }; rIdx++;
-
-                builder.applyTableStyle(startSumR, rIdx-1, 10);
-                
-                ws.addRow([]); rIdx++; 
-                const signR = ws.addRow([]);
-                signR.getCell(2).value = this.t('NGƯỜI LẬP BẢNG\n\n(Ký và ghi rõ họ tên)', 'PREPARED BY\n\n(Signature & Full Name)'); 
-                signR.getCell(8).value = this.t('NGƯỜI PHÊ DUYỆT\n\n(Ký và ghi rõ họ tên)', 'APPROVED BY\n\n(Signature & Full Name)');
-                ws.mergeCells(`B${rIdx}:D${rIdx}`); ws.mergeCells(`H${rIdx}:J${rIdx}`); 
-                signR.font={ bold: true, name: 'Times New Roman', size: 10 }; signR.alignment={ vertical: 'top', horizontal: 'center', wrapText: true }; signR.height = 100;
-            }
-            
-            /* ========================= TAB BÁO GIÁ ========================= */
-            else if (type === 'baogia') {
-                fileName = `Bao_Gia_${projectName}_${dateStr}.xlsx`;
-                ws.columns = [ {width: 5}, {width: 40}, {width: 25}, {width: 8}, {width: 8}, {width: 20}, {width: 22} ];
-                ws.pageSetup.printTitlesRow = '1:18';
-
-                let r1 = ws.addRow([]); 
-                r1.getCell(1).value = this.t('BẢNG BÁO GIÁ', 'QUOTATION'); r1.getCell(1).font={bold:true, name:'Times New Roman', size:18}; r1.getCell(1).alignment=builder.alignCenter; r1.height = 25;
-                r1.getCell(6).value = `${this.t('Số hiệu:', 'Doc No:')} ${str(this.bgHeader.isoDoc)}`; r1.getCell(6).font={ bold: true, name: 'Times New Roman', size: 10 }; r1.getCell(6).alignment = { vertical: 'middle', horizontal: 'left' };
-                let r2 = ws.addRow([]); r2.getCell(1).value = str(projectName).toUpperCase(); r2.getCell(1).font={bold:true, name:'Times New Roman', size:12}; r2.getCell(1).alignment=builder.alignCenter; r2.height = 20;
-                r2.getCell(6).value = `${this.t('Ngày hiệu lực:', 'Effective:')} ${str(this.bgHeader.isoDate)}\n${this.t('Lần ban hành:', 'Issue No:')} ${str(this.bgHeader.isoRev)}`; r2.getCell(6).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
-                ws.mergeCells('A1:E1'); ws.mergeCells('F1:G1'); ws.mergeCells('A2:E3'); ws.mergeCells('F2:G3'); 
-                builder.applyTableStyle(1, 3, 7); ws.addRow([]); ws.addRow([]);
-
-                let r6 = ws.addRow([]); 
-                r6.getCell(1).value = this.t('Công ty:', 'Company:'); r6.getCell(2).value = str(this.bgHeader.company); 
-                r6.getCell(6).value = this.t('Số:', 'Ref No:'); r6.getCell(7).value = str(this.bgHeader.ref); 
-                ws.mergeCells('B6:E6'); r6.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(2).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(6).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(7).font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size: 10};
-                let r7 = ws.addRow([]); 
-                r7.getCell(1).value = this.t('Địa chỉ:', 'Address:'); r7.getCell(2).value = str(this.bgHeader.address); 
-                r7.getCell(6).value = this.t('Ngày:', 'Date:'); r7.getCell(7).value = str(this.bgHeader.date); 
-                ws.mergeCells('B7:E7'); r7.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; r7.getCell(6).font={ bold: true, name: 'Times New Roman', size: 10 };
-                let r8 = ws.addRow([]); 
-                r8.getCell(1).value = this.t('MST:', 'Tax Code:'); r8.getCell(2).value = str(this.bgHeader.taxCode); ws.mergeCells('B8:E8'); r8.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; ws.addRow([]);
-
-                ws.addRow([this.t('Kính gửi Quý Khách hàng:', 'To our valued Customer:')]).font={ bold: true, name: 'Times New Roman', size: 10 };
-                const cusArr = [ [this.t('Công ty/ Cá nhân:', 'Company/ Individual:'), this.bgHeader.cusCompany], [this.t('Địa chỉ:', 'Address:'), this.bgHeader.cusAddress], [this.t('MST:', 'Tax Code:'), this.bgHeader.cusTax] ];
-                let startCus = 11;
-                cusArr.forEach(c => {
-                    let r = ws.addRow([]); r.getCell(1).value = c[0]; r.getCell(2).value = str(c[1]); ws.mergeCells(`B${startCus}:G${startCus}`);
-                    r.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; r.getCell(2).font = (c[0] === this.t('Công ty/ Cá nhân:', 'Company/ Individual:')) ? { bold: true, name: 'Times New Roman', size: 10 } : { name: 'Times New Roman', size: 10 };
-                    startCus++;
-                });
-
-                ws.addRow([this.t('Công ty chúng tôi trân trọng báo giá đến quý khách như sau:', 'We are pleased to submit our quotation as follows:')]).font = {italic:true, name:'Times New Roman', size:10};
-                
-                const head = ws.addRow([this.t('STT', 'No.'), this.t('Hạng mục', 'Item'), this.t('Thông số kỹ thuật', 'Specifications'), this.t('Đvt', 'Unit'), this.t('Số lượng', 'Qty'), this.t('Đơn giá', 'Price'), this.t('Thành tiền', 'Total Amount')]);
-                head.eachCell(c => { c.font={ bold: true, name: 'Times New Roman', size: 10 }; c.fill={ type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } }; c.border=builder.borderThin; c.alignment=builder.alignCenter; });
-                head.height = 25; let rIdx = startCus + 1;
-                
-                this.docBaoGia.forEach((row, i) => {
-                    const r = ws.addRow([]);
-                    if (row.isCategory) {
-                        r.getCell(1).value = this.getRowIndexBG(i); r.getCell(2).value = str(row.name).toUpperCase(); r.getCell(7).value = this.getBGCategoryTotal(i);
-                        ws.mergeCells(`B${rIdx}:F${rIdx}`);
-                        r.getCell(1).alignment = builder.alignCenter; r.getCell(1).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FF0284C7'} };
-                        r.getCell(2).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }; r.getCell(2).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FF0284C7'} }; 
-                        r.getCell(7).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FFDC2626'} }; r.getCell(7).numFmt = FORMAT_MONEY; r.getCell(7).alignment = { vertical: 'middle', horizontal: 'right' };
-                        r.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
-                    } else {
-                        r.getCell(1).value = this.getRowIndexBG(i); r.getCell(2).value = str(row.name); r.getCell(3).value = str(row.specs); r.getCell(4).value = str(row.unit);
-                        let q = num(row.qty); let p = num(row.priceGop); if(this.roundDecimal){ q=Math.round(q); p=Math.round(p); }
-                        r.getCell(5).value = q; r.getCell(6).value = p; r.getCell(7).value = q * p;
-                        r.getCell(2).alignment={ vertical: 'middle', horizontal: 'left', wrapText: true }; r.getCell(3).alignment={ vertical: 'middle', horizontal: 'left', wrapText: true }; 
-                        r.getCell(5).numFmt=FORMAT_MONEY; r.getCell(6).numFmt=FORMAT_MONEY; r.getCell(7).numFmt=FORMAT_MONEY; 
-                    }
-                    rIdx++;
-                });
-                
-                const rT1 = ws.addRow([]); rT1.getCell(6).value = this.t('Tổng giá (trước thuế):', 'Subtotal:'); rT1.getCell(7).value = this.bgTotalBeforeVAT; ws.mergeCells(`A${rIdx}:E${rIdx}`); rT1.font={ bold: true, name: 'Times New Roman', size: 10 }; rT1.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; rT1.getCell(7).numFmt=FORMAT_MONEY; rIdx++;
-                const rT2 = ws.addRow([]); rT2.getCell(6).value = this.t(`Thuế GTGT (VAT ${this.vatRate}%):`, `VAT (${this.vatRate}%):`); rT2.getCell(7).value = this.bgVATAmount; ws.mergeCells(`A${rIdx}:E${rIdx}`); rT2.font={ bold: true, name: 'Times New Roman', size: 10 }; rT2.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; rT2.getCell(7).numFmt=FORMAT_MONEY; rIdx++;
-                const rT3 = ws.addRow([]); rT3.getCell(6).value = this.t('TỔNG GIÁ TRỊ (SAU THUẾ):', 'TOTAL AMOUNT:'); rT3.getCell(7).value = this.bgTotalAfterVAT; ws.mergeCells(`A${rIdx}:E${rIdx}`); rT3.font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size:11}; rT3.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; rT3.getCell(7).numFmt=FORMAT_MONEY; rIdx++;
-                const rT4 = ws.addRow([]); rT4.getCell(1).value = `${this.t('Bằng chữ:', 'In words:')} ${this.readMoney(this.bgTotalAfterVAT)}`; ws.mergeCells(`A${rIdx}:G${rIdx}`); rT4.font={italic:true, name:'Times New Roman', size:10}; rT4.getCell(1).alignment={ vertical: 'middle', horizontal: 'left' }; rIdx++;
-
-                builder.applyTableStyle(startCus, rIdx-5, 7);
-                
-                ws.addRow([]); rIdx++; 
-                ws.addRow([this.t('ĐIỀU KHOẢN THƯƠNG MẠI (TERMS & CONDITIONS):', 'TERMS & CONDITIONS:')]).font = {bold:true, underline:true, name:'Times New Roman', size:10}; rIdx++;
-                this.bgTerms.forEach(t => { 
-                    const tr = ws.addRow([]); tr.getCell(1).value = '-'; tr.getCell(2).value = str(t.title); tr.getCell(3).value = str(t.content);
-                    ws.mergeCells(`C${rIdx}:G${rIdx}`); tr.getCell(2).font={ bold: true, name: 'Times New Roman', size: 10 }; tr.getCell(3).alignment={ vertical: 'middle', horizontal: 'left', wrapText: true }; 
-                    tr.height = Math.max(20, Math.ceil(str(t.content).length / 60) * 15);
-                    rIdx++; 
-                });
-                
-                ws.addRow([]); rIdx++; 
-                const signR = ws.addRow([]); signR.getCell(2).value = this.t('ĐẠI DIỆN KHÁCH HÀNG\n\n(Ký và ghi rõ họ tên)', 'CUSTOMER REPRESENTATIVE\n\n(Signature & Full Name)'); signR.getCell(6).value = this.t('ĐẠI DIỆN CÔNG TY\n\n(Ký và ghi rõ họ tên)', 'COMPANY REP.\n\n(Signature & Full Name)');
-                ws.mergeCells(`B${rIdx}:C${rIdx}`); ws.mergeCells(`F${rIdx}:G${rIdx}`); signR.font={ bold: true, name: 'Times New Roman', size: 10 }; signR.alignment={ vertical: 'top', horizontal: 'center', wrapText: true }; signR.height = 100;
-            }
-            
-            /* ========================= TAB PR (ĐỀ NGHỊ MUA HÀNG) ========================= */
-            else if (type === 'pr') {
-                fileName = `PR_${str(this.prHeader.prNo) || 'No'}_${dateStr}.xlsx`;
-                ws.columns = [ 
-                    {width: 4}, {width: 15}, {width: 10}, {width: 10}, {width: 6}, {width: 6}, {width: 6}, {width: 6}, 
-                    {width: 10}, {width: 12}, {width: 10}, {width: 12}, {width: 10}, {width: 10}, {width: 10}, {width: 10}, {width: 8}, {width: 12} 
-                ];
-                ws.pageSetup.printTitlesRow = '1:11'; builder.setMargins(0.15);
-                builder.addLogo(logoData, 100, 40);
-                
-                let r1 = ws.addRow([]); r1.getCell(1).value = this.t('PHIẾU ĐỀ NGHỊ MUA HÀNG', 'PURCHASE REQUISITION'); r1.getCell(1).font={bold:true, name:'Times New Roman', size:16}; r1.getCell(1).alignment=builder.alignCenter; r1.getCell(15).value = this.t('Số hiệu: ADG_QT_KH_01/BM01', 'Doc No: ADG_QT_KH_01/BM01'); r1.getCell(15).font={ bold: true, name: 'Times New Roman', size: 10 };
-                let r2 = ws.addRow([]); r2.getCell(15).value = `${this.t('Ngày HL:', 'Effective:')} ${str(this.prHeader.isoDate)} | ${this.t('Lần BH:', 'Issue No:')} ${str(this.prHeader.isoRev)} | ${this.t('Lần SX:', 'Rev No:')} ${str(this.prHeader.isoCheck)}`;
-                ws.mergeCells('A1:N2'); ws.mergeCells('O1:R1'); ws.mergeCells('O2:R2'); builder.applyTableStyle(1, 2, 18, 9);
-                
-                ws.addRow([]); 
-                let r4 = ws.addRow([]); r4.getCell(1).value = this.t('Số phiếu:', 'PR No:'); r4.getCell(1).font = { bold: true, name: 'Times New Roman', size: 10 }; r4.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' };
-                r4.getCell(2).value = `ADG_ĐNMH_${str(this.prHeader.prNo)}`; r4.getCell(2).font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size:11}; ws.mergeCells('B4:H4'); r4.getCell(2).border = builder.borderBotOnly; r4.getCell(2).alignment={ vertical: 'middle', horizontal: 'left' };
-                r4.getCell(9).value = this.prHeader.isPlan ? this.t('☑ Theo kế hoạch', '☑ Planned') : this.t('☐ Theo kế hoạch', '☐ Planned'); r4.getCell(9).font={ bold: true, name: 'Times New Roman', size: 10 }; ws.mergeCells('I4:M4');
-                
-                let r5 = ws.addRow([]); r5.getCell(1).value = this.t('Đơn vị lập:', 'Company:'); r5.getCell(2).value = str(this.prHeader.company); ws.mergeCells('B5:H5'); r5.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; r5.getCell(2).font={ bold: true, name: 'Times New Roman', size: 10 }; r5.getCell(2).border = builder.borderBotOnly; r5.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; r5.getCell(2).alignment={ vertical: 'middle', horizontal: 'left' };
-                let r6 = ws.addRow([]); r6.getCell(1).value = this.t('Bộ phận:', 'Department:'); r6.getCell(2).value = str(this.prHeader.dept); ws.mergeCells('B6:F6'); r6.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(2).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(2).border = builder.borderBotOnly; r6.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; r6.getCell(2).alignment={ vertical: 'middle', horizontal: 'left' };
-                r6.getCell(9).value = this.t('Mã code:', 'Dept Code:'); r6.getCell(10).value = str(this.prHeader.deptCode); ws.mergeCells('J6:M6'); r6.getCell(9).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(10).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(10).border = builder.borderBotOnly; r6.getCell(9).alignment={ vertical: 'middle', horizontal: 'right' }; r6.getCell(10).alignment={ vertical: 'middle', horizontal: 'left' };
-                
-                let r7 = ws.addRow([]); r7.getCell(1).value = this.t('Kho hàng:', 'Warehouse:'); r7.getCell(2).value = str(this.prHeader.warehouse); ws.mergeCells('B7:C7'); r7.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; r7.getCell(2).border = builder.borderBotOnly; r7.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; r7.getCell(2).alignment={ vertical: 'middle', horizontal: 'left' };
-                r7.getCell(5).value = this.t('Thủ kho:', 'Storekeeper:'); r7.getCell(6).value = str(this.prHeader.storekeeper); ws.mergeCells('F7:H7'); r7.getCell(5).font={ bold: true, name: 'Times New Roman', size: 10 }; r7.getCell(6).border = builder.borderBotOnly; r7.getCell(5).alignment={ vertical: 'middle', horizontal: 'right' }; r7.getCell(6).alignment={ vertical: 'middle', horizontal: 'left' };
-                r7.getCell(9).value = this.t('Ngày duyệt:', 'Approved:'); r7.getCell(10).value = str(this.prHeader.approvedDate); ws.mergeCells('J7:M7'); r7.getCell(9).font={ bold: true, name: 'Times New Roman', size: 10 }; r7.getCell(10).border = builder.borderBotOnly; r7.getCell(9).alignment={ vertical: 'middle', horizontal: 'right' }; r7.getCell(10).alignment={ vertical: 'middle', horizontal: 'left' };
-                ws.addRow([]);
-
-                ws.addRow([ this.t('STT', 'No.'), this.t('Mô tả hàng hóa', 'Item Description'), '', this.t('Mã vật tư\n(*)', 'Mat. Code\n(*)'), this.t('ĐVT\n(*)', 'Unit\n(*)'), this.t('Bình quân SD hàng tháng\n(*)', 'Avg Monthly Usage\n(*)'), this.t('Số lượng', 'Quantity'), '', this.t('Đơn giá\ntham khảo\n(có VAT)\n(*)', 'Est. Price\n(VAT incl.)\n(*)'), this.t('Thành tiền\n(Có VAT)\n(*)', 'Total Amount\n(VAT incl.)\n(*)'), this.t('Thời gian\ncần hàng\n(*)', 'Req. Date\n(*)'), this.t('Mục đích sử dụng\n(*)', 'Purpose\n(*)'), this.t('TK chi phí\n(Người lập)', 'Expense Acc\n(Creator)'), this.t('TK chi phí\n(KTT)', 'Expense Acc\n(Chief Acct)'), this.t('Ngân sách\ncòn lại', 'Remaining\nBudget'), this.t('Nhà cung cấp tham khảo', 'Suggested\nSupplier'), this.t('Công ty\nsử dụng\n(*)', 'Company Use\n(*)'), this.t('Điều kiện nghiệm thu/ Đánh giá chất lượng (nếu có)', 'QC Conditions') ]);
-                ws.addRow([ '', this.t('Tên hàng hóa\n(*)', 'Item Name\n(*)'), this.t('Quy cách\n(*)', 'Specs\n(*)'), '', '', '', this.t('Tồn Kho\n(*)', 'Stock\n(*)'), this.t('Đề xuất\n(*)', 'Request\n(*)'), '', '', '', '', '', '', '', '', '', '' ]);
-                ws.addRow(['(1)','(2)','(3)','(4)','(5)','(6)','(7)','(8)','(9)','(10)','(11)','(12)','(13)','(14)','(15)','(16)','(17)','(18)']);
-                ['A9:A10','B9:C9','D9:D10','E9:E10','F9:F10','G9:H9','I9:I10','J9:J10','K9:K10','L9:L10','M9:M10','N9:N10','O9:O10','P9:P10','Q9:Q10','R9:R10'].forEach(m => ws.mergeCells(m));
-                [9, 10].forEach(r => ws.getRow(r).eachCell(c => { c.font={name:'Times New Roman', size:9, bold:true, color:{argb:'FF000000'}}; c.fill=fillHeader; c.border=builder.borderThin; c.alignment=builder.alignCenter; }));
-                ws.getRow(11).eachCell(c => { c.font={name:'Times New Roman', size:8, italic:true}; c.fill={type:'pattern', pattern:'solid', fgColor:{argb:'FFD9D9D9'}}; c.border=builder.borderThin; c.alignment=builder.alignCenter; });
-                
-                let rIdx = 12;
-                this.docPR.forEach((row, i) => {
-                    const r = ws.addRow([]);
-                    let avg = num(row.avgUsage); let qS = num(row.qtyStock); let qR = num(row.qtyReq); let p = num(row.price); let bud = num(row.budget);
-                    if(this.roundDecimal) { avg=Math.round(avg); qS=Math.round(qS); qR=Math.round(qR); p=Math.round(p); bud=Math.round(bud); }
-                    r.getCell(1).value = i+1; r.getCell(2).value = str(row.name); r.getCell(3).value = str(row.specs); r.getCell(4).value = str(row.partNo); r.getCell(5).value = str(row.unit); 
-                    r.getCell(6).value = avg; r.getCell(7).value = qS; r.getCell(8).value = qR; r.getCell(9).value = p; r.getCell(10).value = qR * p; 
-                    r.getCell(11).value = str(row.timeNeeded); r.getCell(12).value = str(row.purpose); r.getCell(13).value = str(row.accCreator); r.getCell(14).value = str(row.accKTT); r.getCell(15).value = bud; r.getCell(16).value = str(row.supplier); r.getCell(17).value = str(row.companyUse); r.getCell(18).value = str(row.qcCond);
-                    [2,3,12,16,18].forEach(c=>r.getCell(c).alignment={ vertical: 'middle', horizontal: 'left', wrapText: true });
-                    r.getCell(4).font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size:9};
-                    [6,7,8,9,10,15].forEach(c => r.getCell(c).numFmt=FORMAT_MONEY); r.getCell(8).font={bold:true, name:'Times New Roman', size:9}; r.getCell(10).font={bold:true, name:'Times New Roman', size:9};
-                    rIdx++;
-                });
-                
-                let rTot = ws.addRow([]); rTot.getCell(9).value = this.t('Tổng cộng:', 'Total:'); rTot.getCell(10).value = this.roundDecimal ? Math.round(this.prTotalAmount) : this.prTotalAmount; ws.mergeCells(`A${rIdx}:I${rIdx}`); rTot.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; rTot.font={bold:true, name:'Times New Roman', size:9}; rTot.getCell(10).numFmt=FORMAT_MONEY; rTot.getCell(10).font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size:10}; rIdx++;
-                let rWords = ws.addRow([]); rWords.getCell(9).value = `${this.t('Bằng chữ:', 'In words:')} ${this.readMoney(this.prTotalAmount)}`; ws.mergeCells(`A${rIdx}:R${rIdx}`); rWords.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; rWords.font={italic:true, name:'Times New Roman', size:9}; rIdx++;
-                builder.applyTableStyle(12, rIdx-2, 18, 9);
-                ws.addRow([]); rIdx++; 
-
-                if (this.printPrWorkflow) {
-                    ws.addRow([this.t('QUÁ TRÌNH XỬ LÝ:', 'WORKFLOW PROCESS:')]).font = {bold:true, name:'Times New Roman', size:10}; rIdx++;
-                    let wH = ws.addRow([]); wH.getCell(1).value = this.t('Thời điểm xử lý', 'Timestamp'); wH.getCell(2).value = this.t('Bước xử lý', 'Process Step'); wH.getCell(5).value = this.t('Người xử lý', 'Person in Charge'); wH.getCell(9).value = this.t('Ý kiến người xử lý', 'Remarks/Comments'); wH.eachCell(c => { c.font={bold:true, name:'Times New Roman', size:9}; c.fill=fillHeader; c.alignment=builder.alignCenter; });
-                    ws.mergeCells(`B${rIdx}:D${rIdx}`); ws.mergeCells(`E${rIdx}:H${rIdx}`); ws.mergeCells(`I${rIdx}:R${rIdx}`); builder.applyTableStyle(rIdx, rIdx, 18, 9); rIdx++;
-                    this.prWorkflow.forEach(s => {
-                        let r = ws.addRow([]); r.getCell(1).value = str(s.time); r.getCell(2).value = this.lang === 'vi' ? str(s.stepVi) : str(s.stepEn); r.getCell(5).value = str(s.person); r.getCell(9).value = str(s.note);
-                        ws.mergeCells(`B${rIdx}:D${rIdx}`); ws.mergeCells(`E${rIdx}:H${rIdx}`); ws.mergeCells(`I${rIdx}:R${rIdx}`); builder.applyTableStyle(rIdx, rIdx, 18, 9);
-                        r.getCell(1).alignment=builder.alignCenter; r.getCell(2).alignment={ vertical: 'middle', horizontal: 'left', wrapText: true }; r.getCell(5).alignment=builder.alignCenter; r.getCell(9).alignment={ vertical: 'middle', horizontal: 'left', wrapText: true }; rIdx++;
-                    });
-                    ws.addRow([]); rIdx++;
-                }
-                
-                let s1 = ws.addRow([]); let s2 = ws.addRow([]); let dText = this.t('Ngày...tháng...năm...', 'Date...../...../.....');
-                [1, 5, 8, 11, 14].forEach(c => s1.getCell(c).value = dText);
-                s2.getCell(1).value = this.t('Người lập phiếu\n\n\n\n\n', 'Prepared by\n\n\n\n\n'); s2.getCell(5).value = this.t('Trưởng phòng\n\n\n\n\n', 'Dept. Manager\n\n\n\n\n'); s2.getCell(8).value = this.t('TP Cung ứng\n\n\n\n\n', 'Purchasing Mgr\n\n\n\n\n'); s2.getCell(11).value = this.t('Kế toán trưởng\n\n\n\n\n', 'Chief Accountant\n\n\n\n\n'); s2.getCell(14).value = this.t('Ban Giám đốc\n\n\n\n\n', 'Board of Directors\n\n\n\n\n');
-                [`A${rIdx}:D${rIdx}`, `E${rIdx}:G${rIdx}`, `H${rIdx}:J${rIdx}`, `K${rIdx}:M${rIdx}`, `N${rIdx}:R${rIdx}`].forEach(m => ws.mergeCells(m)); rIdx++;
-                [`A${rIdx}:D${rIdx}`, `E${rIdx}:G${rIdx}`, `H${rIdx}:J${rIdx}`, `K${rIdx}:M${rIdx}`, `N${rIdx}:R${rIdx}`].forEach(m => ws.mergeCells(m));
-                s1.alignment = builder.alignCenter; s1.font = {name:'Times New Roman', size:9};
-                s2.alignment = { vertical: 'top', horizontal: 'center', wrapText: true }; s2.font = {bold:true, name:'Times New Roman', size:9}; s2.height = 80;
-            }
-
-            else if (type === 'daily' || type === 'nghiemthu' || type === 'nghiemthubg') {
+            if (strategies[type]) {
+                await strategies[type](builder, dateStr, projectName, str, num, FORMAT_MONEY, logoData);
+            } else {
                 alert(this.t('Tính năng Export Excel cho form này đang bảo trì để nâng cấp UI.', 'Excel export for this form is under maintenance.'));
                 this.showSavedToast = false;
-                return;
             }
+        },
 
-            builder.download(fileName);
+        async exportExcel_employees(builder, dateStr, projectName, str, num, FORMAT_MONEY, logoData) {
+            let fileName = `Danh_Sach_Nhan_Vien_${dateStr}.xlsx`;
+            const ws = builder.ws;
+
+            ws.columns = [ {width: 6}, {width: 15}, {width: 30}, {width: 25}, {width: 15}, {width: 15}, {width: 20} ];
+            ws.pageSetup.printTitlesRow = '1:6';
+            builder.addLogo(logoData, 140, 50);
+            
+            ws.mergeCells('A1:G1'); ws.getCell('A1').value = this.t('DANH SÁCH NHÂN VIÊN', 'EMPLOYEE LIST'); ws.getCell('A1').font = { bold: true, name: 'Times New Roman', size: 16 }; ws.getCell('A1').alignment = builder.alignCenter; ws.getRow(1).height = 30;
+            ws.addRow([]); ws.addRow([]); ws.addRow([]); ws.addRow([]);
+            
+            const head = ws.addRow([this.t('STT', 'No.'), this.t('MSNV', 'Emp ID'), this.t('Họ và tên', 'Full Name'), this.t('Vị trí công việc', 'Position'), this.t('Tổ', 'Team'), this.t('Nhóm', 'Group'), this.t('SĐT', 'Phone')]);
+            head.eachCell(c => { c.font={ bold: true, name: 'Times New Roman', size: 11 }; c.fill={ type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } }; c.border=builder.borderThin; c.alignment=builder.alignCenter; });
+            
+            let rIdx = 7;
+            this.employees.forEach((emp, i) => {
+                const r = ws.addRow([i + 1, str(emp.id), str(emp.name), str(emp.position), str(emp.team), str(emp.group), str(emp.phone)]);
+                r.getCell(1).alignment = builder.alignCenter; r.getCell(2).alignment = builder.alignCenter;
+                r.getCell(3).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+                r.getCell(4).alignment = builder.alignCenter; r.getCell(5).alignment = builder.alignCenter;
+                r.getCell(6).alignment = builder.alignCenter; r.getCell(7).alignment = builder.alignCenter;
+                rIdx++;
+            });
+            builder.applyTableStyle(6, rIdx-1, 7, 11);
+            await builder.download(fileName);
+            setTimeout(() => this.showSavedToast = false, 2500);
+        },
+
+        async exportExcel_dutoan(builder, dateStr, projectName, str, num, FORMAT_MONEY, logoData) {
+            let fileName = `BOM_${projectName}_${dateStr}.xlsx`;
+            const ws = builder.ws;
+
+            ws.columns = [ {width: 5}, {width: 35}, {width: 15}, {width: 6}, {width: 6}, {width: 12}, {width: 12}, {width: 12}, {width: 12}, {width: 15} ];
+            ws.pageSetup.printTitlesRow = '1:6';
+            builder.addLogo(logoData, 140, 50);
+            
+            ws.mergeCells('A1:J1'); ws.getCell('A1').value = this.t('BẢNG DỰ TOÁN CHI PHÍ (BOM)', 'BILL OF MATERIALS (BOM)'); ws.getCell('A1').font = { bold: true, name: 'Times New Roman', size: 16 }; ws.getCell('A1').alignment = builder.alignCenter; ws.getRow(1).height = 30;
+            ws.mergeCells('A2:J2'); ws.getCell('A2').value = `${this.t('Dự án:', 'Project:')} ${str(projectName)}`; ws.getCell('A2').font = { bold: true, name: 'Times New Roman', size: 11 }; ws.getCell('A2').alignment = builder.alignCenter; ws.getRow(2).height = 20;
+            ws.mergeCells('A3:J3'); ws.getCell('A3').value = this.t('', ''); ws.getCell('A3').font = {italic:true, name:'Times New Roman', size:10}; ws.getCell('A3').alignment = builder.alignCenter;
+            ws.addRow([]);
+            
+            ws.addRow([this.t('STT', 'No.'), this.t('Hạng mục', 'Description'), this.t('Quy cách', 'Specs'), this.t('ĐVT', 'Unit'), this.t('SL', 'Qty'), this.t('Đơn giá (VNĐ)', 'Unit Price (VND)'), '', this.t('Thành tiền (VNĐ)', 'Total Amount (VND)'), '', this.t('Tổng cộng (VNĐ)', 'Grand Total')]);
+            ws.addRow(['', '', '', '', '', this.t('Vật tư', 'Material'), this.t('Nhân công', 'Labor'), this.t('Vật tư', 'Material'), this.t('Nhân công', 'Labor'), '']);
+            ['A5:A6', 'B5:B6', 'C5:C6', 'D5:D6', 'E5:E6', 'F5:G5', 'H5:I5', 'J5:J6'].forEach(m => ws.mergeCells(m));
+            [5, 6].forEach(r => ws.getRow(r).eachCell(c => { c.font = { bold: true, name: 'Times New Roman', size: 10 }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } }; c.border = builder.borderThin; c.alignment = builder.alignCenter; }));
+            
+            let rIdx = 7;
+            this.docDuToan.forEach((row, i) => {
+                const r = ws.addRow([]);
+                if (row.isCategory) {
+                    r.getCell(1).value = this.getRowIndex(i); 
+                    r.getCell(2).value = str(row.name).toUpperCase();
+                    r.getCell(8).value = this.getCategoryTotal(i).vt;
+                    r.getCell(9).value = this.getCategoryTotal(i).nc;
+                    r.getCell(10).value = this.getCategoryTotal(i).total;
+                    
+                    ws.mergeCells(`B${rIdx}:G${rIdx}`);
+                    r.getCell(1).alignment = builder.alignCenter; r.getCell(1).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FF0284C7'} };
+                    r.getCell(2).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }; r.getCell(2).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FF0284C7'} }; 
+                    r.getCell(8).font = { bold: true, name: 'Times New Roman', size: 10 }; r.getCell(9).font = { bold: true, name: 'Times New Roman', size: 10 }; r.getCell(10).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FFDC2626'} };
+                    r.getCell(8).numFmt = FORMAT_MONEY; r.getCell(9).numFmt = FORMAT_MONEY; r.getCell(10).numFmt = FORMAT_MONEY;
+                    r.getCell(8).alignment = { vertical: 'middle', horizontal: 'right' }; r.getCell(9).alignment = { vertical: 'middle', horizontal: 'right' }; r.getCell(10).alignment = { vertical: 'middle', horizontal: 'right' };
+                    r.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+                } else {
+                    r.getCell(1).value = this.getRowIndex(i); 
+                    r.getCell(2).value = str(row.name); r.getCell(3).value = str(row.specs); r.getCell(4).value = str(row.unit);
+                    let q = num(row.qty); let vt = num(row.priceVT); let nc = num(row.priceNC);
+                    if(this.roundDecimal) { q=Math.round(q); vt=Math.round(vt); nc=Math.round(nc); }
+                    r.getCell(5).value = q; r.getCell(6).value = vt; r.getCell(7).value = nc; r.getCell(8).value = q * vt; r.getCell(9).value = q * nc; r.getCell(10).value = (q * vt) + (q * nc);
+                    
+                    r.getCell(2).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }; r.getCell(3).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }; 
+                    for(let c=5; c<=10; c++) { r.getCell(c).numFmt=FORMAT_MONEY; r.getCell(c).alignment={ vertical: 'middle', horizontal: 'right' }; } 
+                    r.getCell(10).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FFDC2626'} };
+                }
+                rIdx++;
+            });
+            
+            const rT = ws.addRow([]);
+            rT.getCell(8).value = this.t('Tổng chi phí trực tiếp:', 'Subtotal Direct Cost:'); rT.getCell(9).value = this.roundDecimal ? Math.round(this.dtSumVT) : this.dtSumVT; rT.getCell(10).value = this.roundDecimal ? Math.round(this.dtSumNC) : this.dtSumNC;
+            ws.mergeCells(`A${rIdx}:H${rIdx}`); rT.font={ bold: true, name: 'Times New Roman', size: 10 }; rT.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; rT.getCell(9).numFmt=FORMAT_MONEY; rT.getCell(10).numFmt=FORMAT_MONEY;
+            builder.applyTableStyle(5, rIdx, 10);
+            
+            ws.addRow([]); rIdx++;
+            const sumTitle = ws.addRow([this.t('TỔNG HỢP CHI PHÍ & LỢI NHUẬN', 'COST & PROFIT SUMMARY')]);
+            ws.mergeCells(`A${rIdx}:J${rIdx}`); sumTitle.font = {bold:true, name:'Times New Roman', size:11}; sumTitle.alignment = builder.alignCenter; sumTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } }; sumTitle.border = builder.borderThin;
+            rIdx++;
+
+            const startSumR = rIdx;
+            const sumData = [
+                { t: this.t(`1. TỔNG CHI PHÍ TRỰC TIẾP (Vật tư + Nhân công):`, `1. TOTAL BASE COST (Mat. + Lab.):`), v: this.dtSumVT + this.dtSumNC },
+                { t: this.t(`2. Chi phí Quản lý (${this.tyleNCGT}% NC)`, `2. Management Cost (${this.tyleNCGT}% Lab)`), v: this.dtCpNCGT },
+                { t: this.t(`3. LN định mức Vật tư (${this.tyleQLCVT}% VT)`, `3. Mat. Profit Margin (${this.tyleQLCVT}% Mat)`), v: this.dtCpQLCVT },
+                { t: this.t(`4. LN định mức Nhân công (${this.tyleQLCNC}% NC+QL)`, `4. Lab. Profit Margin (${this.tyleQLCNC}% Lab)`), v: this.dtCpQLCNC },
+                { t: this.t(`TỔNG DỰ TOÁN (TRƯỚC THUẾ):`, `ESTIMATE BEFORE TAX:`), v: this.dtTotalBeforeVAT, bold: true },
+                { t: this.t(`Thuế GTGT (VAT ${this.dtVatRate}%):`, `VAT (${this.dtVatRate}%):`), v: this.dtVATAmount },
+                { t: this.t(`TỔNG GIÁ TRỊ (SAU THUẾ):`, `TOTAL CONTRACT VALUE:`), v: this.dtTotalAfterVAT, bold: true, color: 'FFDC2626', size: 12 },
+            ];
+            
+            sumData.forEach(d => {
+                const r = ws.addRow([]); r.getCell(1).value = d.t; r.getCell(9).value = this.roundDecimal ? Math.round(d.v) : d.v;
+                ws.mergeCells(`A${rIdx}:H${rIdx}`); ws.mergeCells(`I${rIdx}:J${rIdx}`); 
+                r.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; r.getCell(9).numFmt=FORMAT_MONEY; r.getCell(9).alignment={ vertical: 'middle', horizontal: 'right' };
+                if(d.bold) { r.font = {bold:true, name:'Times New Roman', size: d.size||10, color: d.color ? {argb: d.color} : undefined}; } 
+                rIdx++;
+            });
+            
+            const rWords = ws.addRow([`${this.t('Bằng chữ:', 'In words:')} ${this.readMoney(this.dtTotalAfterVAT)}`]); ws.mergeCells(`A${rIdx}:J${rIdx}`); 
+            rWords.font = {italic:true, name:'Times New Roman', size:10}; rWords.getCell(1).alignment={ vertical: 'middle', horizontal: 'left' }; rIdx++;
+
+            builder.applyTableStyle(startSumR, rIdx-1, 10);
+            
+            ws.addRow([]); rIdx++; 
+            const signR = ws.addRow([]);
+            signR.getCell(2).value = this.t('NGƯỜI LẬP BẢNG\n\n(Ký và ghi rõ họ tên)', 'PREPARED BY\n\n(Signature & Full Name)'); 
+            signR.getCell(8).value = this.t('NGƯỜI PHÊ DUYỆT\n\n(Ký và ghi rõ họ tên)', 'APPROVED BY\n\n(Signature & Full Name)');
+            ws.mergeCells(`B${rIdx}:D${rIdx}`); ws.mergeCells(`H${rIdx}:J${rIdx}`); 
+            signR.font={ bold: true, name: 'Times New Roman', size: 10 }; signR.alignment={ vertical: 'top', horizontal: 'center', wrapText: true }; signR.height = 100;
+
+            await builder.download(fileName);
+            setTimeout(() => this.showSavedToast = false, 2500);
+        },
+
+        async exportExcel_baogia(builder, dateStr, projectName, str, num, FORMAT_MONEY, logoData) {
+            let fileName = `Bao_Gia_${projectName}_${dateStr}.xlsx`;
+            const ws = builder.ws;
+
+            ws.columns = [ {width: 5}, {width: 40}, {width: 25}, {width: 8}, {width: 8}, {width: 20}, {width: 22} ];
+            ws.pageSetup.printTitlesRow = '1:18';
+
+            let r1 = ws.addRow([]); 
+            r1.getCell(1).value = this.t('BẢNG BÁO GIÁ', 'QUOTATION'); r1.getCell(1).font={bold:true, name:'Times New Roman', size:18}; r1.getCell(1).alignment=builder.alignCenter; r1.height = 25;
+            r1.getCell(6).value = `${this.t('Số hiệu:', 'Doc No:')} ${str(this.bgHeader.isoDoc)}`; r1.getCell(6).font={ bold: true, name: 'Times New Roman', size: 10 }; r1.getCell(6).alignment = { vertical: 'middle', horizontal: 'left' };
+            let r2 = ws.addRow([]); r2.getCell(1).value = str(projectName).toUpperCase(); r2.getCell(1).font={bold:true, name:'Times New Roman', size:12}; r2.getCell(1).alignment=builder.alignCenter; r2.height = 20;
+            r2.getCell(6).value = `${this.t('Ngày hiệu lực:', 'Effective:')} ${str(this.bgHeader.isoDate)}\n${this.t('Lần ban hành:', 'Issue No:')} ${str(this.bgHeader.isoRev)}`; r2.getCell(6).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+            ws.mergeCells('A1:E1'); ws.mergeCells('F1:G1'); ws.mergeCells('A2:E3'); ws.mergeCells('F2:G3'); 
+            builder.applyTableStyle(1, 3, 7); ws.addRow([]); ws.addRow([]);
+
+            let r6 = ws.addRow([]); 
+            r6.getCell(1).value = this.t('Công ty:', 'Company:'); r6.getCell(2).value = str(this.bgHeader.company); 
+            r6.getCell(6).value = this.t('Số:', 'Ref No:'); r6.getCell(7).value = str(this.bgHeader.ref); 
+            ws.mergeCells('B6:E6'); r6.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(2).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(6).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(7).font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size: 10};
+            let r7 = ws.addRow([]); 
+            r7.getCell(1).value = this.t('Địa chỉ:', 'Address:'); r7.getCell(2).value = str(this.bgHeader.address); 
+            r7.getCell(6).value = this.t('Ngày:', 'Date:'); r7.getCell(7).value = str(this.bgHeader.date); 
+            ws.mergeCells('B7:E7'); r7.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; r7.getCell(6).font={ bold: true, name: 'Times New Roman', size: 10 };
+            let r8 = ws.addRow([]); 
+            r8.getCell(1).value = this.t('MST:', 'Tax Code:'); r8.getCell(2).value = str(this.bgHeader.taxCode); ws.mergeCells('B8:E8'); r8.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; ws.addRow([]);
+
+            ws.addRow([this.t('Kính gửi Quý Khách hàng:', 'To our valued Customer:')]).font={ bold: true, name: 'Times New Roman', size: 10 };
+            const cusArr = [ [this.t('Công ty/ Cá nhân:', 'Company/ Individual:'), this.bgHeader.cusCompany], [this.t('Địa chỉ:', 'Address:'), this.bgHeader.cusAddress], [this.t('MST:', 'Tax Code:'), this.bgHeader.cusTax] ];
+            let startCus = 11;
+            cusArr.forEach(c => {
+                let r = ws.addRow([]); r.getCell(1).value = c[0]; r.getCell(2).value = str(c[1]); ws.mergeCells(`B${startCus}:G${startCus}`);
+                r.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; r.getCell(2).font = (c[0] === this.t('Công ty/ Cá nhân:', 'Company/ Individual:')) ? { bold: true, name: 'Times New Roman', size: 10 } : { name: 'Times New Roman', size: 10 };
+                startCus++;
+            });
+
+            ws.addRow([this.t('Công ty chúng tôi trân trọng báo giá đến quý khách như sau:', 'We are pleased to submit our quotation as follows:')]).font = {italic:true, name:'Times New Roman', size:10};
+            
+            const head = ws.addRow([this.t('STT', 'No.'), this.t('Hạng mục', 'Item'), this.t('Thông số kỹ thuật', 'Specifications'), this.t('Đvt', 'Unit'), this.t('Số lượng', 'Qty'), this.t('Đơn giá', 'Price'), this.t('Thành tiền', 'Total Amount')]);
+            head.eachCell(c => { c.font={ bold: true, name: 'Times New Roman', size: 10 }; c.fill={ type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } }; c.border=builder.borderThin; c.alignment=builder.alignCenter; });
+            head.height = 25; let rIdx = startCus + 1;
+            
+            this.docBaoGia.forEach((row, i) => {
+                const r = ws.addRow([]);
+                if (row.isCategory) {
+                    r.getCell(1).value = this.getRowIndexBG(i); r.getCell(2).value = str(row.name).toUpperCase(); r.getCell(7).value = this.getBGCategoryTotal(i);
+                    ws.mergeCells(`B${rIdx}:F${rIdx}`);
+                    r.getCell(1).alignment = builder.alignCenter; r.getCell(1).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FF0284C7'} };
+                    r.getCell(2).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }; r.getCell(2).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FF0284C7'} }; 
+                    r.getCell(7).font = { bold: true, name: 'Times New Roman', size: 10, color: {argb: 'FFDC2626'} }; r.getCell(7).numFmt = FORMAT_MONEY; r.getCell(7).alignment = { vertical: 'middle', horizontal: 'right' };
+                    r.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+                } else {
+                    r.getCell(1).value = this.getRowIndexBG(i); r.getCell(2).value = str(row.name); r.getCell(3).value = str(row.specs); r.getCell(4).value = str(row.unit);
+                    let q = num(row.qty); let p = num(row.priceGop); if(this.roundDecimal){ q=Math.round(q); p=Math.round(p); }
+                    r.getCell(5).value = q; r.getCell(6).value = p; r.getCell(7).value = q * p;
+                    r.getCell(2).alignment={ vertical: 'middle', horizontal: 'left', wrapText: true }; r.getCell(3).alignment={ vertical: 'middle', horizontal: 'left', wrapText: true }; 
+                    r.getCell(5).numFmt=FORMAT_MONEY; r.getCell(6).numFmt=FORMAT_MONEY; r.getCell(7).numFmt=FORMAT_MONEY; 
+                }
+                rIdx++;
+            });
+            
+            const rT1 = ws.addRow([]); rT1.getCell(6).value = this.t('Tổng giá (trước thuế):', 'Subtotal:'); rT1.getCell(7).value = this.bgTotalBeforeVAT; ws.mergeCells(`A${rIdx}:E${rIdx}`); rT1.font={ bold: true, name: 'Times New Roman', size: 10 }; rT1.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; rT1.getCell(7).numFmt=FORMAT_MONEY; rIdx++;
+            const rT2 = ws.addRow([]); rT2.getCell(6).value = this.t(`Thuế GTGT (VAT ${this.vatRate}%):`, `VAT (${this.vatRate}%):`); rT2.getCell(7).value = this.bgVATAmount; ws.mergeCells(`A${rIdx}:E${rIdx}`); rT2.font={ bold: true, name: 'Times New Roman', size: 10 }; rT2.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; rT2.getCell(7).numFmt=FORMAT_MONEY; rIdx++;
+            const rT3 = ws.addRow([]); rT3.getCell(6).value = this.t('TỔNG GIÁ TRỊ (SAU THUẾ):', 'TOTAL AMOUNT:'); rT3.getCell(7).value = this.bgTotalAfterVAT; ws.mergeCells(`A${rIdx}:E${rIdx}`); rT3.font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size:11}; rT3.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; rT3.getCell(7).numFmt=FORMAT_MONEY; rIdx++;
+            const rT4 = ws.addRow([]); rT4.getCell(1).value = `${this.t('Bằng chữ:', 'In words:')} ${this.readMoney(this.bgTotalAfterVAT)}`; ws.mergeCells(`A${rIdx}:G${rIdx}`); rT4.font={italic:true, name:'Times New Roman', size:10}; rT4.getCell(1).alignment={ vertical: 'middle', horizontal: 'left' }; rIdx++;
+
+            builder.applyTableStyle(startCus, rIdx-5, 7);
+            
+            ws.addRow([]); rIdx++; 
+            ws.addRow([this.t('ĐIỀU KHOẢN THƯƠNG MẠI (TERMS & CONDITIONS):', 'TERMS & CONDITIONS:')]).font = {bold:true, underline:true, name:'Times New Roman', size:10}; rIdx++;
+            this.bgTerms.forEach(t => { 
+                const tr = ws.addRow([]); tr.getCell(1).value = '-'; tr.getCell(2).value = str(t.title); tr.getCell(3).value = str(t.content);
+                ws.mergeCells(`C${rIdx}:G${rIdx}`); tr.getCell(2).font={ bold: true, name: 'Times New Roman', size: 10 }; tr.getCell(3).alignment={ vertical: 'middle', horizontal: 'left', wrapText: true }; 
+                tr.height = Math.max(20, Math.ceil(str(t.content).length / 60) * 15);
+                rIdx++; 
+            });
+            
+            ws.addRow([]); rIdx++; 
+            const signR = ws.addRow([]); signR.getCell(2).value = this.t('ĐẠI DIỆN KHÁCH HÀNG\n\n(Ký và ghi rõ họ tên)', 'CUSTOMER REPRESENTATIVE\n\n(Signature & Full Name)'); signR.getCell(6).value = this.t('ĐẠI DIỆN CÔNG TY\n\n(Ký và ghi rõ họ tên)', 'COMPANY REP.\n\n(Signature & Full Name)');
+            ws.mergeCells(`B${rIdx}:C${rIdx}`); ws.mergeCells(`F${rIdx}:G${rIdx}`); signR.font={ bold: true, name: 'Times New Roman', size: 10 }; signR.alignment={ vertical: 'top', horizontal: 'center', wrapText: true }; signR.height = 100;
+
+            await builder.download(fileName);
+            setTimeout(() => this.showSavedToast = false, 2500);
+        },
+
+        async exportExcel_pr(builder, dateStr, projectName, str, num, FORMAT_MONEY, logoData) {
+            let fileName = `PR_${str(this.prHeader.prNo) || 'No'}_${dateStr}.xlsx`;
+            const ws = builder.ws;
+
+            ws.columns = [ {width: 4}, {width: 15}, {width: 10}, {width: 10}, {width: 6}, {width: 6}, {width: 6}, {width: 6}, {width: 10}, {width: 12}, {width: 10}, {width: 12}, {width: 10}, {width: 10}, {width: 10}, {width: 10}, {width: 8}, {width: 12} ];
+            ws.pageSetup.printTitlesRow = '1:11'; builder.setMargins(0.15);
+            builder.addLogo(logoData, 100, 40);
+            
+            let r1 = ws.addRow([]); r1.getCell(1).value = this.t('PHIẾU ĐỀ NGHỊ MUA HÀNG', 'PURCHASE REQUISITION'); r1.getCell(1).font={bold:true, name:'Times New Roman', size:16}; r1.getCell(1).alignment=builder.alignCenter; r1.getCell(15).value = this.t('Số hiệu: ADG_QT_KH_01/BM01', 'Doc No: ADG_QT_KH_01/BM01'); r1.getCell(15).font={ bold: true, name: 'Times New Roman', size: 10 };
+            let r2 = ws.addRow([]); r2.getCell(15).value = `${this.t('Ngày HL:', 'Effective:')} ${str(this.prHeader.isoDate)} | ${this.t('Lần BH:', 'Issue No:')} ${str(this.prHeader.isoRev)} | ${this.t('Lần SX:', 'Rev No:')} ${str(this.prHeader.isoCheck)}`;
+            ws.mergeCells('A1:N2'); ws.mergeCells('O1:R1'); ws.mergeCells('O2:R2'); builder.applyTableStyle(1, 2, 18, 9);
+            
+            ws.addRow([]); 
+            let r4 = ws.addRow([]); r4.getCell(1).value = this.t('Số phiếu:', 'PR No:'); r4.getCell(1).font = { bold: true, name: 'Times New Roman', size: 10 }; r4.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' };
+            r4.getCell(2).value = `ADG_ĐNMH_${str(this.prHeader.prNo)}`; r4.getCell(2).font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size:11}; ws.mergeCells('B4:H4'); r4.getCell(2).border = builder.borderBotOnly; r4.getCell(2).alignment={ vertical: 'middle', horizontal: 'left' };
+            r4.getCell(9).value = this.prHeader.isPlan ? this.t('☑ Theo kế hoạch', '☑ Planned') : this.t('☐ Theo kế hoạch', '☐ Planned'); r4.getCell(9).font={ bold: true, name: 'Times New Roman', size: 10 }; ws.mergeCells('I4:M4');
+            
+            let r5 = ws.addRow([]); r5.getCell(1).value = this.t('Đơn vị lập:', 'Company:'); r5.getCell(2).value = str(this.prHeader.company); ws.mergeCells('B5:H5'); r5.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; r5.getCell(2).font={ bold: true, name: 'Times New Roman', size: 10 }; r5.getCell(2).border = builder.borderBotOnly; r5.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; r5.getCell(2).alignment={ vertical: 'middle', horizontal: 'left' };
+            let r6 = ws.addRow([]); r6.getCell(1).value = this.t('Bộ phận:', 'Department:'); r6.getCell(2).value = str(this.prHeader.dept); ws.mergeCells('B6:F6'); r6.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(2).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(2).border = builder.borderBotOnly; r6.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; r6.getCell(2).alignment={ vertical: 'middle', horizontal: 'left' };
+            r6.getCell(9).value = this.t('Mã code:', 'Dept Code:'); r6.getCell(10).value = str(this.prHeader.deptCode); ws.mergeCells('J6:M6'); r6.getCell(9).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(10).font={ bold: true, name: 'Times New Roman', size: 10 }; r6.getCell(10).border = builder.borderBotOnly; r6.getCell(9).alignment={ vertical: 'middle', horizontal: 'right' }; r6.getCell(10).alignment={ vertical: 'middle', horizontal: 'left' };
+            
+            let r7 = ws.addRow([]); r7.getCell(1).value = this.t('Kho hàng:', 'Warehouse:'); r7.getCell(2).value = str(this.prHeader.warehouse); ws.mergeCells('B7:C7'); r7.getCell(1).font={ bold: true, name: 'Times New Roman', size: 10 }; r7.getCell(2).border = builder.borderBotOnly; r7.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; r7.getCell(2).alignment={ vertical: 'middle', horizontal: 'left' };
+            r7.getCell(5).value = this.t('Thủ kho:', 'Storekeeper:'); r7.getCell(6).value = str(this.prHeader.storekeeper); ws.mergeCells('F7:H7'); r7.getCell(5).font={ bold: true, name: 'Times New Roman', size: 10 }; r7.getCell(6).border = builder.borderBotOnly; r7.getCell(5).alignment={ vertical: 'middle', horizontal: 'right' }; r7.getCell(6).alignment={ vertical: 'middle', horizontal: 'left' };
+            r7.getCell(9).value = this.t('Ngày duyệt:', 'Approved:'); r7.getCell(10).value = str(this.prHeader.approvedDate); ws.mergeCells('J7:M7'); r7.getCell(9).font={ bold: true, name: 'Times New Roman', size: 10 }; r7.getCell(10).border = builder.borderBotOnly; r7.getCell(9).alignment={ vertical: 'middle', horizontal: 'right' }; r7.getCell(10).alignment={ vertical: 'middle', horizontal: 'left' };
+            ws.addRow([]);
+
+            ws.addRow([ this.t('STT', 'No.'), this.t('Mô tả hàng hóa', 'Item Description'), '', this.t('Mã vật tư\n(*)', 'Mat. Code\n(*)'), this.t('ĐVT\n(*)', 'Unit\n(*)'), this.t('Bình quân SD hàng tháng\n(*)', 'Avg Monthly Usage\n(*)'), this.t('Số lượng', 'Quantity'), '', this.t('Đơn giá\ntham khảo\n(có VAT)\n(*)', 'Est. Price\n(VAT incl.)\n(*)'), this.t('Thành tiền\n(Có VAT)\n(*)', 'Total Amount\n(VAT incl.)\n(*)'), this.t('Thời gian\ncần hàng\n(*)', 'Req. Date\n(*)'), this.t('Mục đích sử dụng\n(*)', 'Purpose\n(*)'), this.t('TK chi phí\n(Người lập)', 'Expense Acc\n(Creator)'), this.t('TK chi phí\n(KTT)', 'Expense Acc\n(Chief Acct)'), this.t('Ngân sách\ncòn lại', 'Remaining\nBudget'), this.t('Nhà cung cấp tham khảo', 'Suggested\nSupplier'), this.t('Công ty\nsử dụng\n(*)', 'Company Use\n(*)'), this.t('Điều kiện nghiệm thu/ Đánh giá chất lượng (nếu có)', 'QC Conditions') ]);
+            ws.addRow([ '', this.t('Tên hàng hóa\n(*)', 'Item Name\n(*)'), this.t('Quy cách\n(*)', 'Specs\n(*)'), '', '', '', this.t('Tồn Kho\n(*)', 'Stock\n(*)'), this.t('Đề xuất\n(*)', 'Request\n(*)'), '', '', '', '', '', '', '', '', '', '' ]);
+            ws.addRow(['(1)','(2)','(3)','(4)','(5)','(6)','(7)','(8)','(9)','(10)','(11)','(12)','(13)','(14)','(15)','(16)','(17)','(18)']);
+            ['A9:A10','B9:C9','D9:D10','E9:E10','F9:F10','G9:H9','I9:I10','J9:J10','K9:K10','L9:L10','M9:M10','N9:N10','O9:O10','P9:P10','Q9:Q10','R9:R10'].forEach(m => ws.mergeCells(m));
+            [9, 10].forEach(r => ws.getRow(r).eachCell(c => { c.font={name:'Times New Roman', size:9, bold:true, color:{argb:'FF000000'}}; c.fill=fillHeader; c.border=builder.borderThin; c.alignment=builder.alignCenter; }));
+            ws.getRow(11).eachCell(c => { c.font={name:'Times New Roman', size:8, italic:true}; c.fill={type:'pattern', pattern:'solid', fgColor:{argb:'FFD9D9D9'}}; c.border=builder.borderThin; c.alignment=builder.alignCenter; });
+            
+            let rIdx = 12;
+            this.docPR.forEach((row, i) => {
+                const r = ws.addRow([]);
+                let avg = num(row.avgUsage); let qS = num(row.qtyStock); let qR = num(row.qtyReq); let p = num(row.price); let bud = num(row.budget);
+                if(this.roundDecimal) { avg=Math.round(avg); qS=Math.round(qS); qR=Math.round(qR); p=Math.round(p); bud=Math.round(bud); }
+                r.getCell(1).value = i+1; r.getCell(2).value = str(row.name); r.getCell(3).value = str(row.specs); r.getCell(4).value = str(row.partNo); r.getCell(5).value = str(row.unit); 
+                r.getCell(6).value = avg; r.getCell(7).value = qS; r.getCell(8).value = qR; r.getCell(9).value = p; r.getCell(10).value = qR * p; 
+                r.getCell(11).value = str(row.timeNeeded); r.getCell(12).value = str(row.purpose); r.getCell(13).value = str(row.accCreator); r.getCell(14).value = str(row.accKTT); r.getCell(15).value = bud; r.getCell(16).value = str(row.supplier); r.getCell(17).value = str(row.companyUse); r.getCell(18).value = str(row.qcCond);
+                [2,3,12,16,18].forEach(c=>r.getCell(c).alignment={ vertical: 'middle', horizontal: 'left', wrapText: true });
+                r.getCell(4).font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size:9};
+                [6,7,8,9,10,15].forEach(c => r.getCell(c).numFmt=FORMAT_MONEY); r.getCell(8).font={bold:true, name:'Times New Roman', size:9}; r.getCell(10).font={bold:true, name:'Times New Roman', size:9};
+                rIdx++;
+            });
+            
+            let rTot = ws.addRow([]); rTot.getCell(9).value = this.t('Tổng cộng:', 'Total:'); rTot.getCell(10).value = this.roundDecimal ? Math.round(this.prTotalAmount) : this.prTotalAmount; ws.mergeCells(`A${rIdx}:I${rIdx}`); rTot.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; rTot.font={bold:true, name:'Times New Roman', size:9}; rTot.getCell(10).numFmt=FORMAT_MONEY; rTot.getCell(10).font={bold:true, color:{argb:'FFDC2626'}, name:'Times New Roman', size:10}; rIdx++;
+            let rWords = ws.addRow([]); rWords.getCell(9).value = `${this.t('Bằng chữ:', 'In words:')} ${this.readMoney(this.prTotalAmount)}`; ws.mergeCells(`A${rIdx}:R${rIdx}`); rWords.getCell(1).alignment={ vertical: 'middle', horizontal: 'right' }; rWords.font={italic:true, name:'Times New Roman', size:9}; rIdx++;
+            builder.applyTableStyle(12, rIdx-2, 18, 9);
+            ws.addRow([]); rIdx++; 
+
+            if (this.printPrWorkflow) {
+                ws.addRow([this.t('QUÁ TRÌNH XỬ LÝ:', 'WORKFLOW PROCESS:')]).font = {bold:true, name:'Times New Roman', size:10}; rIdx++;
+                let wH = ws.addRow([]); wH.getCell(1).value = this.t('Thời điểm xử lý', 'Timestamp'); wH.getCell(2).value = this.t('Bước xử lý', 'Process Step'); wH.getCell(5).value = this.t('Người xử lý', 'Person in Charge'); wH.getCell(9).value = this.t('Ý kiến người xử lý', 'Remarks/Comments'); wH.eachCell(c => { c.font={bold:true, name:'Times New Roman', size:9}; c.fill=fillHeader; c.alignment=builder.alignCenter; });
+                ws.mergeCells(`B${rIdx}:D${rIdx}`); ws.mergeCells(`E${rIdx}:H${rIdx}`); ws.mergeCells(`I${rIdx}:R${rIdx}`); builder.applyTableStyle(rIdx, rIdx, 18, 9); rIdx++;
+                this.prWorkflow.forEach(s => {
+                    let r = ws.addRow([]); r.getCell(1).value = str(s.time); r.getCell(2).value = this.lang === 'vi' ? str(s.stepVi) : str(s.stepEn); r.getCell(5).value = str(s.person); r.getCell(9).value = str(s.note);
+                    ws.mergeCells(`B${rIdx}:D${rIdx}`); ws.mergeCells(`E${rIdx}:H${rIdx}`); ws.mergeCells(`I${rIdx}:R${rIdx}`); builder.applyTableStyle(rIdx, rIdx, 18, 9);
+                    r.getCell(1).alignment=builder.alignCenter; r.getCell(2).alignment={ vertical: 'middle', horizontal: 'left', wrapText: true }; r.getCell(5).alignment=builder.alignCenter; r.getCell(9).alignment={ vertical: 'middle', horizontal: 'left', wrapText: true }; rIdx++;
+                });
+                ws.addRow([]); rIdx++;
+            }
+            
+            let s1 = ws.addRow([]); let s2 = ws.addRow([]); let dText = this.t('Ngày...tháng...năm...', 'Date...../...../.....');
+            [1, 5, 8, 11, 14].forEach(c => s1.getCell(c).value = dText);
+            s2.getCell(1).value = this.t('Người lập phiếu\n\n\n\n\n', 'Prepared by\n\n\n\n\n'); s2.getCell(5).value = this.t('Trưởng phòng\n\n\n\n\n', 'Dept. Manager\n\n\n\n\n'); s2.getCell(8).value = this.t('TP Cung ứng\n\n\n\n\n', 'Purchasing Mgr\n\n\n\n\n'); s2.getCell(11).value = this.t('Kế toán trưởng\n\n\n\n\n', 'Chief Accountant\n\n\n\n\n'); s2.getCell(14).value = this.t('Ban Giám đốc\n\n\n\n\n', 'Board of Directors\n\n\n\n\n');
+            [`A${rIdx}:D${rIdx}`, `E${rIdx}:G${rIdx}`, `H${rIdx}:J${rIdx}`, `K${rIdx}:M${rIdx}`, `N${rIdx}:R${rIdx}`].forEach(m => ws.mergeCells(m)); rIdx++;
+            [`A${rIdx}:D${rIdx}`, `E${rIdx}:G${rIdx}`, `H${rIdx}:J${rIdx}`, `K${rIdx}:M${rIdx}`, `N${rIdx}:R${rIdx}`].forEach(m => ws.mergeCells(m));
+            s1.alignment = builder.alignCenter; s1.font = {name:'Times New Roman', size:9};
+            s2.alignment = { vertical: 'top', horizontal: 'center', wrapText: true }; s2.font = {bold:true, name:'Times New Roman', size:9}; s2.height = 80;
+
+            await builder.download(fileName);
+            setTimeout(() => this.showSavedToast = false, 2500);
         },
 
         importFromExcel(event) {
@@ -786,8 +790,8 @@ createApp({
                 if (newDoc.length > 0) {
                     this.ntbgHeader = newHeader;
                     this.docNghiemThuBG = newDoc;
-                    this.saveDraft('ntbg_header', newHeader);
-                    this.saveDraft('ntbg_table', newDoc);
+                    debouncedSaveData('ntbg_header', newHeader, this);
+                    debouncedSaveData('ntbg_table', newDoc, this);
                     alert(this.t(`Đã Import thành công ${newDoc.length} công việc từ nhà thầu!`, `Imported ${newDoc.length} items!`));
                 } else {
                     alert(this.t('Không tìm thấy dữ liệu bảng hợp lệ trong file Excel.', 'No valid table data found.'));
@@ -957,15 +961,6 @@ createApp({
             this.searchQuery = ''; this.showSearchDropdown = false;
         },
 
-        saveDraft(key, data) { 
-            if (this.draftTimeouts[key]) { clearTimeout(this.draftTimeouts[key]); }
-            this.draftTimeouts[key] = setTimeout(() => {
-                localforage.setItem(key, JSON.parse(JSON.stringify(data))).then(() => { 
-                    this.showSavedToast = true; setTimeout(() => this.showSavedToast = false, 2000); 
-                });
-            }, 800); 
-        },
-        
         async loadDrafts() {
             const parseL = async (k, defaultData) => { const data = await localforage.getItem(k); return data !== null ? data : defaultData; };
             this.docDuToan = await parseL('dt_table', this.docDuToan); 
